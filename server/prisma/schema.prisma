@@ -1,0 +1,141 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserRole {
+  customer
+  admin
+}
+
+enum OrderStatus {
+  pending
+  processing
+  shipped
+  delivered
+  cancelled
+}
+
+enum PaymentStatus {
+  pending
+  paid
+  failed
+}
+
+model User {
+  id            Int      @id @default(autoincrement())
+  name          String   @db.VarChar(120)
+  email         String   @unique @db.VarChar(180)
+  passwordHash  String   @map("password_hash") @db.VarChar(255)
+  role          UserRole @default(customer)
+  createdAt     DateTime @default(now()) @map("created_at")
+  orders        Order[]
+  reviews       Review[]
+
+  @@map("users")
+}
+
+model Category {
+  id           Int       @id @default(autoincrement())
+  name         String    @db.VarChar(100)
+  slug         String    @unique @db.VarChar(120)
+  description  String?   @db.Text
+  imageUrl     String?   @map("image_url") @db.VarChar(500)
+  displayOrder Int?      @default(0) @map("display_order")
+  products     Product[]
+
+  @@map("categories")
+}
+
+model Product {
+  id               Int            @id @default(autoincrement())
+  categoryId       Int?           @map("category_id")
+  name             String         @db.VarChar(200)
+  slug             String         @unique @db.VarChar(220)
+  brand            String         @default("Maison du Chocolat") @db.VarChar(100)
+  shortDesc        String?        @map("short_desc") @db.VarChar(300)
+  description      String?        @db.Text
+  price            Decimal        @db.Decimal(10, 2)
+  stock            Int            @default(50)
+  origin           String         @default("Ecuador") @db.VarChar(100)
+  cocoaPercentage  Int?           @default(70) @map("cocoa_percentage")
+  rating           Decimal?       @default(4.8) @db.Decimal(2, 1)
+  reviewsCount     Int?           @default(12) @map("reviews_count")
+  isFeatured       Boolean?       @default(false) @map("is_featured")
+  isNew            Boolean?       @default(false) @map("is_new")
+  isBestseller     Boolean?       @default(false) @map("is_bestseller")
+  createdAt        DateTime       @default(now()) @map("created_at")
+  category         Category?      @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+  images           ProductImage[]
+  reviews          Review[]
+
+  @@map("products")
+}
+
+model ProductImage {
+  id        Int     @id @default(autoincrement())
+  productId Int     @map("product_id")
+  imageUrl  String  @map("image_url") @db.VarChar(500)
+  isPrimary Boolean @default(false) @map("is_primary")
+  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@map("product_images")
+}
+
+model Review {
+  id        Int      @id @default(autoincrement())
+  productId Int      @map("product_id")
+  userId    Int?     @map("user_id")
+  userName  String   @map("user_name") @db.VarChar(120)
+  rating    Int      @db.Int
+  title     String?  @db.VarChar(200)
+  comment   String?  @db.Text
+  createdAt DateTime @default(now()) @map("created_at")
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  user      User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@map("reviews")
+}
+
+model Order {
+  id               Int          @id @default(autoincrement())
+  userId           Int?         @map("user_id")
+  orderNumber      String       @unique @map("order_number") @db.VarChar(60)
+  customerName     String       @map("customer_name") @db.VarChar(150)
+  customerEmail    String       @map("customer_email") @db.VarChar(180)
+  customerPhone    String?      @map("customer_phone") @db.VarChar(50)
+  totalAmount      Decimal      @map("total_amount") @db.Decimal(10, 2)
+  subtotal         Decimal      @db.Decimal(10, 2)
+  taxAmount        Decimal      @default(0.00) @map("tax_amount") @db.Decimal(10, 2)
+  shippingFee      Decimal      @default(0.00) @map("shipping_fee") @db.Decimal(10, 2)
+  discountAmount   Decimal      @default(0.00) @map("discount_amount") @db.Decimal(10, 2)
+  promoCode        String?      @map("promo_code") @db.VarChar(50)
+  status           OrderStatus  @default(processing)
+  paymentStatus    PaymentStatus @default(paid) @map("payment_status")
+  paymentId        String?      @map("payment_id") @db.VarChar(100)
+  razorpayOrderId  String?      @map("razorpay_order_id") @db.VarChar(100)
+  shippingAddress  Json         @map("shipping_address")
+  createdAt        DateTime     @default(now()) @map("created_at")
+  user             User?        @relation(fields: [userId], references: [id], onDelete: SetNull)
+  items            OrderItem[]
+
+  @@map("orders")
+}
+
+model OrderItem {
+  id          Int     @id @default(autoincrement())
+  orderId     Int     @map("order_id")
+  productId   Int     @map("product_id")
+  productName String  @map("product_name") @db.VarChar(200)
+  quantity    Int
+  unitPrice   Decimal @map("unit_price") @db.Decimal(10, 2)
+  totalPrice  Decimal @map("total_price") @db.Decimal(10, 2)
+  imageUrl    String? @map("image_url") @db.VarChar(500)
+  order       Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  @@map("order_items")
+}
