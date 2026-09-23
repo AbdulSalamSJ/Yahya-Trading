@@ -27,7 +27,7 @@ export function CheckoutModal({ isOpen, onClose, onOrderPlaced }) {
     city: '',
     state: '',
     postalCode: '',
-    shippingMethod: 'insulated', // 'insulated' (Free) | 'express_saturday' (+₹150)
+    shippingMethod: 'insulated', // 'insulated' (Free) | 'express_saturday' (+₹ 150)
     paymentMethod: 'razorpay'
   });
 
@@ -439,7 +439,7 @@ export function CheckoutModal({ isOpen, onClose, onOrderPlaced }) {
                     disabled={isProcessing}
                     className="px-7 py-3 rounded-xl bg-[#795548] hover:bg-[#5D4037] active:scale-95 text-white text-sm font-bold shadow-choco-card hover:shadow-choco-card-hover transition-all flex items-center gap-2"
                   >
-                    <span>{isProcessing ? 'Authorizing...' : `Pay ₹${totalAmount.toLocaleString('en-IN')}`}</span>
+                    <span>{isProcessing ? 'Authorizing...' : `Pay ₹ ${totalAmount.toLocaleString('en-IN')}`}</span>
                     <ShieldCheck size={16} />
                   </button>
                 )}
@@ -462,7 +462,7 @@ export function CheckoutModal({ isOpen, onClose, onOrderPlaced }) {
                         <span className="text-[11px] text-[#6D4C41] dark:text-[#C8B8B0]">Qty: {item.quantity}</span>
                       </div>
                       <span className="font-semibold text-[#795548] dark:text-[#A1887F]">
-                        ₹{(item.price * item.quantity).toLocaleString('en-IN')}
+                        ₹ {(item.price * item.quantity).toLocaleString('en-IN')}
                       </span>
                     </div>
                   ))}
@@ -471,21 +471,21 @@ export function CheckoutModal({ isOpen, onClose, onOrderPlaced }) {
                 <div className="space-y-1.5 text-xs text-[#6D4C41] dark:text-[#C8B8B0] border-t border-[#EBE0D8] dark:border-[#3E2F29] pt-3">
                   <div className="flex justify-between">
                     <span>Subtotal</span>
-                    <span>₹{subtotal.toLocaleString('en-IN')}</span>
+                    <span>₹ {subtotal.toLocaleString('en-IN')}</span>
                   </div>
                   {discountAmount > 0 && (
                     <div className="flex justify-between text-[#388E3C]">
                       <span>Discount ({promoCode})</span>
-                      <span>- ₹{discountAmount.toLocaleString('en-IN')}</span>
+                      <span>- ₹ {discountAmount.toLocaleString('en-IN')}</span>
                     </div>
                   )}
                   <div className="flex justify-between">
                     <span>GST (18%)</span>
-                    <span>₹{taxAmount.toLocaleString('en-IN')}</span>
+                    <span>₹ {taxAmount.toLocaleString('en-IN')}</span>
                   </div>
                   <div className="flex justify-between">
                     <span>Insulated Shipping</span>
-                    <span>{shippingFee === 0 ? 'FREE' : `₹${shippingFee}`}</span>
+                    <span>{shippingFee === 0 ? 'FREE' : `₹ ${shippingFee}`}</span>
                   </div>
                 </div>
               </div>
@@ -493,7 +493,7 @@ export function CheckoutModal({ isOpen, onClose, onOrderPlaced }) {
               <div className="pt-4 border-t border-[#EBE0D8] dark:border-[#3E2F29] mt-4 flex items-baseline justify-between">
                 <span className="font-serif text-sm font-bold text-[#3E2723] dark:text-[#F5EFEA]">Total Amount</span>
                 <span className="font-serif text-xl font-bold text-[#795548] dark:text-[#A1887F]">
-                  ₹{totalAmount.toLocaleString('en-IN')}
+                  ₹ {totalAmount.toLocaleString('en-IN')}
                 </span>
               </div>
             </div>

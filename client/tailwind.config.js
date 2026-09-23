@@ -68,9 +68,9 @@ export default {
         }
       },
       fontFamily: {
-        sans: ['DM Sans', 'Inter', 'system-ui', '-apple-system', 'sans-serif'],
-        serif: ['Lora', 'Georgia', 'serif'],
-        heading: ['DM Sans', 'Inter', 'sans-serif']
+        sans: ['DM Sans', 'Noto Sans', 'Inter', 'system-ui', '-apple-system', 'sans-serif'],
+        serif: ['Lora', 'Georgia', 'Noto Sans', 'serif'],
+        heading: ['DM Sans', 'Noto Sans', 'Inter', 'sans-serif']
       },
       boxShadow: {
         'palm-card': '0 2px 8px rgba(0, 0, 0, 0.04), 0 1px 2px rgba(0, 0, 0, 0.02)',

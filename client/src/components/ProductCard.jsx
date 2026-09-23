@@ -112,10 +112,10 @@ export function ProductCard({ product, onSelectProduct }) {
           <div>
             <div className="flex items-baseline gap-1.5">
               <span className="text-base sm:text-lg font-extrabold text-[#1d1d1d] dark:text-white">
-                ₹{currentPrice.toLocaleString('en-IN')}
+                ₹ {currentPrice.toLocaleString('en-IN')}
               </span>
               <span className="text-xs text-neutral-400 line-through">
-                ₹{regularPrice.toLocaleString('en-IN')}
+                ₹ {regularPrice.toLocaleString('en-IN')}
               </span>
             </div>
             <span className="text-[10px] font-semibold text-[#108474] block">

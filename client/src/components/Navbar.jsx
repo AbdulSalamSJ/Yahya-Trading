@@ -27,6 +27,18 @@ export function Navbar({ onOpenAuth, onOpenAdmin, onOpenAddItem, onOpenTracking,
   return (
     <header className="sticky top-0 z-40 w-full bg-white dark:bg-[#141414] border-b border-gray-200 dark:border-neutral-800 shadow-sm transition-colors">
 
+      {/* Top Bright Promo Announcement Bar */}
+      <div className="bg-[#fee000] text-[#1d1d1d] font-bold text-xs sm:text-sm py-2 px-4 text-center tracking-wide flex items-center justify-center gap-2 sm:gap-3 shadow-inner select-none">
+        <span className="bg-[#1d1d1d] text-[#fee000] text-[10px] sm:text-xs font-black uppercase px-2.5 py-0.5 rounded-full shadow-xs">
+          Special Offer
+        </span>
+        <span className="flex items-center gap-1.5 flex-wrap justify-center font-bold">
+          <span>Free Express Delivery Across India on Orders Above <strong className="font-black text-black">₹ 499</strong></span>
+          <span className="hidden sm:inline text-neutral-600">•</span>
+          <span>Use Code <span className="bg-[#1d1d1d] text-white px-2 py-0.5 rounded font-mono font-black text-[11px] tracking-wider">YAHYA10</span> for 10% OFF</span>
+        </span>
+      </div>
+
       {/* Main Branding & Search Header */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3.5 flex items-center justify-between gap-4">
 

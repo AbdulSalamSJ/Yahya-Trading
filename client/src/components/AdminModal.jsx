@@ -1,9 +1,9 @@
-﻿import React, { useState, useEffect, useRef } from 'react';
-import { X, DollarSign, Package, ShoppingBag, AlertTriangle, Plus, Trash2, Edit, CheckCircle, Search, Save, Check, Scale, UploadCloud, FileImage, RefreshCw } from 'lucide-react';
+import React, { useState, useEffect, useRef } from 'react';
+import { X, IndianRupee, Package, ShoppingBag, AlertTriangle, Plus, Trash2, Edit, CheckCircle, Search, Save, Check, Scale, UploadCloud, FileImage, RefreshCw } from 'lucide-react';
 import { api } from '../services/api';
 import logoImg from '../image/logo.jpg';
 
-export function AdminModal({ isOpen, onClose, onRefreshProducts, onOpenAddItem }) {
+export function AdminModal({ isOpen, onClose, onRefreshProducts, onOpenAddItem, onProductCreated }) {
   const [activeTab, setActiveTab] = useState('metrics'); // 'metrics' | 'products' | 'orders'
   const [metrics, setMetrics] = useState(null);
   const [orders, setOrders] = useState([]);
@@ -174,7 +174,7 @@ export function AdminModal({ isOpen, onClose, onRefreshProducts, onOpenAddItem }
     }
 
     try {
-      await api.createProduct({
+      const res = await api.createProduct({
         ...newProduct,
         name: newProduct.name.trim(),
         brand: newProduct.brand.trim() || 'Yahya Traders Select',
@@ -193,6 +193,7 @@ export function AdminModal({ isOpen, onClose, onRefreshProducts, onOpenAddItem }
       resetAddForm();
       loadAdminData();
       if (onRefreshProducts) onRefreshProducts();
+      if (onProductCreated && res?.product) onProductCreated(res.product);
     } catch (err) {
       alert(err.message || 'Failed to create product');
     }
@@ -283,10 +284,10 @@ export function AdminModal({ isOpen, onClose, onRefreshProducts, onOpenAddItem }
                 <div className="p-4 rounded-xl bg-[#FDF8F5] dark:bg-[#1C1412] border border-[#EBE0D8] dark:border-[#3E2F29]">
                   <div className="flex items-center justify-between text-[#6D4C41] dark:text-[#C8B8B0] text-xs font-semibold uppercase mb-1">
                     <span>Gross Revenue</span>
-                    <DollarSign size={16} className="text-[#388E3C]" />
+                    <IndianRupee size={16} className="text-[#388E3C]" />
                   </div>
                   <p className="font-serif text-2xl font-bold text-[#795548] dark:text-[#A1887F]">
-                    ₹{(metrics?.totalSales || 0).toLocaleString('en-IN')}
+                    ₹ {(metrics?.totalSales || 0).toLocaleString('en-IN')}
                   </p>
                   <p className="text-[11px] text-[#388E3C] mt-1">✓ Razorpay settlements verified</p>
                 </div>
@@ -387,7 +388,7 @@ export function AdminModal({ isOpen, onClose, onRefreshProducts, onOpenAddItem }
                           <p className="text-[11px] text-[#6D4C41] dark:text-[#C8B8B0]">{order.customer_email}</p>
                         </td>
                         <td className="p-3 font-bold text-[#795548] dark:text-[#A1887F]">
-                          ₹{Number(order.total_amount).toLocaleString('en-IN')}
+                          ₹ {Number(order.total_amount).toLocaleString('en-IN')}
                         </td>
                         <td className="p-3">
                           <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-[#388E3C]/15 text-[#388E3C]">
@@ -701,7 +702,7 @@ export function AdminModal({ isOpen, onClose, onRefreshProducts, onOpenAddItem }
                               </td>
 
                               <td className="p-3 font-black text-base text-[#1d1d1d] dark:text-[#fee000]">
-                                ₹{Number(p.price).toLocaleString('en-IN')}
+                                ₹ {Number(p.price).toLocaleString('en-IN')}
                               </td>
 
                               <td className="p-3">

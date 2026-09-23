@@ -853,10 +853,10 @@ const handleBack = (e) => {
                 {/* Price & Savings */}
                 <div className="p-4 rounded-2xl bg-neutral-50 dark:bg-[#181818] border border-neutral-200 dark:border-neutral-800 flex flex-wrap items-baseline gap-4 mb-4">
                   <div className="text-3xl sm:text-4xl font-black text-[#1d1d1d] dark:text-white">
-                    ₹{currentPrice.toLocaleString('en-IN')}
+                    ₹ {currentPrice.toLocaleString('en-IN')}
                   </div>
                   <div className="text-sm text-neutral-400 line-through">
-                    MRP ₹{regularPrice.toLocaleString('en-IN')}
+                    MRP ₹ {regularPrice.toLocaleString('en-IN')}
                   </div>
                   {discountPercent > 0 && (
                     <span className="px-3 py-1 rounded-full bg-[#fee000] text-[#1d1d1d] text-xs font-black">
@@ -864,7 +864,7 @@ const handleBack = (e) => {
                     </span>
                   )}
                   <span className="text-[11px] text-neutral-500 dark:text-neutral-400 block w-full">
-                    Inclusive of all taxes • Free shipping on orders above ₹499
+                    Inclusive of all taxes • Free shipping on orders above ₹ 499
                   </span>
                 </div>
 
@@ -941,7 +941,7 @@ const handleBack = (e) => {
                       ) : (
                         <>
                           <ShoppingBag size={18} />
-                          <span>Add {quantity} to Bag • ₹{(currentPrice * quantity).toLocaleString('en-IN')}</span>
+                          <span>Add {quantity} to Bag • ₹ {(currentPrice * quantity).toLocaleString('en-IN')}</span>
                         </>
                       )}
                     </button>

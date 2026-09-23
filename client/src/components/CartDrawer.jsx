@@ -69,7 +69,7 @@ export function CartDrawer({ onProceedToCheckout }) {
               <Truck size={14} className="text-[#fee000]" />
               {neededForFreeShipping > 0 ? (
                 <span>
-                  Add <strong className="text-[#1d1d1d] dark:text-[#fee000]">₹{neededForFreeShipping.toLocaleString('en-IN')}</strong> more for <strong className="text-[#108474]">FREE Shipping</strong>
+                  Add <strong className="text-[#1d1d1d] dark:text-[#fee000]">₹ {neededForFreeShipping.toLocaleString('en-IN')}</strong> more for <strong className="text-[#108474]">FREE Shipping</strong>
                 </span>
               ) : (
                 <span className="text-[#108474] font-bold flex items-center gap-1">
@@ -163,7 +163,7 @@ export function CartDrawer({ onProceedToCheckout }) {
                     </div>
 
                     <span className="font-extrabold text-xs sm:text-sm text-[#1d1d1d] dark:text-white">
-                      ₹{(item.price * item.quantity).toLocaleString('en-IN')}
+                      ₹ {(item.price * item.quantity).toLocaleString('en-IN')}
                     </span>
                   </div>
                 </div>
@@ -211,19 +211,19 @@ export function CartDrawer({ onProceedToCheckout }) {
             <div className="space-y-1.5 text-xs text-neutral-600 dark:text-neutral-400 pt-1">
               <div className="flex justify-between">
                 <span>Subtotal</span>
-                <span className="font-semibold text-neutral-900 dark:text-white">₹{subtotal.toLocaleString('en-IN')}</span>
+                <span className="font-semibold text-neutral-900 dark:text-white">₹ {subtotal.toLocaleString('en-IN')}</span>
               </div>
 
               {discountAmount > 0 && (
                 <div className="flex justify-between text-[#108474] font-semibold">
                   <span>Yahya Traders Promo Discount</span>
-                  <span>- ₹{discountAmount.toLocaleString('en-IN')}</span>
+                  <span>- ₹ {discountAmount.toLocaleString('en-IN')}</span>
                 </div>
               )}
 
               <div className="flex justify-between">
                 <span>Estimated Tax (GST 5%)</span>
-                <span className="text-neutral-800 dark:text-neutral-200">₹{taxAmount.toLocaleString('en-IN')}</span>
+                <span className="text-neutral-800 dark:text-neutral-200">₹ {taxAmount.toLocaleString('en-IN')}</span>
               </div>
 
               <div className="flex justify-between">
@@ -232,7 +232,7 @@ export function CartDrawer({ onProceedToCheckout }) {
                   {shippingFee === 0 ? (
                     <span className="text-[#108474] font-bold">FREE Delivery</span>
                   ) : (
-                    `₹${shippingFee}`
+                    <span>₹ {shippingFee}</span>
                   )}
                 </span>
               </div>
@@ -240,7 +240,7 @@ export function CartDrawer({ onProceedToCheckout }) {
               <div className="flex justify-between text-base font-extrabold text-[#1d1d1d] dark:text-white pt-2 border-t border-neutral-200 dark:border-neutral-700">
                 <span>Grand Total</span>
                 <span className="text-lg font-black text-[#1d1d1d] dark:text-white">
-                  ₹{totalAmount.toLocaleString('en-IN')}
+                  ₹ {totalAmount.toLocaleString('en-IN')}
                 </span>
               </div>
             </div>

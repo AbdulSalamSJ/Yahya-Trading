@@ -6,7 +6,7 @@ export function TrustFeatures() {
     {
       icon: Truck,
       title: 'Express Delivery',
-      description: 'Dispatched within 24 hours. Fast express shipping nationwide, free on orders above ₹1,999.',
+      description: 'Dispatched within 24 hours. Fast express shipping nationwide, free on orders above ₹ 499.',
       badge: '24h Dispatch'
     },
     {

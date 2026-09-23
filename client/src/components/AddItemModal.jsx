@@ -627,7 +627,7 @@ export function AddItemModal({ isOpen, onClose, categories = [], onProductCreate
                     </p>
                     <div className="pt-2 flex items-baseline justify-between border-t border-neutral-100 dark:border-neutral-800">
                       <span className="text-sm font-black text-[#1d1d1d] dark:text-[#fee000]">
-                        ₹{Number(formData.price || 0).toLocaleString('en-IN')}
+                        ₹ {Number(formData.price || 0).toLocaleString('en-IN')}
                       </span>
                       <span className="text-[10px] text-neutral-400 font-medium">
                         {formData.stock || 50} in stock

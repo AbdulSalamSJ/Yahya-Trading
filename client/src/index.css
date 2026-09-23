@@ -4,7 +4,7 @@
 
 @layer base {
   body {
-    font-family: 'DM Sans', 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    font-family: 'DM Sans', 'Noto Sans', 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
     color: #1d1d1d;
     background-color: #FFFFFF;
     transition: background-color 0.2s ease, color 0.2s ease;
@@ -17,6 +17,11 @@
   h1, h2, h3, .font-serif-heading {
     font-family: 'DM Sans', sans-serif;
     letter-spacing: -0.02em;
+  }
+
+  .rupee {
+    font-family: 'Inter', 'Noto Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    font-weight: inherit;
   }
 }
 

@@ -53,20 +53,7 @@ async function seedMySQLData() {
       'Eleanor Vance', 'customer@example.com', customerHash]
   );
 
-  // Remove deleted categories and products
-  const activeCategoryIds = categories.map(c => c.id);
-  const activeProductIds = products.map(p => p.id);
-  if (activeProductIds.length) {
-    const pPlaceholders = activeProductIds.map(() => '?').join(',');
-    await pool.query(`DELETE FROM product_images WHERE product_id NOT IN (${pPlaceholders})`, activeProductIds);
-    await pool.query(`DELETE FROM reviews WHERE product_id NOT IN (${pPlaceholders})`, activeProductIds);
-    await pool.query(`DELETE FROM products WHERE id NOT IN (${pPlaceholders})`, activeProductIds);
-  }
-  if (activeCategoryIds.length) {
-    const cPlaceholders = activeCategoryIds.map(() => '?').join(',');
-    await pool.query(`DELETE FROM categories WHERE id NOT IN (${cPlaceholders})`, activeCategoryIds);
-  }
-
+  // Keep all existing catalog items and newly added products intact (do not delete admin-created items)
   for (const category of categories) {
     await pool.query(
       `INSERT INTO categories (id, name, slug, description, image_url, display_order)
@@ -452,7 +439,7 @@ export const db = {
       if (sort === 'price-low') query += ' ORDER BY p.price ASC';
       else if (sort === 'price-high') query += ' ORDER BY p.price DESC';
       else if (sort === 'rating') query += ' ORDER BY p.rating DESC';
-      else query += ' ORDER BY p.id ASC';
+      else query += ' ORDER BY p.id DESC';
 
       const [rows] = await pool.query(query, params);
       return attachProductImages(rows);
@@ -486,6 +473,7 @@ export const db = {
     if (sort === 'price-low') result.sort((a, b) => a.price - b.price);
     else if (sort === 'price-high') result.sort((a, b) => b.price - a.price);
     else if (sort === 'rating') result.sort((a, b) => b.rating - a.rating);
+    else result.sort((a, b) => b.id - a.id);
 
     return result.map(p => {
       const cat = localDb.categories.find(c => c.id === p.category_id);

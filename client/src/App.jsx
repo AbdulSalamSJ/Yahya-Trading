@@ -123,9 +123,12 @@ export function App() {
   };
 
   const handleProductCreated = (newProduct) => {
-    setProducts(prev => [newProduct, ...prev]);
+    setProducts(prev => [newProduct, ...prev.filter(p => p.id !== newProduct.id)]);
     fetchProducts();
-    setSelectedProduct(newProduct);
+    setTimeout(() => {
+      const el = document.getElementById('recently-added');
+      if (el) el.scrollIntoView({ behavior: 'smooth' });
+    }, 300);
   };
 
   const handleCategorySelect = (categorySlug) => {
@@ -235,6 +238,61 @@ export function App() {
         <div id="categories">
           <CategoryShowcase onSelectCategory={handleCategorySelect} />
         </div>
+      )}
+
+      {/* Front Page: Recently Added Products & Fresh Arrivals Section */}
+      {isFrontPage && (
+        <section id="recently-added" className="max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-10 sm:py-14 border-t border-neutral-200 dark:border-neutral-800">
+          <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-8">
+            <div>
+              <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-[#108474] dark:text-[#14b8a6] mb-1.5">
+                <Sparkles size={14} className="text-[#fee000]" />
+                <span>Just Added to Storefront • Fresh Harvest Arrivals</span>
+              </div>
+              <h2 className="text-2xl sm:text-3xl font-black text-[#1d1d1d] dark:text-white tracking-tight">
+                Recently Added Harvest Items
+              </h2>
+              <p className="text-xs sm:text-sm text-neutral-500 dark:text-neutral-400 mt-1">
+                Authentic, hand-picked selections recently published to Yahya Traders catalog.
+              </p>
+            </div>
+
+            <div className="flex items-center gap-2.5">
+              {isAdmin && (
+                <button
+                  onClick={() => setIsAddItemOpen(true)}
+                  className="px-4 py-2 rounded-full bg-[#108474] hover:bg-[#0d6e61] text-white text-xs font-black shadow-sm transition flex items-center gap-1.5 cursor-pointer"
+                >
+                  <Plus size={14} />
+                  <span>+ Add New Item</span>
+                </button>
+              )}
+              <button
+                onClick={() => handleCategorySelect(categories[0]?.slug || 'dates')}
+                className="px-4 py-2 rounded-full bg-neutral-100 hover:bg-[#fee000] text-neutral-800 hover:text-[#1d1d1d] dark:bg-neutral-800 dark:hover:bg-[#fee000] dark:text-neutral-200 dark:hover:text-[#1d1d1d] text-xs font-bold transition shadow-sm cursor-pointer"
+              >
+                Browse All Categories
+              </button>
+            </div>
+          </div>
+
+          {/* Product Grid */}
+          {products.length === 0 ? (
+            <div className="text-center py-12 bg-neutral-50 dark:bg-neutral-900 rounded-3xl border border-dashed border-neutral-300 dark:border-neutral-700">
+              <p className="text-sm font-semibold text-neutral-500">No items available yet.</p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6">
+              {products.slice(0, 8).map((product) => (
+                <ProductCard
+                  key={product.id}
+                  product={product}
+                  onSelectProduct={setSelectedProduct}
+                />
+              ))}
+            </div>
+          )}
+        </section>
       )}
 
       {/* Our Story View (if selected) */}
@@ -509,6 +567,7 @@ export function App() {
           isOpen={isAdminOpen}
           onClose={() => setIsAdminOpen(false)}
           onRefreshProducts={fetchProducts}
+          onProductCreated={handleProductCreated}
           onOpenAddItem={() => {
             setIsAdminOpen(false);
             setIsAddItemOpen(true);

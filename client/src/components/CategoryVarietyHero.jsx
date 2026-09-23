@@ -55,7 +55,7 @@ export function CategoryVarietyHero({
                   {product.name}
                 </p>
                 <p className="text-[11px] font-extrabold text-[#108474] dark:text-[#14b8a6] mt-1.5">
-                  ₹{Number(product.price).toLocaleString()}
+                  ₹ {Number(product.price).toLocaleString('en-IN')}
                 </p>
               </div>
             </div>
