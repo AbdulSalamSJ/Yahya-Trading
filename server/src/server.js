@@ -28,6 +28,20 @@ const __dirname = path.dirname(__filename);
 const publicImagesPath = path.resolve(__dirname, '../../client/public/images');
 app.use('/images', express.static(publicImagesPath));
 
+// Auto-initialize DB on first request (essential for serverless environments like Vercel)
+let isDbReady = false;
+app.use(async (req, res, next) => {
+  if (!isDbReady) {
+    try {
+      await initDatabase();
+      isDbReady = true;
+    } catch (e) {
+      console.warn('Database initialization notice:', e.message);
+    }
+  }
+  next();
+});
+
 // Request logging in development
 app.use((req, res, next) => {
   console.log(`[${new Date().toLocaleTimeString()}] ${req.method} ${req.url}`);
@@ -61,12 +75,18 @@ app.use((err, req, res, next) => {
   res.status(500).json({ message: 'Internal server error', error: err.message });
 });
 
-// Start Server
+// Start Server in standalone mode
 async function start() {
   await initDatabase();
+  isDbReady = true;
   app.listen(PORT, () => {
     console.log(`Server running on http://localhost:${PORT}`);
   });
 }
 
-start();
+const isMain = process.argv[1] && fileURLToPath(import.meta.url) === path.resolve(process.argv[1]);
+if (isMain && !process.env.VERCEL) {
+  start();
+}
+
+export default app;

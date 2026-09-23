@@ -2,13 +2,28 @@
   "name": "artisanal-chocolate-store",
   "version": "1.0.0",
   "private": true,
+  "type": "module",
   "scripts": {
-    "install:all": "npm --prefix server install && npm --prefix client install",
+    "build": "npm --prefix client install && npm --prefix client run build && node -e \"import fs from 'fs'; fs.cpSync('client/dist', 'dist', {recursive: true});\"",
+    "install:all": "npm install && npm --prefix server install && npm --prefix client install",
+    "dev": "npm --prefix client run dev",
     "dev:server": "npm --prefix server run dev",
     "dev:client": "npm --prefix client run dev",
+    "start": "node server/src/server.js",
     "start:server": "npm --prefix server start",
     "build:client": "npm --prefix client run build",
     "db:migrate": "npm --prefix server run db:migrate",
     "db:init": "npm --prefix server run db:init"
+  },
+  "dependencies": {
+    "bcryptjs": "^2.4.3",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
+    "express": "^4.21.0",
+    "jsonwebtoken": "^9.0.2",
+    "multer": "^2.4.0",
+    "mysql2": "^3.11.0",
+    "nodemailer": "^10.0.10",
+    "razorpay": "^2.9.4"
   }
 }
