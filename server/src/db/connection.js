@@ -1,4 +1,5 @@
 import mysql from 'mysql2/promise';
+import pg from 'pg';
 import dotenv from 'dotenv';
 import fs from 'fs';
 import path from 'path';
@@ -9,12 +10,16 @@ import bcrypt from 'bcryptjs';
 
 dotenv.config();
 
+const { Pool: PgPool } = pg;
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const LOCAL_STORAGE_FILE = path.join(__dirname, 'local_db.json');
 
 let pool = null;
 let isMySQL = false;
+let pgPool = null;
+let isPg = false;
+
 let localDb = {
   users: [],
   categories: [],
@@ -23,11 +28,31 @@ let localDb = {
   orders: []
 };
 
+// Unified database query function handling both PostgreSQL (Supabase) and MySQL
+async function dbQuery(sql, params = []) {
+  if (isPg && pgPool) {
+    let i = 1;
+    let pgSql = sql.replace(/\?/g, () => `$${i++}`);
+    pgSql = pgSql.replace(/`(\w+)`/g, '"$1"');
+    pgSql = pgSql.replace(/is_featured\s*=\s*1\b/gi, 'is_featured = true');
+    const isInsert = /^\s*insert\s+/i.test(pgSql);
+    if (isInsert && !/returning/i.test(pgSql)) {
+      pgSql += ' RETURNING id';
+    }
+    const res = await pgPool.query(pgSql, params);
+    const insertId = res.rows[0]?.id ? Number(res.rows[0].id) : null;
+    return [res.rows, { insertId, affectedRows: res.rowCount }];
+  } else if (isMySQL && pool) {
+    return pool.query(sql, params);
+  }
+  throw new Error('No database connection available');
+}
+
 async function attachProductImages(rows) {
   if (!rows.length) return rows;
   const productIds = rows.map(product => product.id);
   const placeholders = productIds.map(() => '?').join(',');
-  const [images] = await pool.query(
+  const [images] = await dbQuery(
     `SELECT product_id, image_url FROM product_images WHERE product_id IN (${placeholders}) ORDER BY is_primary DESC, id ASC`,
     productIds
   );
@@ -170,7 +195,7 @@ async function attachOrderItems(rows) {
   if (!rows.length) return rows;
   const orderIds = rows.map(order => order.id);
   const placeholders = orderIds.map(() => '?').join(',');
-  const [items] = await pool.query(
+  const [items] = await dbQuery(
     `SELECT * FROM order_items WHERE order_id IN (${placeholders}) ORDER BY id ASC`,
     orderIds
   );
@@ -286,6 +311,30 @@ async function initLocalDb() {
 }
 
 export async function initDatabase() {
+  // Priority 1: Supabase PostgreSQL (Cloud Database for production and shared development)
+  const supabaseUrl = process.env.SUPABASE_DATABASE_URL;
+  if (supabaseUrl && !supabaseUrl.includes('[YOUR-PASSWORD]')) {
+    try {
+      pgPool = new PgPool({
+        connectionString: supabaseUrl,
+        ssl: { rejectUnauthorized: false },
+        max: 10,
+        idleTimeoutMillis: 30000
+      });
+      const test = await pgPool.query('SELECT 1 + 1 AS result');
+      if (test && test.rows) {
+        isPg = true;
+        console.log('✓ Connected to Supabase PostgreSQL database.');
+        return;
+      }
+    } catch (err) {
+      console.warn(`! Supabase connection failed (${err.message}). Trying fallback...`);
+      pgPool = null;
+      isPg = false;
+    }
+  }
+
+  // Priority 2: Local MySQL Database
   const dbHost = process.env.DB_HOST || 'localhost';
   const dbUser = process.env.DB_USER || 'root';
   const dbPassword = process.env.DB_PASSWORD || '';
@@ -354,19 +403,21 @@ async function runMySQLMigrations() {
 
 export const db = {
   isUsingMySQL: () => isMySQL,
+  isUsingSupabase: () => isPg,
+  isUsingDatabase: () => isPg || isMySQL,
 
   // Users
   findUserByEmail: async (email) => {
-    if (isMySQL) {
-      const [rows] = await pool.query('SELECT * FROM users WHERE email = ?', [email]);
+    if (isPg || isMySQL) {
+      const [rows] = await dbQuery('SELECT * FROM users WHERE email = ?', [email]);
       return rows[0] || null;
     }
     return localDb.users.find(u => u.email.toLowerCase() === email.toLowerCase()) || null;
   },
 
   findUserById: async (id) => {
-    if (isMySQL) {
-      const [rows] = await pool.query('SELECT id, name, email, role, created_at FROM users WHERE id = ?', [id]);
+    if (isPg || isMySQL) {
+      const [rows] = await dbQuery('SELECT id, name, email, role, created_at FROM users WHERE id = ?', [id]);
       return rows[0] || null;
     }
     const u = localDb.users.find(u => u.id === Number(id));
@@ -376,12 +427,13 @@ export const db = {
   },
 
   createUser: async ({ name, email, passwordHash, role = 'customer' }) => {
-    if (isMySQL) {
-      const [result] = await pool.query(
+    if (isPg || isMySQL) {
+      const [rows, result] = await dbQuery(
         'INSERT INTO users (name, email, password_hash, role) VALUES (?, ?, ?, ?)',
         [name, email, passwordHash, role]
       );
-      return { id: result.insertId, name, email, role };
+      const id = result.insertId || rows[0]?.id;
+      return { id, name, email, role };
     }
     const newUser = {
       id: localDb.users.length ? Math.max(...localDb.users.map(u => u.id)) + 1 : 1,
@@ -398,8 +450,8 @@ export const db = {
 
   // Categories
   getCategories: async () => {
-    if (isMySQL) {
-      const [rows] = await pool.query('SELECT * FROM categories ORDER BY display_order ASC');
+    if (isPg || isMySQL) {
+      const [rows] = await dbQuery('SELECT * FROM categories ORDER BY display_order ASC');
       return rows;
     }
     return localDb.categories;
@@ -407,7 +459,7 @@ export const db = {
 
   // Products
   getProducts: async ({ categorySlug, minCocoa, maxCocoa, search, featured, sort } = {}) => {
-    if (isMySQL) {
+    if (isPg || isMySQL) {
       let query = `
         SELECT p.*, c.name AS category_name, c.slug AS category_slug 
         FROM products p 
@@ -433,7 +485,7 @@ export const db = {
         params.push(`%${search}%`, `%${search}%`, `%${search}%`);
       }
       if (featured) {
-        query += ' AND p.is_featured = 1';
+        query += isPg ? ' AND p.is_featured = true' : ' AND p.is_featured = 1';
       }
 
       if (sort === 'price-low') query += ' ORDER BY p.price ASC';
@@ -441,7 +493,7 @@ export const db = {
       else if (sort === 'rating') query += ' ORDER BY p.rating DESC';
       else query += ' ORDER BY p.id DESC';
 
-      const [rows] = await pool.query(query, params);
+      const [rows] = await dbQuery(query, params);
       return attachProductImages(rows);
     }
 
@@ -487,11 +539,11 @@ export const db = {
 
   getProductBySlugOrId: async (identifier) => {
     const isId = !isNaN(Number(identifier));
-    if (isMySQL) {
+    if (isPg || isMySQL) {
       const query = isId
         ? 'SELECT p.*, c.name as category_name, c.slug as category_slug FROM products p LEFT JOIN categories c ON p.category_id = c.id WHERE p.id = ?'
         : 'SELECT p.*, c.name as category_name, c.slug as category_slug FROM products p LEFT JOIN categories c ON p.category_id = c.id WHERE p.slug = ?';
-      const [rows] = await pool.query(query, [identifier]);
+      const [rows] = await dbQuery(query, [identifier]);
       const productsWithImages = await attachProductImages(rows);
       return productsWithImages[0] || null;
     }
@@ -509,28 +561,29 @@ export const db = {
   createProduct: async (productData) => {
     let slug = (productData.name || 'item').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
     if (!slug) slug = 'harvest-item-' + Date.now();
-    if (isMySQL) {
-      const [existing] = await pool.query('SELECT id FROM products WHERE slug = ?', [slug]);
+    if (isPg || isMySQL) {
+      const [existing] = await dbQuery('SELECT id FROM products WHERE slug = ?', [slug]);
       if (existing.length > 0) {
         slug = `${slug}-${Date.now().toString().slice(-4)}`;
       }
-      const [result] = await pool.query(
+      const [rows, result] = await dbQuery(
         `INSERT INTO products (category_id, name, slug, brand, short_desc, description, price, stock,
          origin, cocoa_percentage, rating, reviews_count, is_featured, is_new, is_bestseller)
          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0, ?, 1, 0)`,
         [productData.category_id, productData.name, slug, productData.brand || 'Yahya Traders Select', productData.short_desc || '',
           productData.description || '', productData.price, productData.stock || 50, productData.origin || 'Imported',
-          productData.cocoa_percentage || 500, productData.rating || 5, productData.is_featured ? 1 : 0]
+          productData.cocoa_percentage || 500, productData.rating || 5, productData.is_featured ? (isPg ? true : 1) : (isPg ? false : 0)]
       );
+      const insertedId = result.insertId || rows[0]?.id;
       for (const [index, imageUrl] of (productData.images || []).entries()) {
         if (imageUrl) {
-          await pool.query(
+          await dbQuery(
             'INSERT INTO product_images (product_id, image_url, is_primary) VALUES (?, ?, ?)',
-            [result.insertId, imageUrl, index === 0]
+            [insertedId, imageUrl, index === 0]
           );
         }
       }
-      return db.getProductBySlugOrId(result.insertId);
+      return db.getProductBySlugOrId(insertedId);
     }
     const newProd = {
       ...productData,
@@ -550,21 +603,21 @@ export const db = {
   },
 
   updateProduct: async (id, updateData) => {
-    if (isMySQL) {
+    if (isPg || isMySQL) {
       const allowedFields = ['name', 'category_id', 'brand', 'short_desc', 'description', 'price', 'stock',
         'origin', 'cocoa_percentage', 'is_featured'];
       const fields = allowedFields.filter(field => updateData[field] !== undefined);
       if (fields.length) {
-        await pool.query(
-          `UPDATE products SET ${fields.map(field => `\`${field}\` = ?`).join(', ')} WHERE id = ?`,
-          [...fields.map(field => updateData[field]), id]
+        await dbQuery(
+          `UPDATE products SET ${fields.map(field => `"${field}" = ?`).join(', ')} WHERE id = ?`,
+          [...fields.map(field => (field === 'is_featured' && isPg) ? !!updateData[field] : updateData[field]), id]
         );
       }
       if (updateData.images && Array.isArray(updateData.images) && updateData.images.length) {
-        await pool.query('DELETE FROM product_images WHERE product_id = ?', [id]);
+        await dbQuery('DELETE FROM product_images WHERE product_id = ?', [id]);
         for (const [index, imageUrl] of updateData.images.entries()) {
           if (imageUrl) {
-            await pool.query(
+            await dbQuery(
               'INSERT INTO product_images (product_id, image_url, is_primary) VALUES (?, ?, ?)',
               [id, imageUrl, index === 0]
             );
@@ -581,8 +634,8 @@ export const db = {
   },
 
   deleteProduct: async (id) => {
-    if (isMySQL) {
-      const [result] = await pool.query('DELETE FROM products WHERE id = ?', [id]);
+    if (isPg || isMySQL) {
+      const [, result] = await dbQuery('DELETE FROM products WHERE id = ?', [id]);
       return result.affectedRows > 0;
     }
     const index = localDb.products.findIndex(p => p.id === Number(id));
@@ -594,8 +647,8 @@ export const db = {
 
   // Reviews
   getProductReviews: async (productId) => {
-    if (isMySQL) {
-      const [rows] = await pool.query(
+    if (isPg || isMySQL) {
+      const [rows] = await dbQuery(
         `SELECT id, product_id, user_name, rating, title, comment, created_at FROM reviews
          WHERE product_id = ? ORDER BY created_at DESC`, [productId]
       );
@@ -605,17 +658,18 @@ export const db = {
   },
 
   addReview: async ({ product_id, user_name, rating, title, comment }) => {
-    if (isMySQL) {
-      const [result] = await pool.query(
+    if (isPg || isMySQL) {
+      const [rows, result] = await dbQuery(
         'INSERT INTO reviews (product_id, user_name, rating, title, comment) VALUES (?, ?, ?, ?, ?)',
         [product_id, user_name, rating, title, comment]
       );
-      await pool.query(
+      const insertedId = result.insertId || rows[0]?.id;
+      await dbQuery(
         `UPDATE products p SET rating = (SELECT ROUND(AVG(rating), 1) FROM reviews WHERE product_id = p.id),
          reviews_count = (SELECT COUNT(*) FROM reviews WHERE product_id = p.id) WHERE p.id = ?`, [product_id]
       );
-      const [rows] = await pool.query('SELECT * FROM reviews WHERE id = ?', [result.insertId]);
-      return rows[0];
+      const [reviewRows] = await dbQuery('SELECT * FROM reviews WHERE id = ?', [insertedId]);
+      return reviewRows[0];
     }
     const newRev = {
       id: localDb.reviews.length + 1,
@@ -643,7 +697,49 @@ export const db = {
   // Orders
   createOrder: async (orderData) => {
     const orderNumber = 'CHOCO-' + Math.floor(100000 + Math.random() * 900000);
-    if (isMySQL) {
+    const shippingJson = typeof orderData.shipping_address === 'string'
+      ? orderData.shipping_address
+      : JSON.stringify(orderData.shipping_address || {});
+
+    if (isPg && pgPool) {
+      const client = await pgPool.connect();
+      try {
+        await client.query('BEGIN');
+        const insertRes = await client.query(
+          `INSERT INTO orders (user_id, order_number, customer_name, customer_email, customer_phone,
+           total_amount, subtotal, tax_amount, shipping_fee, discount_amount, promo_code, payment_status,
+           payment_id, razorpay_order_id, shipping_address)
+           VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15) RETURNING id`,
+          [orderData.user_id || 1, orderNumber, orderData.customer_name, orderData.customer_email,
+            orderData.customer_phone, orderData.total_amount, orderData.subtotal, orderData.tax_amount,
+            orderData.shipping_fee, orderData.discount_amount, orderData.promo_code, orderData.payment_status,
+            orderData.payment_id, orderData.razorpay_order_id, shippingJson]
+        );
+        const orderId = insertRes.rows[0].id;
+        for (const item of orderData.items || []) {
+          await client.query(
+            `INSERT INTO order_items (order_id, product_id, product_name, quantity, unit_price, total_price, image_url)
+             VALUES ($1, $2, $3, $4, $5, $6, $7)`,
+            [orderId, item.product_id, item.product_name, item.quantity, item.unit_price,
+              item.total_price, item.image_url]
+          );
+          await client.query(
+            'UPDATE products SET stock = stock - $1 WHERE id = $2 AND stock >= $1',
+            [item.quantity, item.product_id]
+          );
+        }
+        await client.query('COMMIT');
+        const [rows] = await dbQuery('SELECT * FROM orders WHERE id = ?', [orderId]);
+        return (await attachOrderItems(rows))[0];
+      } catch (error) {
+        await client.query('ROLLBACK');
+        throw error;
+      } finally {
+        client.release();
+      }
+    }
+
+    if (isMySQL && pool) {
       const connection = await pool.getConnection();
       try {
         await connection.beginTransaction();
@@ -655,7 +751,7 @@ export const db = {
           [orderData.user_id, orderNumber, orderData.customer_name, orderData.customer_email,
             orderData.customer_phone, orderData.total_amount, orderData.subtotal, orderData.tax_amount,
             orderData.shipping_fee, orderData.discount_amount, orderData.promo_code, orderData.payment_status,
-            orderData.payment_id, orderData.razorpay_order_id, JSON.stringify(orderData.shipping_address)]
+            orderData.payment_id, orderData.razorpay_order_id, shippingJson]
         );
         for (const item of orderData.items || []) {
           await connection.query(
@@ -679,6 +775,7 @@ export const db = {
         connection.release();
       }
     }
+
     const newOrder = {
       id: localDb.orders.length ? Math.max(...localDb.orders.map(o => o.id)) + 1 : 1,
       order_number: orderNumber,
@@ -702,34 +799,34 @@ export const db = {
   },
 
   getOrdersByUser: async (userId) => {
-    if (isMySQL) {
-      const [rows] = await pool.query('SELECT * FROM orders WHERE user_id = ? ORDER BY created_at DESC', [userId]);
+    if (isPg || isMySQL) {
+      const [rows] = await dbQuery('SELECT * FROM orders WHERE user_id = ? ORDER BY created_at DESC', [userId]);
       return attachOrderItems(rows);
     }
     return localDb.orders.filter(o => o.user_id === Number(userId));
   },
 
   getOrderByNumber: async (orderNumber) => {
-    if (isMySQL) {
-      const [rows] = await pool.query('SELECT * FROM orders WHERE order_number = ?', [orderNumber]);
+    if (isPg || isMySQL) {
+      const [rows] = await dbQuery('SELECT * FROM orders WHERE order_number = ?', [orderNumber]);
       return (await attachOrderItems(rows))[0] || null;
     }
     return localDb.orders.find(o => o.order_number === orderNumber) || null;
   },
 
   getAllOrders: async () => {
-    if (isMySQL) {
-      const [rows] = await pool.query('SELECT * FROM orders ORDER BY created_at DESC');
+    if (isPg || isMySQL) {
+      const [rows] = await dbQuery('SELECT * FROM orders ORDER BY created_at DESC');
       return attachOrderItems(rows);
     }
     return localDb.orders;
   },
 
   updateOrderStatus: async (orderId, status) => {
-    if (isMySQL) {
-      const [result] = await pool.query('UPDATE orders SET status = ? WHERE id = ?', [status, orderId]);
+    if (isPg || isMySQL) {
+      const [, result] = await dbQuery('UPDATE orders SET status = ? WHERE id = ?', [status, orderId]);
       if (!result.affectedRows) return null;
-      const [rows] = await pool.query('SELECT * FROM orders WHERE id = ?', [orderId]);
+      const [rows] = await dbQuery('SELECT * FROM orders WHERE id = ?', [orderId]);
       return (await attachOrderItems(rows))[0];
     }
     const order = localDb.orders.find(o => o.id === Number(orderId));
@@ -741,22 +838,22 @@ export const db = {
 
   // Admin Metrics
   getAdminMetrics: async () => {
-    if (isMySQL) {
-      const [[sales]] = await pool.query(
-        `SELECT COALESCE(SUM(total_amount), 0) AS totalSales, COUNT(*) AS totalOrders
+    if (isPg || isMySQL) {
+      const [sales] = await dbQuery(
+        `SELECT COALESCE(SUM(total_amount), 0) AS "totalSales", COUNT(*) AS "totalOrders"
          FROM orders WHERE payment_status = 'paid'`
       );
-      const [[productCount]] = await pool.query('SELECT COUNT(*) AS totalProducts FROM products');
-      const [[customerCount]] = await pool.query("SELECT COUNT(*) AS totalCustomers FROM users WHERE role = 'customer'");
-      const [[lowStock]] = await pool.query('SELECT COUNT(*) AS lowStockCount FROM products WHERE stock < 25');
-      const [lowStockItems] = await pool.query('SELECT * FROM products WHERE stock < 25 ORDER BY stock ASC');
-      const [recentRows] = await pool.query('SELECT * FROM orders ORDER BY created_at DESC LIMIT 5');
+      const [productCount] = await dbQuery('SELECT COUNT(*) AS "totalProducts" FROM products');
+      const [customerCount] = await dbQuery("SELECT COUNT(*) AS total_customers FROM users WHERE role = 'customer'");
+      const [lowStock] = await dbQuery('SELECT COUNT(*) AS low_stock_count FROM products WHERE stock < 25');
+      const [lowStockItems] = await dbQuery('SELECT * FROM products WHERE stock < 25 ORDER BY stock ASC');
+      const [recentRows] = await dbQuery('SELECT * FROM orders ORDER BY created_at DESC LIMIT 5');
       return {
-        totalSales: Number(sales.totalSales),
-        totalOrders: Number(sales.totalOrders),
-        totalProducts: Number(productCount.totalProducts),
-        totalCustomers: Number(customerCount.totalCustomers),
-        lowStockCount: Number(lowStock.lowStockCount),
+        totalSales: Number(sales[0]?.totalSales || 0),
+        totalOrders: Number(sales[0]?.totalOrders || 0),
+        totalProducts: Number(productCount[0]?.totalProducts || 0),
+        totalCustomers: Number(customerCount[0]?.total_customers || 0),
+        lowStockCount: Number(lowStock[0]?.low_stock_count || 0),
         lowStockItems: await attachProductImages(lowStockItems),
         recentOrders: await attachOrderItems(recentRows)
       };
