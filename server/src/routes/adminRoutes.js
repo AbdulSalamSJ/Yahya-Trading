@@ -6,7 +6,9 @@ import {
   deleteProduct,
   getAllOrders,
   updateOrderStatus,
-  testMailConnection
+  testMailConnection,
+  uploadProductImageMiddleware,
+  handleUploadProductImage
 } from '../controllers/adminController.js';
 import { authenticateToken, requireAdmin } from '../middleware/auth.js';
 
@@ -16,6 +18,7 @@ router.use(authenticateToken, requireAdmin);
 
 router.get('/metrics', getMetrics);
 router.post('/products', createProduct);
+router.post('/upload-image', uploadProductImageMiddleware, handleUploadProductImage);
 router.put('/products/:id', updateProduct);
 router.delete('/products/:id', deleteProduct);
 router.get('/orders', getAllOrders);

@@ -35,7 +35,7 @@ export function AuthModal({ isOpen, onClose }) {
 
   const handleDemoFill = (type) => {
     if (type === 'admin') {
-      setEmail('admin@chocolatier.com');
+      setEmail('admin@yahyatraders.com');
       setPassword('Admin@123');
       setIsRegistering(false);
     } else {
@@ -66,7 +66,7 @@ export function AuthModal({ isOpen, onClose }) {
           <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-1">
             {isRegistering
               ? 'Receive fresh harvest previews, royal dates announcements, and member discounts.'
-              : 'Sign in to access your orders, delivery tracking, and saved preferences.'}
+              : 'Sign in to access your orders, delivery tracking, and store administration.'}
           </p>
         </div>
 
@@ -79,20 +79,20 @@ export function AuthModal({ isOpen, onClose }) {
         {/* Quick Demo Fill Buttons */}
         <div className="mb-5 p-3 rounded-xl bg-[#FDF8F5] dark:bg-[#1C1412] border border-[#EBE0D8] dark:border-[#3E2F29]">
           <span className="text-[11px] font-semibold text-[#6D4C41] dark:text-[#C8B8B0] block mb-2">
-            Instant Demo Logins:
+            Instant Demo Logins (Click to auto-fill):
           </span>
           <div className="flex gap-2">
             <button
               type="button"
               onClick={() => handleDemoFill('admin')}
-              className="flex-1 py-1.5 px-2 bg-white dark:bg-[#271E1B] border border-[#D7C4BC] dark:border-[#3E2F29] rounded-lg text-xs font-medium text-[#795548] dark:text-[#A1887F] hover:bg-[#EFEBE9] transition"
+              className="flex-1 py-1.5 px-2 bg-white dark:bg-[#271E1B] border border-[#D7C4BC] dark:border-[#3E2F29] rounded-lg text-xs font-bold text-[#795548] dark:text-[#A1887F] hover:bg-[#EFEBE9] transition cursor-pointer"
             >
               👑 Admin Account
             </button>
             <button
               type="button"
               onClick={() => handleDemoFill('customer')}
-              className="flex-1 py-1.5 px-2 bg-white dark:bg-[#271E1B] border border-[#D7C4BC] dark:border-[#3E2F29] rounded-lg text-xs font-medium text-[#6D4C41] dark:text-[#C8B8B0] hover:bg-[#EFEBE9] transition"
+              className="flex-1 py-1.5 px-2 bg-white dark:bg-[#271E1B] border border-[#D7C4BC] dark:border-[#3E2F29] rounded-lg text-xs font-bold text-[#6D4C41] dark:text-[#C8B8B0] hover:bg-[#EFEBE9] transition cursor-pointer"
             >
               🌴 Customer Account
             </button>

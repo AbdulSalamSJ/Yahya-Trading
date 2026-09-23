@@ -3,6 +3,8 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 import { initDatabase } from './db/connection.js';
 
+import path from 'path';
+import { fileURLToPath } from 'url';
 import authRoutes from './routes/authRoutes.js';
 import productRoutes from './routes/productRoutes.js';
 import orderRoutes from './routes/orderRoutes.js';
@@ -20,6 +22,11 @@ app.use(cors({
   credentials: true
 }));
 app.use(express.json());
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+const publicImagesPath = path.resolve(__dirname, '../../client/public/images');
+app.use('/images', express.static(publicImagesPath));
 
 // Request logging in development
 app.use((req, res, next) => {

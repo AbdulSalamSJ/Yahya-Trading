@@ -1,9 +1,10 @@
-﻿const API_BASE = '/api';
+const API_BASE = '/api';
 
 export async function request(endpoint, options = {}) {
   const token = localStorage.getItem('choco_token');
+  const isFormData = typeof FormData !== 'undefined' && options.body instanceof FormData;
   const headers = {
-    'Content-Type': 'application/json',
+    ...(isFormData ? {} : { 'Content-Type': 'application/json' }),
     ...(token ? { Authorization: `Bearer ${token}` } : {}),
     ...options.headers
   };
@@ -59,6 +60,14 @@ export const api = {
   // Admin
   getAdminMetrics: () => request('/admin/metrics'),
   createProduct: (productData) => request('/admin/products', { method: 'POST', body: JSON.stringify(productData) }),
+  uploadProductImage: (file) => {
+    const formData = new FormData();
+    formData.append('image', file);
+    return request('/admin/upload-image', {
+      method: 'POST',
+      body: formData
+    });
+  },
   updateProduct: (id, data) => request(`/admin/products/${id}`, { method: 'PUT', body: JSON.stringify(data) }),
   deleteProduct: (id) => request(`/admin/products/${id}`, { method: 'DELETE' }),
   getAllOrders: () => request('/admin/orders'),

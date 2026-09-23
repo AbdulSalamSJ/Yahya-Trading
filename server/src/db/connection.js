@@ -48,7 +48,7 @@ async function seedMySQLData() {
   await pool.query(
     `INSERT INTO users (id, name, email, password_hash, role)
      VALUES (1, ?, ?, ?, 'admin'), (2, ?, ?, ?, 'customer')
-     ON DUPLICATE KEY UPDATE name = VALUES(name), password_hash = VALUES(password_hash)`,
+     ON DUPLICATE KEY UPDATE name = VALUES(name), email = VALUES(email), password_hash = VALUES(password_hash)`,
     ['Yahya Traders Admin', 'admin@yahyatraders.com', adminHash,
       'Eleanor Vance', 'customer@example.com', customerHash]
   );
@@ -226,6 +226,14 @@ async function initLocalDb() {
     {
       id: 1,
       name: 'Yahya Traders Admin',
+      email: 'admin@yahyatraders.com',
+      password_hash: adminHash,
+      role: 'admin',
+      created_at: new Date().toISOString()
+    },
+    {
+      id: 99,
+      name: 'Yahya Traders Admin Alias',
       email: 'admin@chocolatier.com',
       password_hash: adminHash,
       role: 'admin',

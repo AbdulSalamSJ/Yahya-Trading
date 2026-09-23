@@ -1,4 +1,4 @@
-﻿import bcrypt from 'bcryptjs';
+import bcrypt from 'bcryptjs';
 import { db } from '../db/connection.js';
 import { generateToken } from '../middleware/auth.js';
 
@@ -39,16 +39,28 @@ export async function register(req, res) {
 export async function login(req, res) {
   try {
     const { email, password } = req.body;
-    if (!email || !password) {
+    const cleanEmail = (email || '').trim().toLowerCase();
+    const cleanPassword = (password || '').trim();
+
+    if (!cleanEmail || !cleanPassword) {
       return res.status(400).json({ message: 'Email and password are required' });
     }
 
-    const user = await db.findUserByEmail(email);
+    let user = await db.findUserByEmail(cleanEmail);
+    if (!user) {
+      // Check admin aliases
+      if (cleanEmail === 'admin@yahyatraders.com') {
+        user = await db.findUserByEmail('admin@chocolatier.com');
+      } else if (cleanEmail === 'admin@chocolatier.com') {
+        user = await db.findUserByEmail('admin@yahyatraders.com');
+      }
+    }
+
     if (!user) {
       return res.status(401).json({ message: 'Invalid email or password' });
     }
 
-    const isMatch = await bcrypt.compare(password, user.password_hash);
+    const isMatch = await bcrypt.compare(cleanPassword, user.password_hash);
     if (!isMatch) {
       return res.status(401).json({ message: 'Invalid email or password' });
     }

@@ -1,9 +1,9 @@
-import React, { useState, useEffect } from 'react';
-import { X, DollarSign, Package, ShoppingBag, AlertTriangle, Plus, Trash2, Edit, CheckCircle, Search, Save, Check, Scale } from 'lucide-react';
+﻿import React, { useState, useEffect, useRef } from 'react';
+import { X, DollarSign, Package, ShoppingBag, AlertTriangle, Plus, Trash2, Edit, CheckCircle, Search, Save, Check, Scale, UploadCloud, FileImage, RefreshCw } from 'lucide-react';
 import { api } from '../services/api';
 import logoImg from '../image/logo.jpg';
 
-export function AdminModal({ isOpen, onClose, onRefreshProducts }) {
+export function AdminModal({ isOpen, onClose, onRefreshProducts, onOpenAddItem }) {
   const [activeTab, setActiveTab] = useState('metrics'); // 'metrics' | 'products' | 'orders'
   const [metrics, setMetrics] = useState(null);
   const [orders, setOrders] = useState([]);
@@ -18,22 +18,29 @@ export function AdminModal({ isOpen, onClose, onRefreshProducts }) {
   const [savingProductId, setSavingProductId] = useState(null);
   const [saveSuccessId, setSaveSuccessId] = useState(null);
 
-  // New product modal form state
+  // New product modal form state - initialized empty
   const [showAddProduct, setShowAddProduct] = useState(false);
   const [newProductSuccess, setNewProductSuccess] = useState('');
   const [newProduct, setNewProduct] = useState({
     name: '',
     category_id: 1,
-    brand: 'Yahya Traders Select',
+    brand: '',
     short_desc: '',
     description: '',
     price: '',
-    stock: 50,
-    origin: 'Medina, Saudi Arabia',
-    cocoa_percentage: 500,
-    is_featured: true,
-    image_url: '/images/products/ajwa-dates.jpg'
+    stock: '',
+    origin: '',
+    cocoa_percentage: '',
+    is_featured: false,
+    image_url: ''
   });
+
+  // System file upload state
+  const [adminFile, setAdminFile] = useState(null);
+  const [adminPreviewUrl, setAdminPreviewUrl] = useState('');
+  const [adminUploading, setAdminUploading] = useState(false);
+  const [adminUploadError, setAdminUploadError] = useState('');
+  const adminFileInputRef = useRef(null);
 
   const loadAdminData = async () => {
     setLoading(true);
@@ -97,29 +104,93 @@ export function AdminModal({ isOpen, onClose, onRefreshProducts }) {
 
   if (!isOpen) return null;
 
+  const resetAddForm = () => {
+    setNewProduct({
+      name: '',
+      category_id: categories[0]?.id || 1,
+      brand: '',
+      short_desc: '',
+      description: '',
+      price: '',
+      stock: '',
+      origin: '',
+      cocoa_percentage: '',
+      is_featured: false,
+      image_url: ''
+    });
+    setAdminFile(null);
+    setAdminPreviewUrl('');
+    setAdminUploadError('');
+    if (adminFileInputRef.current) adminFileInputRef.current.value = '';
+  };
+
+  const handleAdminFileSelect = async (file) => {
+    if (!file) return;
+    if (!file.type || !file.type.startsWith('image/')) {
+      setAdminUploadError('Please select a valid image file (JPG, PNG, WEBP, etc.)');
+      return;
+    }
+    if (file.size > 15 * 1024 * 1024) {
+      setAdminUploadError('Image size exceeds 15MB limit.');
+      return;
+    }
+
+    setAdminUploadError('');
+    setAdminFile(file);
+    setAdminPreviewUrl(URL.createObjectURL(file));
+    setAdminUploading(true);
+
+    try {
+      const res = await api.uploadProductImage(file);
+      if (res && res.imageUrl) {
+        setNewProduct(prev => ({ ...prev, image_url: res.imageUrl }));
+      }
+    } catch (err) {
+      console.error('Admin image upload error:', err);
+      setAdminUploadError(err.message || 'Failed to upload product image');
+    } finally {
+      setAdminUploading(false);
+    }
+  };
+
   const handleCreateProduct = async (e) => {
     e.preventDefault();
+
+    if (!newProduct.name.trim()) {
+      alert('Please enter a harvest item name');
+      return;
+    }
+    if (!newProduct.price || Number(newProduct.price) <= 0) {
+      alert('Please enter a valid price in ₹ INR');
+      return;
+    }
+    if (adminUploading) {
+      alert('Please wait for the image upload to complete');
+      return;
+    }
+    if (!newProduct.image_url) {
+      alert('Please upload a product image from your system');
+      return;
+    }
+
     try {
       await api.createProduct({
         ...newProduct,
-        images: [newProduct.image_url || '/images/products/ajwa-dates.jpg']
+        name: newProduct.name.trim(),
+        brand: newProduct.brand.trim() || 'Yahya Traders Select',
+        category_id: Number(newProduct.category_id),
+        price: Number(newProduct.price),
+        stock: newProduct.stock ? Number(newProduct.stock) : 50,
+        cocoa_percentage: newProduct.cocoa_percentage ? Number(newProduct.cocoa_percentage) : 500,
+        origin: newProduct.origin.trim() || 'Imported Selection',
+        short_desc: newProduct.short_desc.trim() || 'Authentic premium selection from Yahya Traders.',
+        description: newProduct.description.trim() || 'Hand-sorted, certified pure harvest with sealed aroma lock.',
+        images: [newProduct.image_url]
       });
       setShowAddProduct(false);
       setNewProductSuccess(`✓ "${newProduct.name}" created and published to storefront successfully!`);
       setTimeout(() => setNewProductSuccess(''), 4500);
-      setNewProduct({
-        name: '',
-        category_id: 1,
-        brand: 'Yahya Traders Select',
-        short_desc: '',
-        description: '',
-        price: '',
-        stock: 50,
-        origin: 'Medina, Saudi Arabia',
-        cocoa_percentage: 500,
-        is_featured: true,
-        image_url: '/images/products/ajwa-dates.jpg'
-      });
+      resetAddForm();
       loadAdminData();
       if (onRefreshProducts) onRefreshProducts();
     } catch (err) {
@@ -422,7 +493,7 @@ export function AdminModal({ isOpen, onClose, onRefreshProducts }) {
                       <input
                         type="number"
                         required
-                        placeholder="750"
+                        placeholder="e.g. 750"
                         value={newProduct.price}
                         onChange={(e) => setNewProduct({ ...newProduct, price: e.target.value })}
                         className="w-full h-10 px-3 text-xs rounded-lg border border-[#D7C4BC] dark:border-[#3E2F29] bg-white dark:bg-[#271E1B] text-[#3E2723] dark:text-[#F5EFEA]"
@@ -433,6 +504,7 @@ export function AdminModal({ isOpen, onClose, onRefreshProducts }) {
                       <label className="block text-xs font-semibold text-[#3E2723] dark:text-[#F5EFEA] mb-1">Batch Stock Units</label>
                       <input
                         type="number"
+                        placeholder="e.g. 50"
                         value={newProduct.stock}
                         onChange={(e) => setNewProduct({ ...newProduct, stock: e.target.value })}
                         className="w-full h-10 px-3 text-xs rounded-lg border border-[#D7C4BC] dark:border-[#3E2F29] bg-white dark:bg-[#271E1B] text-[#3E2723] dark:text-[#F5EFEA]"
@@ -443,7 +515,7 @@ export function AdminModal({ isOpen, onClose, onRefreshProducts }) {
                       <label className="block text-xs font-semibold text-[#3E2723] dark:text-[#F5EFEA] mb-1">Weight / Pack Size (grams)</label>
                       <input
                         type="number"
-                        placeholder="500"
+                        placeholder="e.g. 500"
                         value={newProduct.cocoa_percentage}
                         onChange={(e) => setNewProduct({ ...newProduct, cocoa_percentage: e.target.value })}
                         className="w-full h-10 px-3 text-xs rounded-lg border border-[#D7C4BC] dark:border-[#3E2F29] bg-white dark:bg-[#271E1B] text-[#3E2723] dark:text-[#F5EFEA]"
@@ -462,14 +534,74 @@ export function AdminModal({ isOpen, onClose, onRefreshProducts }) {
                     </div>
                   </div>
 
-                  <div>
-                    <label className="block text-xs font-semibold text-[#3E2723] dark:text-[#F5EFEA] mb-1">High-Res Product Image URL</label>
+                  {/* System Image Upload */}
+                  <div className="p-3.5 rounded-xl border border-[#D7C4BC] dark:border-[#3E2F29] bg-white dark:bg-[#271E1B] space-y-2">
+                    <div className="flex items-center justify-between">
+                      <label className="block text-xs font-bold text-[#3E2723] dark:text-[#F5EFEA] flex items-center gap-1.5">
+                        <UploadCloud size={15} className="text-[#108474]" />
+                        <span>Upload Product Image From System *</span>
+                      </label>
+                      <span className="text-[10px] text-neutral-400">Saves in /images/products</span>
+                    </div>
+
                     <input
-                      type="url"
-                      value={newProduct.image_url}
-                      onChange={(e) => setNewProduct({ ...newProduct, image_url: e.target.value })}
-                      className="w-full h-10 px-3 text-xs rounded-lg border border-[#D7C4BC] dark:border-[#3E2F29] bg-white dark:bg-[#271E1B] text-[#3E2723] dark:text-[#F5EFEA]"
+                      ref={adminFileInputRef}
+                      type="file"
+                      accept="image/*"
+                      onChange={(e) => {
+                        if (e.target.files && e.target.files.length > 0) {
+                          handleAdminFileSelect(e.target.files[0]);
+                        }
+                      }}
+                      className="hidden"
                     />
+
+                    {!adminPreviewUrl && !newProduct.image_url ? (
+                      <div
+                        onClick={() => adminFileInputRef.current?.click()}
+                        className="p-4 border-2 border-dashed border-[#D7C4BC] dark:border-[#3E2F29] hover:border-[#795548] rounded-xl flex items-center justify-center gap-3 cursor-pointer transition bg-[#FDF8F5] dark:bg-[#1C1412]"
+                      >
+                        <UploadCloud size={20} className="text-[#795548]" />
+                        <span className="text-xs font-bold text-[#3E2723] dark:text-[#F5EFEA]">
+                          Click to browse image file from computer (Saved to /images/products)
+                        </span>
+                      </div>
+                    ) : (
+                      <div className="flex items-center justify-between p-2 rounded-lg bg-neutral-50 dark:bg-neutral-800">
+                        <div className="flex items-center gap-2">
+                          <img
+                            src={adminPreviewUrl || newProduct.image_url}
+                            alt="Upload preview"
+                            className="w-12 h-12 rounded-lg object-cover border border-neutral-200"
+                          />
+                          <div>
+                            <p className="text-xs font-bold truncate max-w-[220px]">
+                              {adminFile?.name || newProduct.image_url.split('/').pop()}
+                            </p>
+                            {adminUploading ? (
+                              <span className="text-[10px] text-amber-600 font-bold flex items-center gap-1">
+                                <RefreshCw size={11} className="animate-spin" /> Uploading to /images/products...
+                              </span>
+                            ) : (
+                              <span className="text-[10px] text-green-600 font-bold flex items-center gap-1">
+                                <Check size={11} /> Saved in /images/products/
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => adminFileInputRef.current?.click()}
+                          className="px-3 py-1 text-xs rounded-lg bg-neutral-200 dark:bg-neutral-700 font-bold"
+                        >
+                          Change
+                        </button>
+                      </div>
+                    )}
+
+                    {adminUploadError && (
+                      <p className="text-xs text-red-600 font-bold">{adminUploadError}</p>
+                    )}
                   </div>
 
                   <div>
@@ -485,9 +617,10 @@ export function AdminModal({ isOpen, onClose, onRefreshProducts }) {
 
                   <button
                     type="submit"
-                    className="px-6 py-2.5 bg-[#795548] hover:bg-[#5D4037] text-white text-xs font-semibold rounded-lg shadow-sm transition"
+                    disabled={adminUploading}
+                    className="px-6 py-2.5 bg-[#795548] hover:bg-[#5D4037] text-white text-xs font-semibold rounded-lg shadow-sm transition disabled:opacity-50"
                   >
-                    Publish to Storefront
+                    {adminUploading ? 'Uploading Image...' : 'Publish to Storefront'}
                   </button>
                 </form>
               )}

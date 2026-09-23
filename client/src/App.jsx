@@ -509,6 +509,10 @@ export function App() {
           isOpen={isAdminOpen}
           onClose={() => setIsAdminOpen(false)}
           onRefreshProducts={fetchProducts}
+          onOpenAddItem={() => {
+            setIsAdminOpen(false);
+            setIsAddItemOpen(true);
+          }}
         />
       )}
 

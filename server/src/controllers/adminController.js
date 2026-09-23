@@ -1,5 +1,80 @@
 import { db } from '../db/connection.js';
 import { sendOrderStatusEmail, verifyMailConnection } from '../utils/mailer.js';
+import multer from 'multer';
+import path from 'path';
+import fs from 'fs';
+import { fileURLToPath } from 'url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+const PRODUCTS_DIR = path.resolve(__dirname, '../../../client/public/images/products');
+const DIST_PRODUCTS_DIR = path.resolve(__dirname, '../../../client/dist/images/products');
+
+if (!fs.existsSync(PRODUCTS_DIR)) {
+  fs.mkdirSync(PRODUCTS_DIR, { recursive: true });
+}
+
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, PRODUCTS_DIR);
+  },
+  filename: function (req, file, cb) {
+    const ext = path.extname(file.originalname).toLowerCase() || '.jpg';
+    const base = path.basename(file.originalname, ext)
+      .toLowerCase()
+      .replace(/[^a-z0-9]/g, '-')
+      .replace(/-+/g, '-')
+      .replace(/^-|-$/g, '') || 'product';
+    const timestamp = Date.now();
+    cb(null, `${base}-${timestamp}${ext}`);
+  }
+});
+
+const fileFilter = (req, file, cb) => {
+  if (file.mimetype && file.mimetype.startsWith('image/')) {
+    cb(null, true);
+  } else {
+    cb(new Error('Only image files (JPG, PNG, WEBP, GIF, SVG) are allowed!'), false);
+  }
+};
+
+export const uploadProductImageMiddleware = multer({
+  storage,
+  fileFilter,
+  limits: { fileSize: 15 * 1024 * 1024 }
+}).single('image');
+
+export async function handleUploadProductImage(req, res) {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ message: 'No image file uploaded' });
+    }
+
+    try {
+      if (fs.existsSync(DIST_PRODUCTS_DIR)) {
+        fs.copyFileSync(
+          path.join(PRODUCTS_DIR, req.file.filename),
+          path.join(DIST_PRODUCTS_DIR, req.file.filename)
+        );
+      }
+    } catch (copyErr) {
+      console.warn('Could not mirror copy uploaded image to dist:', copyErr.message);
+    }
+
+    const relativeUrl = `/images/products/${req.file.filename}`;
+    res.json({
+      success: true,
+      message: 'Product image uploaded and saved in /images/products successfully',
+      imageUrl: relativeUrl,
+      filename: req.file.filename,
+      size: req.file.size
+    });
+  } catch (err) {
+    console.error('handleUploadProductImage error:', err);
+    res.status(500).json({ message: 'Failed to upload product image', error: err.message });
+  }
+}
+
 
 export async function getMetrics(req, res) {
   try {
