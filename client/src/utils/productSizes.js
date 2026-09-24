@@ -53,3 +53,4 @@ export function getPriceForSize(product, sizeStr) {
   }
   return Math.round(raw);
 }
+

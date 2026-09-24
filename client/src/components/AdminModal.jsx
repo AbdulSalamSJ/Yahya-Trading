@@ -774,6 +774,8 @@ export function AdminModal({ isOpen, onClose, onRefreshProducts, onOpenAddItem, 
                                         <div className="relative mb-1.5">
                                           <input
                                             type="number"
+                                            step="any"
+                                            min="1"
                                             value={editForm.weight}
                                             onChange={(e) => setEditForm({ ...editForm, weight: e.target.value })}
                                             className="w-full px-3 py-2 text-xs font-bold rounded-lg border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white focus:outline-none focus:border-[#fee000]"
@@ -783,7 +785,7 @@ export function AdminModal({ isOpen, onClose, onRefreshProducts, onOpenAddItem, 
                                         {/* Quick Weight Presets */}
                                         <div className="flex items-center gap-1">
                                           <span className="text-[10px] text-neutral-400">Presets:</span>
-                                          {[150, 250, 400, 500, 1000].map(w => (
+                                          {[100, 150, 250, 400, 500, 1000].map(w => (
                                             <button
                                               key={w}
                                               type="button"

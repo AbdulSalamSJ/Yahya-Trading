@@ -658,7 +658,7 @@ const handleBack = (e) => {
                       <span className="absolute left-3.5 top-1/2 -translate-y-1/2 font-black text-neutral-400">₹</span>
                       <input
                         type="number"
-                        step="1"
+                        step="any"
                         min="1"
                         required
                         value={editForm.price}
@@ -677,7 +677,7 @@ const handleBack = (e) => {
                     <div className="relative mb-1.5">
                       <input
                         type="number"
-                        step="10"
+                        step="any"
                         min="1"
                         required
                         value={editForm.cocoa_percentage}
@@ -691,7 +691,7 @@ const handleBack = (e) => {
                     {/* Quick presets */}
                     <div className="flex items-center gap-1">
                       <span className="text-[10px] text-neutral-400">Presets:</span>
-                      {[150, 250, 400, 500, 1000].map(wt => (
+                      {[100, 150, 250, 400, 500, 1000].map(wt => (
                         <button
                           key={wt}
                           type="button"
