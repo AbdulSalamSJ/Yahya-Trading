@@ -177,13 +177,13 @@ export function AdminModal({ isOpen, onClose, onRefreshProducts, onOpenAddItem, 
       const res = await api.createProduct({
         ...newProduct,
         name: newProduct.name.trim(),
-        brand: newProduct.brand.trim() || 'Yahya Traders Select',
+        brand: newProduct.brand.trim() || 'Yahiya Traders Select',
         category_id: Number(newProduct.category_id),
         price: Number(newProduct.price),
         stock: newProduct.stock ? Number(newProduct.stock) : 50,
         cocoa_percentage: newProduct.cocoa_percentage ? Number(newProduct.cocoa_percentage) : 500,
         origin: newProduct.origin.trim() || 'Imported Selection',
-        short_desc: newProduct.short_desc.trim() || 'Authentic premium selection from Yahya Traders.',
+        short_desc: newProduct.short_desc.trim() || 'Authentic premium selection from Yahiya Traders.',
         description: newProduct.description.trim() || 'Hand-sorted, certified pure harvest with sealed aroma lock.',
         images: [newProduct.image_url]
       });
@@ -218,11 +218,11 @@ export function AdminModal({ isOpen, onClose, onRefreshProducts, onOpenAddItem, 
         <div className="p-5 border-b border-neutral-200 dark:border-neutral-800 bg-[#fafafa] dark:bg-[#181818] flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-full overflow-hidden border-2 border-[#fee000] shadow-sm flex-shrink-0 bg-white">
-              <img src={logoImg} alt="Yahya Traders" className="w-full h-full object-cover" />
+              <img src={logoImg} alt="Yahiya Traders" className="w-full h-full object-cover" />
             </div>
             <div>
               <h3 className="text-lg font-black text-[#1d1d1d] dark:text-white">
-                Yahya Traders Store Administration & Orders
+                Yahiya Traders Store Administration & Orders
               </h3>
               <p className="text-xs text-neutral-500 dark:text-neutral-400">
                 Manage dates, nuts, dry fruits & chocolates catalog, order fulfillment, and metrics.

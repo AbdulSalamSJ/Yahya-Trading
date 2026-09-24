@@ -253,7 +253,7 @@ export function App() {
                 Recently Added Harvest Items
               </h2>
               <p className="text-xs sm:text-sm text-neutral-500 dark:text-neutral-400 mt-1">
-                Authentic, hand-picked selections recently published to Yahya Traders catalog.
+                Authentic, hand-picked selections recently published to Yahiya Traders catalog.
               </p>
             </div>
 
@@ -362,7 +362,7 @@ export function App() {
               <h2 className="text-2xl sm:text-4xl font-extrabold text-[#1d1d1d] dark:text-white tracking-tight">
                 {searchQuery
                   ? `Search Results for "${searchQuery}"`
-                  : categories.find(c => c.slug === selectedCategory)?.name || 'Curated Yahya Traders Collection'}
+                  : categories.find(c => c.slug === selectedCategory)?.name || 'Curated Yahiya Traders Collection'}
               </h2>
             </div>
 
@@ -496,7 +496,7 @@ export function App() {
           ) : displayedProducts.length === 0 ? (
             <div className="text-center py-16 bg-neutral-50 dark:bg-neutral-900 rounded-2xl border border-neutral-200 dark:border-neutral-800 p-8 max-w-md mx-auto space-y-3">
               <div className="w-16 h-16 rounded-full overflow-hidden border-2 border-[#fee000] mx-auto shadow-sm bg-white">
-                <img src={logoImg} alt="Yahya Traders" className="w-full h-full object-cover" />
+                <img src={logoImg} alt="Yahiya Traders" className="w-full h-full object-cover" />
               </div>
               <h4 className="text-lg font-bold text-[#1d1d1d] dark:text-white">
                 No matching harvest found

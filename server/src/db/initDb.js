@@ -3,7 +3,7 @@ import { initDatabase, db } from './connection.js';
 import dotenv from 'dotenv';
 dotenv.config();
 
-console.log('--- Initializing & Migrating Yahya Traders Database ---');
+console.log('--- Initializing & Migrating Yahiya Traders Database ---');
 await migrateAllToDatabase();
 await initDatabase();
 const products = await db.getProducts();

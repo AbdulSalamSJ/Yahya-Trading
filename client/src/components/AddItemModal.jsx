@@ -195,12 +195,12 @@ export function AddItemModal({ isOpen, onClose, categories = [], onProductCreate
       const payload = {
         name: formData.name.trim(),
         category_id: Number(formData.category_id),
-        brand: formData.brand.trim() || 'Yahya Traders Select',
+        brand: formData.brand.trim() || 'Yahiya Traders Select',
         price: Number(formData.price),
         stock: formData.stock ? Number(formData.stock) : 50,
         origin: formData.origin.trim() || 'Imported Selection',
         cocoa_percentage: formData.cocoa_percentage ? Number(formData.cocoa_percentage) : 500,
-        short_desc: formData.short_desc.trim() || 'Authentic premium selection from Yahya Traders. Freshly harvested and packed.',
+        short_desc: formData.short_desc.trim() || 'Authentic premium selection from Yahiya Traders. Freshly harvested and packed.',
         description: formData.description.trim() || 'Hand-sorted, certified pure harvest. Guaranteed fresh packaging with sealed aroma lock.',
         is_featured: !!formData.is_featured,
         images: [formData.image_url]
@@ -234,7 +234,7 @@ export function AddItemModal({ isOpen, onClose, categories = [], onProductCreate
         <div className="p-5 sm:px-8 border-b border-neutral-200 dark:border-neutral-800 bg-[#fafafa] dark:bg-[#141414] flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-full overflow-hidden border-2 border-[#fee000] shadow-sm flex-shrink-0 bg-white">
-              <img src={logoImg} alt="Yahya Traders" className="w-full h-full object-cover" />
+              <img src={logoImg} alt="Yahiya Traders" className="w-full h-full object-cover" />
             </div>
             <div>
               <h3 className="text-base sm:text-lg font-black text-[#1d1d1d] dark:text-white flex items-center gap-2">
@@ -322,7 +322,7 @@ export function AddItemModal({ isOpen, onClose, categories = [], onProductCreate
                     </label>
                     <input
                       type="text"
-                      placeholder="e.g. Yahya Traders Select"
+                      placeholder="e.g. Yahiya Traders Select"
                       value={formData.brand}
                       onChange={(e) => setFormData({ ...formData, brand: e.target.value })}
                       className="w-full px-4 py-2.5 text-xs font-bold rounded-xl border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-[#262626] text-[#1d1d1d] dark:text-white focus:outline-none focus:border-[#fee000]"

@@ -91,7 +91,7 @@ export function CheckoutModal({ isOpen, onClose, onOrderPlaced }) {
           key: paymentOrder.key,
           amount: paymentOrder.amount,
           currency: paymentOrder.currency,
-          name: 'Yahya Traders',
+          name: 'Yahiya Traders',
           description: 'Premium Dates, Dry Fruits & Chocolates',
           order_id: paymentOrder.id,
           prefill: {

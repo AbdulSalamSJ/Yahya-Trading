@@ -10,7 +10,7 @@ export function OurStory() {
         {/* Title and Intro */}
         <div className="text-center max-w-3xl mx-auto mb-16 space-y-4">
           <div className="inline-flex items-center justify-center w-18 h-18 rounded-full overflow-hidden border-2 border-[#fee000] shadow-md mb-2 bg-white">
-            <img src={logoImg} alt="Yahya Traders" className="w-16 h-16 object-cover rounded-full" />
+            <img src={logoImg} alt="Yahiya Traders" className="w-16 h-16 object-cover rounded-full" />
           </div>
           <div>
             <span className="text-xs uppercase tracking-widest font-black text-[#108474] dark:text-[#14b8a6] bg-[#e6f4f1] dark:bg-[#108474]/20 px-3 py-1 rounded-full">
@@ -18,10 +18,10 @@ export function OurStory() {
             </span>
           </div>
           <h2 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-[#1d1d1d] dark:text-white tracking-tight">
-            The Yahya Traders Sourcing Journey
+            The Yahiya Traders Sourcing Journey
           </h2>
           <p className="text-sm sm:text-base text-neutral-600 dark:text-neutral-300 leading-relaxed">
-            At Yahya Traders, our mission is simple: to connect discerning gourmet food lovers in India with the world’s most celebrated harvests. From sacred date groves in Medina and sunny almond valleys in California to Swiss chocolate chocolatiers in Bern and spice estates in Kerala, every item in our store is carefully hand-selected for superior quality, authentic origin, and peak freshness.
+            At Yahiya Traders, our mission is simple: to connect discerning gourmet food lovers in India with the world’s most celebrated harvests. From sacred date groves in Medina and sunny almond valleys in California to Swiss chocolate chocolatiers in Bern and spice estates in Kerala, every item in our store is carefully hand-selected for superior quality, authentic origin, and peak freshness.
           </p>
         </div>
 

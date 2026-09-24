@@ -42,7 +42,7 @@ async function run() {
       category_id BIGINT REFERENCES categories(id) ON DELETE SET NULL,
       name VARCHAR(200) NOT NULL,
       slug VARCHAR(220) NOT NULL UNIQUE,
-      brand VARCHAR(100) DEFAULT 'Yahya Select',
+      brand VARCHAR(100) DEFAULT 'Yahiya Select',
       short_desc VARCHAR(300),
       description TEXT,
       price NUMERIC(10, 2) NOT NULL,
@@ -286,7 +286,7 @@ async function run() {
         is_new = EXCLUDED.is_new,
         is_bestseller = EXCLUDED.is_bestseller
     `, [
-      p.id, p.category_id, p.name, p.slug, p.brand || 'Yahya Select',
+      p.id, p.category_id, p.name, p.slug, p.brand || 'Yahiya Select',
       p.short_desc || '', p.description || '', p.price, p.stock || 50,
       p.origin || 'Imported', p.cocoa_percentage || 500, p.rating || 4.8,
       p.reviews_count || 0, !!p.is_featured, !!p.is_new, !!p.is_bestseller
@@ -309,8 +309,8 @@ async function run() {
   const customerHash = await bcrypt.hash('Customer@123', salt);
 
   const defaultUsers = [
-    { id: 1, name: 'Yahya Traders Admin', email: 'admin@yahyatraders.com', password_hash: adminHash, role: 'admin' },
-    { id: 2, name: 'Yahya Traders Admin Alias', email: 'admin@chocolatier.com', password_hash: adminHash, role: 'admin' },
+    { id: 1, name: 'Yahiya Traders Admin', email: 'admin@yahiyatraders.com', password_hash: adminHash, role: 'admin' },
+    { id: 2, name: 'Yahiya Traders Admin Alias', email: 'admin@chocolatier.com', password_hash: adminHash, role: 'admin' },
     { id: 3, name: 'Eleanor Vance', email: 'customer@example.com', password_hash: customerHash, role: 'customer' }
   ];
 

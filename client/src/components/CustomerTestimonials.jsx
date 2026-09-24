@@ -10,7 +10,7 @@ const testimonials = [
     product: 'Royal Saudi Ajwa Al-Madinah Dates',
     rating: 5,
     title: 'Pure authentic Medina Ajwa! Outstanding quality',
-    comment: 'The Ajwa dates were fresh, tender, and came in pristine luxury vacuum packaging. Tastes exactly like what we get directly from Saudi Arabia. Yahya Traders has become our family go-to.',
+    comment: 'The Ajwa dates were fresh, tender, and came in pristine luxury vacuum packaging. Tastes exactly like what we get directly from Saudi Arabia. Yahiya Traders has become our family go-to.',
     date: '2 days ago'
   },
   {
@@ -40,7 +40,7 @@ const testimonials = [
     name: 'Siddharth Varma',
     role: 'Corporate Gifting',
     location: 'Hyderabad',
-    product: 'Yahya Traders Royal Wooden Gift Hamper',
+    product: 'Yahiya Traders Royal Wooden Gift Hamper',
     rating: 5,
     title: 'Gave this hamper to our clients — they were thrilled!',
     comment: 'The wooden box craftsmanship is remarkable. All four jars were sealed and brimming with premium dry fruits. 10/10 gift!',
@@ -70,7 +70,7 @@ export function CustomerTestimonials() {
               Let Our Customers Speak for Us
             </h3>
             <p className="text-xs sm:text-sm text-neutral-500 dark:text-neutral-400 mt-1">
-              Genuine experiences from verified Yahya Traders customers across India
+              Genuine experiences from verified Yahiya Traders customers across India
             </p>
           </div>
 

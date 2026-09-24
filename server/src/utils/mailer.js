@@ -43,7 +43,7 @@ export async function verifyMailConnection() {
 export async function sendMail({ to, bcc, subject, html, text }) {
   const rawFrom = process.env.SMTP_FROM || process.env.SMTP_USER || "career@datainfolenz.com";
   const fromEmail = rawFrom.includes('<') ? (rawFrom.match(/<([^>]+)>/)?.[1] || rawFrom) : rawFrom;
-  const from = rawFrom.includes('<') ? rawFrom : `"Yahya Traders" <${rawFrom}>`;
+  const from = rawFrom.includes('<') ? rawFrom : `"Yahiya Traders" <${rawFrom}>`;
 
   if (!isConfigured) {
     console.log("\n=======================================================");
@@ -127,7 +127,7 @@ export async function sendOrderConfirmationEmail(order) {
     <html>
     <head>
       <meta charset="utf-8">
-      <title>Order Confirmation - Yahya Traders</title>
+      <title>Order Confirmation - Yahiya Traders</title>
     </head>
     <body style="margin: 0; padding: 24px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background-color: #faf9f6; color: #1d1d1d;">
       <div style="max-width: 600px; margin: 0 auto; background: #ffffff; border-radius: 16px; border: 1px solid #ebe5df; overflow: hidden; box-shadow: 0 4px 20px rgba(0,0,0,0.05);">
@@ -135,7 +135,7 @@ export async function sendOrderConfirmationEmail(order) {
         <!-- Header -->
         <div style="background-color: #1d1d1d; padding: 28px 24px; text-align: center; border-bottom: 3px solid #fee000;">
           <h1 style="color: #ffffff; margin: 0; font-size: 24px; font-weight: 800; letter-spacing: -0.5px;">
-            Yahya Traders
+            Yahiya Traders
           </h1>
           <p style="color: #fee000; margin: 4px 0 0 0; font-size: 11px; text-transform: uppercase; letter-spacing: 2px; font-weight: 700;">
             100% Certified Authentic Harvest
@@ -203,7 +203,7 @@ export async function sendOrderConfirmationEmail(order) {
 
         <!-- Footer -->
         <div style="background-color: #f7f7f7; padding: 18px 24px; text-align: center; font-size: 11px; color: #888; border-top: 1px solid #ebe5df;">
-          © ${new Date().getFullYear()} Yahya Traders. All rights reserved. Sourced globally with 100% certified authenticity.
+          © ${new Date().getFullYear()} Yahiya Traders. All rights reserved. Sourced globally with 100% certified authenticity.
         </div>
 
       </div>
@@ -217,7 +217,7 @@ export async function sendOrderConfirmationEmail(order) {
   return sendMail({
     to: order.customer_email,
     bcc: shouldBcc ? adminEmail : undefined,
-    subject: `Order Confirmation #${order.order_number} - Yahya Traders`,
+    subject: `Order Confirmation #${order.order_number} - Yahiya Traders`,
     html,
     text: `Thank you for your order, ${order.customer_name}! Order #${order.order_number} has been received for ₹${Number(order.total_amount).toLocaleString('en-IN')}. We will ship to: ${formattedAddress}.`
   });
@@ -241,13 +241,13 @@ export async function sendOrderStatusEmail(order, newStatus) {
     <html>
     <body style="font-family: sans-serif; padding: 20px; color: #1d1d1d; background: #fafafa;">
       <div style="max-width: 550px; margin: auto; background: #fff; border-radius: 12px; border: 1px solid #eee; padding: 24px;">
-        <h2 style="margin-top: 0; color: #1d1d1d;">Yahya Traders Order Update</h2>
+        <h2 style="margin-top: 0; color: #1d1d1d;">Yahiya Traders Order Update</h2>
         <p>Dear ${order.customer_name || 'Customer'},</p>
         <p>The status of your order <strong>#${order.order_number}</strong> has been updated to: <strong style="text-transform: uppercase; color: #108474;">${newStatus}</strong>.</p>
         <p style="background: #fdfbf7; padding: 12px; border-radius: 8px; border: 1px solid #faeccb;">
           ${statusDescriptions[newStatus] || `Your order status is now ${newStatus}.`}
         </p>
-        <p style="font-size: 12px; color: #888;">Thank you for shopping with Yahya Traders.</p>
+        <p style="font-size: 12px; color: #888;">Thank you for shopping with Yahiya Traders.</p>
       </div>
     </body>
     </html>
@@ -255,7 +255,7 @@ export async function sendOrderStatusEmail(order, newStatus) {
 
   return sendMail({
     to: order.customer_email,
-    subject: `Order #${order.order_number} Status Update: ${newStatus.toUpperCase()} - Yahya Traders`,
+    subject: `Order #${order.order_number} Status Update: ${newStatus.toUpperCase()} - Yahiya Traders`,
     html,
     text: `Your order #${order.order_number} has been updated to: ${newStatus}.`
   });

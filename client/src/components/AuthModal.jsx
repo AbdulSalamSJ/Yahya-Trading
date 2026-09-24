@@ -35,7 +35,7 @@ export function AuthModal({ isOpen, onClose }) {
 
   const handleDemoFill = (type) => {
     if (type === 'admin') {
-      setEmail('admin@yahyatraders.com');
+      setEmail('admin@yahiyatraders.com');
       setPassword('Admin@123');
       setIsRegistering(false);
     } else {
@@ -58,10 +58,10 @@ export function AuthModal({ isOpen, onClose }) {
 
         <div className="text-center mb-6">
           <div className="w-16 h-16 rounded-full overflow-hidden border-2 border-[#fee000] mx-auto mb-3 shadow-md bg-white">
-            <img src={logoImg} alt="Yahya Traders" className="w-full h-full object-cover" />
+            <img src={logoImg} alt="Yahiya Traders" className="w-full h-full object-cover" />
           </div>
           <h3 className="text-2xl font-black text-[#1d1d1d] dark:text-white">
-            {isRegistering ? 'Join Yahya Traders Club' : 'Welcome to Yahya Traders'}
+            {isRegistering ? 'Join Yahiya Traders Club' : 'Welcome to Yahiya Traders'}
           </h3>
           <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-1">
             {isRegistering
@@ -158,7 +158,7 @@ export function AuthModal({ isOpen, onClose }) {
             disabled={loading}
             className="w-full h-11 rounded-full bg-[#fee000] hover:bg-[#f5d600] text-[#1d1d1d] text-sm font-black shadow-md transition-all mt-2 flex items-center justify-center gap-2"
           >
-            <span>{loading ? 'Authenticating...' : isRegistering ? 'Join Yahya Traders' : 'Sign In'}</span>
+            <span>{loading ? 'Authenticating...' : isRegistering ? 'Join Yahiya Traders' : 'Sign In'}</span>
           </button>
         </form>
 
@@ -176,7 +176,7 @@ export function AuthModal({ isOpen, onClose }) {
             </span>
           ) : (
             <span>
-              New to Yahya Traders?{' '}
+              New to Yahiya Traders?{' '}
               <button
                 type="button"
                 onClick={() => setIsRegistering(true)}

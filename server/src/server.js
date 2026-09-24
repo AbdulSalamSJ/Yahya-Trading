@@ -52,7 +52,7 @@ app.use((req, res, next) => {
 app.get('/api/health', (req, res) => {
   res.json({
     status: 'ok',
-    store: 'Yahya Traders — Premium Nuts, Cashews & Royal Dates API',
+    store: 'Yahiya Traders — Premium Nuts, Cashews & Royal Dates API',
     timestamp: new Date().toISOString()
   });
 });

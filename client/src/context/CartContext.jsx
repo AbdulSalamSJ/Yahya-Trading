@@ -78,7 +78,7 @@ export function CartProvider({ children }) {
 
   const applyPromoCode = (code) => {
     const clean = code.trim().toUpperCase();
-    if (clean === 'CHOCO10' || clean === 'COCOA10') {
+    if (clean === 'YAHIYA10' || clean === 'YAHYA10' || clean === 'CHOCO10' || clean === 'COCOA10') {
       setDiscountPercent(10);
       setPromoCode(clean);
       setPromoError('');
@@ -91,7 +91,7 @@ export function CartProvider({ children }) {
       showToast('20% VIP connoisseur discount applied!');
       return true;
     } else {
-      setPromoError('Invalid coupon code. Try "CHOCO10"');
+      setPromoError('Invalid coupon code. Try "YAHIYA10"');
       return false;
     }
   };

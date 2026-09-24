@@ -49,10 +49,13 @@ export async function login(req, res) {
     let user = await db.findUserByEmail(cleanEmail);
     if (!user) {
       // Check admin aliases
-      if (cleanEmail === 'admin@yahyatraders.com') {
-        user = await db.findUserByEmail('admin@chocolatier.com');
+      if (cleanEmail === 'admin@yahiyatraders.com' || cleanEmail === 'admin@yahyatraders.com') {
+        user = (await db.findUserByEmail('admin@yahiyatraders.com')) ||
+               (await db.findUserByEmail('admin@yahyatraders.com')) ||
+               (await db.findUserByEmail('admin@chocolatier.com'));
       } else if (cleanEmail === 'admin@chocolatier.com') {
-        user = await db.findUserByEmail('admin@yahyatraders.com');
+        user = (await db.findUserByEmail('admin@yahiyatraders.com')) ||
+               (await db.findUserByEmail('admin@yahyatraders.com'));
       }
     }
 

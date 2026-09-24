@@ -74,7 +74,7 @@ async function seedMySQLData() {
     `INSERT INTO users (id, name, email, password_hash, role)
      VALUES (1, ?, ?, ?, 'admin'), (2, ?, ?, ?, 'customer')
      ON DUPLICATE KEY UPDATE name = VALUES(name), email = VALUES(email), password_hash = VALUES(password_hash)`,
-    ['Yahya Traders Admin', 'admin@yahyatraders.com', adminHash,
+    ['Yahiya Traders Admin', 'admin@yahiyatraders.com', adminHash,
       'Eleanor Vance', 'customer@example.com', customerHash]
   );
 
@@ -237,15 +237,15 @@ async function initLocalDb() {
   localDb.users = [
     {
       id: 1,
-      name: 'Yahya Traders Admin',
-      email: 'admin@yahyatraders.com',
+      name: 'Yahiya Traders Admin',
+      email: 'admin@yahiyatraders.com',
       password_hash: adminHash,
       role: 'admin',
       created_at: new Date().toISOString()
     },
     {
       id: 99,
-      name: 'Yahya Traders Admin Alias',
+      name: 'Yahiya Traders Admin Alias',
       email: 'admin@chocolatier.com',
       password_hash: adminHash,
       role: 'admin',
@@ -307,7 +307,7 @@ async function initLocalDb() {
   ];
 
   saveLocalDb();
-  console.log('✓ Initialized embedded store with Yahya Traders nuts & dates catalog.');
+  console.log('✓ Initialized embedded store with Yahiya Traders nuts & dates catalog.');
 }
 
 export async function initDatabase() {
@@ -570,7 +570,7 @@ export const db = {
         `INSERT INTO products (category_id, name, slug, brand, short_desc, description, price, stock,
          origin, cocoa_percentage, rating, reviews_count, is_featured, is_new, is_bestseller)
          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0, ?, 1, 0)`,
-        [productData.category_id, productData.name, slug, productData.brand || 'Yahya Traders Select', productData.short_desc || '',
+        [productData.category_id, productData.name, slug, productData.brand || 'Yahiya Traders Select', productData.short_desc || '',
           productData.description || '', productData.price, productData.stock || 50, productData.origin || 'Imported',
           productData.cocoa_percentage || 500, productData.rating || 5, productData.is_featured ? (isPg ? true : 1) : (isPg ? false : 0)]
       );

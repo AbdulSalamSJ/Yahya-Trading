@@ -1,4 +1,4 @@
-# Yahya Traders — Premium Nuts, Cashews & Royal Dates Platform
+# Yahiya Traders — Premium Nuts, Cashews & Royal Dates Platform
 ### Built with React, Node.js, Express, MySQL 8, and Razorpay
 
 An elegant, luxury nuts, colossal cashews, and authentic royal dates e-commerce boutique with the signature **Warm Earth & Harvest Design Specification**.
@@ -63,7 +63,7 @@ npm run db:init
 ---
 
 ## 👤 Test Accounts
-- **Yahya Traders Admin**:
+- **Yahiya Traders Admin**:
   - Email: `admin@chocolatier.com`
   - Password: `Admin@123`
   - Features: Metrics dashboard, harvest inventory management, batch order status updates.

@@ -122,7 +122,7 @@ export const sampleOrders = [
     items: [
       {
         product_id: 8,
-        product_name: 'Yahya Imperial Carved Wooden Keepsake Gift Hamper (1kg)',
+        product_name: 'Yahiya Imperial Carved Wooden Keepsake Gift Hamper (1kg)',
         quantity: 1,
         unit_price: 3400.00,
         total_price: 3400.00,
@@ -245,7 +245,7 @@ export async function migrateAllToDatabase() {
   const customerHash = await bcrypt.hash('Customer@123', salt);
 
   const defaultUsers = [
-    { id: 1, name: 'Yahya Traders Admin', email: 'admin@chocolatier.com', password_hash: adminHash, role: 'admin' },
+    { id: 1, name: 'Yahiya Traders Admin', email: 'admin@chocolatier.com', password_hash: adminHash, role: 'admin' },
     { id: 2, name: 'Eleanor Vance', email: 'customer@example.com', password_hash: customerHash, role: 'customer' }
   ];
 
@@ -325,7 +325,7 @@ export async function migrateAllToDatabase() {
         product.category_id,
         product.name,
         product.slug,
-        product.brand || 'Yahya Royal Reserve',
+        product.brand || 'Yahiya Royal Reserve',
         product.short_desc,
         product.description,
         product.price,

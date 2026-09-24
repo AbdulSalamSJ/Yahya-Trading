@@ -36,10 +36,10 @@ export function TrustFeatures() {
         {/* Header */}
         <div className="text-center max-w-2xl mx-auto mb-10">
           <span className="text-[11px] font-bold uppercase tracking-widest text-[#108474] dark:text-[#14b8a6] bg-[#e6f4f1] dark:bg-[#108474]/20 px-3 py-1 rounded-full">
-            The Yahya Traders Guarantee
+            The Yahiya Traders Guarantee
           </span>
           <h3 className="text-2xl sm:text-3xl font-bold tracking-tight text-[#1d1d1d] dark:text-white mt-2">
-            Why Discerning Food Lovers Choose Yahya Traders
+            Why Discerning Food Lovers Choose Yahiya Traders
           </h3>
           <p className="text-xs sm:text-sm text-neutral-500 dark:text-neutral-400 mt-1">
             Premium quality, certified freshness, and unmatched customer care at every step.

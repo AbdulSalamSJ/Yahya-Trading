@@ -45,7 +45,7 @@ export function CartDrawer({ onProceedToCheckout }) {
         <div className="p-4 sm:p-5 border-b border-neutral-200 dark:border-neutral-800 flex items-center justify-between">
           <div className="flex items-center gap-2.5">
             <div className="w-8 h-8 rounded-full overflow-hidden border border-[#fee000] flex-shrink-0 bg-white">
-              <img src={logoImg} alt="Yahya Traders" className="w-full h-full object-cover" />
+              <img src={logoImg} alt="Yahiya Traders" className="w-full h-full object-cover" />
             </div>
             <div>
               <h3 className="text-base font-bold text-[#1d1d1d] dark:text-white">Your Shopping Bag</h3>
@@ -94,7 +94,7 @@ export function CartDrawer({ onProceedToCheckout }) {
           {cartItems.length === 0 ? (
             <div className="text-center py-16 space-y-3">
               <div className="w-16 h-16 rounded-full overflow-hidden border-2 border-[#fee000] mx-auto shadow-sm bg-white">
-                <img src={logoImg} alt="Yahya Traders" className="w-full h-full object-cover" />
+                <img src={logoImg} alt="Yahiya Traders" className="w-full h-full object-cover" />
               </div>
               <h4 className="text-base font-bold text-[#1d1d1d] dark:text-white">Your bag is empty</h4>
               <p className="text-xs text-neutral-500 dark:text-neutral-400 max-w-xs mx-auto">
@@ -104,7 +104,7 @@ export function CartDrawer({ onProceedToCheckout }) {
                 onClick={() => setIsCartOpen(false)}
                 className="mt-4 px-6 py-2.5 rounded-full bg-[#fee000] hover:bg-[#f5d600] text-[#1d1d1d] text-xs font-bold shadow-sm transition"
               >
-                Shop Yahya Traders Harvest
+                Shop Yahiya Traders Harvest
               </button>
             </div>
           ) : (
@@ -144,7 +144,7 @@ export function CartDrawer({ onProceedToCheckout }) {
                           {item.selectedSize || '250G'}
                         </span>
                         <span className="text-[11px] text-[#108474] font-medium">
-                          {item.origin || 'Yahya Traders Select'}
+                          {item.origin || 'Yahiya Traders Select'}
                         </span>
                       </div>
                     </div>
@@ -190,7 +190,7 @@ export function CartDrawer({ onProceedToCheckout }) {
                 <Tag size={13} className="absolute left-3 top-2.5 text-neutral-400" />
                 <input
                   type="text"
-                  placeholder="Coupon: YAHYA10"
+                  placeholder="Coupon: YAHIYA10"
                   value={inputCode}
                   onChange={(e) => setInputCode(e.target.value)}
                   className="w-full pl-8 pr-3 py-1.5 text-xs rounded-full border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-[#202020] text-neutral-800 dark:text-white uppercase focus:outline-none focus:border-[#fee000]"
@@ -224,7 +224,7 @@ export function CartDrawer({ onProceedToCheckout }) {
 
               {discountAmount > 0 && (
                 <div className="flex justify-between text-[#108474] font-semibold">
-                  <span>Yahya Traders Promo Discount</span>
+                  <span>Yahiya Traders Promo Discount</span>
                   <span>- ₹ {discountAmount.toLocaleString('en-IN')}</span>
                 </div>
               )}

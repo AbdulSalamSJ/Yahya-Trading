@@ -35,7 +35,7 @@ export function Navbar({ onOpenAuth, onOpenAdmin, onOpenAddItem, onOpenTracking,
         <span className="flex items-center gap-1.5 flex-wrap justify-center font-bold">
           <span>Free Express Delivery Across India on Orders Above <strong className="font-black text-black">₹ 499</strong></span>
           <span className="hidden sm:inline text-neutral-600">•</span>
-          <span>Use Code <span className="bg-[#1d1d1d] text-white px-2 py-0.5 rounded font-mono font-black text-[11px] tracking-wider">YAHYA10</span> for 10% OFF</span>
+          <span>Use Code <span className="bg-[#1d1d1d] text-white px-2 py-0.5 rounded font-mono font-black text-[11px] tracking-wider">YAHIYA10</span> for 10% OFF</span>
         </span>
       </div>
 
@@ -52,7 +52,7 @@ export function Navbar({ onOpenAuth, onOpenAdmin, onOpenAddItem, onOpenTracking,
             {mobileMenuOpen ? <X size={22} /> : <Menu size={22} />}
           </button>
 
-          {/* Yahya Traders Brand Logo */}
+          {/* Yahiya Traders Brand Logo */}
           <div
             onClick={() => { setActiveTab('shop'); }}
             className="cursor-pointer flex items-center gap-3 select-none group"
@@ -61,14 +61,14 @@ export function Navbar({ onOpenAuth, onOpenAdmin, onOpenAddItem, onOpenTracking,
             <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-full overflow-hidden border-2 border-[#fee000] shadow-sm group-hover:scale-105 transition-transform flex-shrink-0 bg-white">
               <img
                 src={logoImg}
-                alt="Yahya Traders"
+                alt="Yahiya Traders"
                 className="w-full h-full object-cover"
               />
             </div>
             <div>
               <div className="flex items-center gap-1">
                 <span className="font-bold text-xl sm:text-2xl tracking-tight text-[#1d1d1d] dark:text-white">
-                  Yahya Traders
+                  Yahiya Traders
                 </span>
                 <span className="w-1.5 h-1.5 rounded-full bg-[#fee000]"></span>
               </div>

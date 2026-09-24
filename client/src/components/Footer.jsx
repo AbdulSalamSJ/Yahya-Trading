@@ -28,10 +28,10 @@ export function Footer({ onSelectItem, onOpenTracking, onSelectCategory }) {
               className="flex items-center gap-2.5 cursor-pointer group select-none"
             >
               <div className="w-10 h-10 rounded-full overflow-hidden border-2 border-[#fee000] flex-shrink-0 bg-white group-hover:scale-105 transition-transform">
-                <img src={logoImg} alt="Yahya Traders" className="w-full h-full object-cover" />
+                <img src={logoImg} alt="Yahiya Traders" className="w-full h-full object-cover" />
               </div>
               <div>
-                <span className="text-xl font-black text-white tracking-tight group-hover:text-[#fee000] transition-colors">Yahya Traders</span>
+                <span className="text-xl font-black text-white tracking-tight group-hover:text-[#fee000] transition-colors">Yahiya Traders</span>
                 <span className="text-[10px] block tracking-widest text-[#fee000] uppercase font-bold">
                   Sourced Globally
                 </span>
@@ -39,7 +39,7 @@ export function Footer({ onSelectItem, onOpenTracking, onSelectCategory }) {
             </div>
 
             <p className="text-xs text-neutral-400 leading-relaxed max-w-sm">
-              Yahya Traders is puliangudi's premier destination for globally sourced dates, tree nuts, exotic dry fruits, and imported European chocolates.
+              Yahiya Traders is puliangudi's premier destination for globally sourced dates, tree nuts, exotic dry fruits, and imported European chocolates.
             </p>
 
             <div className="space-y-1.5 text-xs text-neutral-400">
@@ -144,7 +144,7 @@ export function Footer({ onSelectItem, onOpenTracking, onSelectCategory }) {
 
         {/* Bottom Bar: Copyright & Payment Badges */}
         <div className="pt-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-neutral-500">
-          <p>© {new Date().getFullYear()} Yahya Traders. All rights reserved. Sourced Globally.</p>
+          <p>© {new Date().getFullYear()} Yahiya Traders. All rights reserved. Sourced Globally.</p>
 
           {/* Payment Badges */}
           <div className="flex items-center gap-2 text-[10px] font-bold text-neutral-400">

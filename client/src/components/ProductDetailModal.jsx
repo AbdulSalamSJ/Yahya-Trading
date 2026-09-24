@@ -67,7 +67,7 @@ export function ProductDetailModal({
   const [editForm, setEditForm] = useState({
     name: initialProduct?.name || '',
     category_id: initialProduct?.category_id || 1,
-    brand: initialProduct?.brand || 'Yahya Traders Select',
+    brand: initialProduct?.brand || 'Yahiya Traders Select',
     price: initialProduct?.price || '',
     cocoa_percentage: initialProduct?.cocoa_percentage || 500,
     stock: initialProduct?.stock || 50,
@@ -107,7 +107,7 @@ export function ProductDetailModal({
       setEditForm({
         name: initialProduct.name || '',
         category_id: initialProduct.category_id || 1,
-        brand: initialProduct.brand || 'Yahya Traders Select',
+        brand: initialProduct.brand || 'Yahiya Traders Select',
         price: initialProduct.price || '',
         cocoa_percentage: initialProduct.cocoa_percentage || 500,
         stock: initialProduct.stock || 50,
@@ -227,7 +227,7 @@ const handleBack = (e) => {
     setEditForm({
       name: product.name || '',
       category_id: product.category_id || 1,
-      brand: product.brand || 'Yahya Traders Select',
+      brand: product.brand || 'Yahiya Traders Select',
       price: product.price || '',
       cocoa_percentage: product.cocoa_percentage || 500,
       stock: product.stock || 50,
@@ -261,7 +261,7 @@ const handleBack = (e) => {
       const payload = {
         name: editForm.name.trim(),
         category_id: Number(editForm.category_id),
-        brand: editForm.brand || 'Yahya Traders Select',
+        brand: editForm.brand || 'Yahiya Traders Select',
         price: Number(editForm.price),
         cocoa_percentage: Number(editForm.cocoa_percentage),
         stock: Number(editForm.stock),
@@ -423,7 +423,7 @@ const handleBack = (e) => {
 
           <div className="flex items-center gap-2 text-xs text-[#108474] dark:text-[#14b8a6] font-bold">
             <Sparkles size={14} />
-            <span>100% Certified Authentic • Yahya Traders Select</span>
+            <span>100% Certified Authentic • Yahiya Traders Select</span>
           </div>
         </div>
 
@@ -641,7 +641,7 @@ const handleBack = (e) => {
                       type="text"
                       value={editForm.brand}
                       onChange={(e) => setEditForm({ ...editForm, brand: e.target.value })}
-                      placeholder="Yahya Traders Select"
+                      placeholder="Yahiya Traders Select"
                       className="w-full px-4 py-2.5 rounded-xl border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-[#202020] text-xs font-bold text-[#1d1d1d] dark:text-white focus:outline-none focus:border-[#108474]"
                     />
                   </div>
@@ -835,7 +835,7 @@ const handleBack = (e) => {
                 <div className="flex items-center gap-2 text-xs font-extrabold uppercase tracking-wider text-neutral-500 dark:text-neutral-400">
                   <span className="text-[#108474] dark:text-[#14b8a6]">{product.origin || 'Sourced Globally'}</span>
                   <span>•</span>
-                  <span>{product.brand || 'Yahya Traders Select'}</span>
+                  <span>{product.brand || 'Yahiya Traders Select'}</span>
                 </div>
 
                 {/* Title */}
