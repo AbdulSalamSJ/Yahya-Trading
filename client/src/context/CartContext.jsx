@@ -1,4 +1,4 @@
-﻿import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect } from 'react';
 
 const CartContext = createContext();
 
@@ -29,33 +29,45 @@ export function CartProvider({ children }) {
     }, 3500);
   };
 
-  const addToCart = (product, quantity = 1) => {
+  const addToCart = (product, quantity = 1, size = null) => {
+    const selectedSize = size || product.selectedSize || '250G';
+    const itemKey = `${product.id}-${selectedSize}`;
+    const price = product.price != null ? Number(product.price) : 0;
+
     setCartItems(prev => {
-      const existingIndex = prev.findIndex(item => item.id === product.id);
+      const existingIndex = prev.findIndex(item => item.itemKey === itemKey || (!item.itemKey && item.id === product.id && item.selectedSize === selectedSize));
       if (existingIndex > -1) {
         const updated = [...prev];
         updated[existingIndex].quantity += quantity;
         return updated;
       }
-      return [...prev, { ...product, quantity }];
+      return [...prev, {
+        ...product,
+        itemKey,
+        selectedSize,
+        price,
+        quantity
+      }];
     });
-    showToast(`Added "${product.name}" to cart`);
+    showToast(`Added "${product.name} (${selectedSize})" to cart`);
   };
 
-  const updateQuantity = (productId, newQuantity) => {
+  const updateQuantity = (itemKeyOrId, newQuantity) => {
     if (newQuantity <= 0) {
-      removeFromCart(productId);
+      removeFromCart(itemKeyOrId);
       return;
     }
     setCartItems(prev =>
       prev.map(item =>
-        item.id === productId ? { ...item, quantity: newQuantity } : item
+        (item.itemKey === itemKeyOrId || item.id === itemKeyOrId)
+          ? { ...item, quantity: newQuantity }
+          : item
       )
     );
   };
 
-  const removeFromCart = (productId) => {
-    setCartItems(prev => prev.filter(item => item.id !== productId));
+  const removeFromCart = (itemKeyOrId) => {
+    setCartItems(prev => prev.filter(item => item.itemKey !== itemKeyOrId && item.id !== itemKeyOrId));
   };
 
   const clearCart = () => {

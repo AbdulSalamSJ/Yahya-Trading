@@ -1,18 +1,29 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Star, ShoppingBag, Eye, Check } from 'lucide-react';
 import { useCart } from '../context/CartContext';
+import { SizeSelector } from './SizeSelector';
+import { getPriceForSize } from '../utils/productSizes';
 
 export function ProductCard({ product, onSelectProduct }) {
   const { addToCart } = useCart();
+  const [selectedSize, setSelectedSize] = useState(product.selectedSize || '250G');
 
   const primaryImage = product.images && product.images.length > 0
     ? product.images[0]
     : 'https://images.unsplash.com/photo-1549007994-cb92caebd54b?auto=format&fit=crop&w=800&q=80';
 
-  // Calculate a mock regular price to showcase discounts as seen on PalmTree
-  const currentPrice = Number(product.price);
+  // Calculate dynamic price based on selected size
+  const currentPrice = getPriceForSize(product, selectedSize);
   const regularPrice = Math.round(currentPrice * 1.18);
   const discountPercent = Math.round(((regularPrice - currentPrice) / regularPrice) * 100);
+
+  const handleOpenDetail = () => {
+    onSelectProduct({
+      ...product,
+      selectedSize,
+      price: currentPrice
+    });
+  };
 
   return (
     <div id={`product-${product.id}`} className="group relative bg-white dark:bg-[#1c1c1c] border border-neutral-200 dark:border-neutral-800 rounded-2xl overflow-hidden shadow-sm hover:shadow-xl hover:border-neutral-300 dark:hover:border-neutral-700 transition-all duration-300 flex flex-col h-full scroll-mt-24">
@@ -20,7 +31,7 @@ export function ProductCard({ product, onSelectProduct }) {
       {/* Product Image Area */}
       <div 
         className="relative aspect-square overflow-hidden bg-[#f9f9f9] dark:bg-[#161616] cursor-pointer" 
-        onClick={() => onSelectProduct(product)}
+        onClick={handleOpenDetail}
       >
         <img
           src={primaryImage}
@@ -53,9 +64,9 @@ export function ProductCard({ product, onSelectProduct }) {
           <button
             onClick={(e) => {
               e.stopPropagation();
-              onSelectProduct(product);
+              handleOpenDetail();
             }}
-            className="w-full py-2 px-3 bg-white/95 dark:bg-[#1d1d1d]/95 backdrop-blur-md rounded-full text-xs font-bold text-[#1d1d1d] dark:text-white border border-neutral-200 dark:border-neutral-700 hover:bg-[#fee000] hover:text-black dark:hover:bg-[#fee000] dark:hover:text-black transition flex items-center justify-center gap-1.5 shadow-md"
+            className="w-full py-2 px-3 bg-white/95 dark:bg-[#1d1d1d]/95 backdrop-blur-md rounded-full text-xs font-bold text-[#1d1d1d] dark:text-white border border-neutral-200 dark:border-neutral-700 hover:bg-[#fee000] hover:text-black dark:hover:bg-[#fee000] dark:hover:text-black transition flex items-center justify-center gap-1.5 shadow-md cursor-pointer"
           >
             <Eye size={14} />
             <span>Quick View</span>
@@ -71,16 +82,14 @@ export function ProductCard({ product, onSelectProduct }) {
             <span className="font-bold uppercase tracking-wider text-[10px] text-[#108474] dark:text-[#14b8a6]">
               {product.origin || 'Sourced Globally'}
             </span>
-            {product.cocoa_percentage && (
-              <span className="font-semibold text-neutral-600 dark:text-neutral-400">
-                {product.cocoa_percentage >= 1000 ? `${product.cocoa_percentage / 1000}kg` : `${product.cocoa_percentage}g`}
-              </span>
-            )}
+            <span className="font-semibold text-neutral-600 dark:text-neutral-400">
+              {selectedSize}
+            </span>
           </div>
 
           {/* Product Title */}
           <h3
-            onClick={() => onSelectProduct(product)}
+            onClick={handleOpenDetail}
             className="text-sm sm:text-base font-bold text-[#1d1d1d] dark:text-neutral-100 leading-snug line-clamp-2 hover:text-[#fee000] dark:hover:text-[#fee000] cursor-pointer transition-colors"
             title={product.name}
           >
@@ -107,8 +116,19 @@ export function ProductCard({ product, onSelectProduct }) {
           </div>
         </div>
 
+        {/* Pack Size Selector */}
+        <div className="mt-3 pt-1" onClick={(e) => e.stopPropagation()}>
+          <SizeSelector
+            product={product}
+            selectedSize={selectedSize}
+            onSelectSize={setSelectedSize}
+            showLabel={true}
+            compact={true}
+          />
+        </div>
+
         {/* Price & Add to Cart */}
-        <div className="mt-4 pt-3 border-t border-neutral-100 dark:border-neutral-800 flex items-center justify-between gap-2">
+        <div className="mt-3 pt-3 border-t border-neutral-100 dark:border-neutral-800 flex items-center justify-between gap-2">
           <div>
             <div className="flex items-baseline gap-1.5">
               <span className="text-base sm:text-lg font-extrabold text-[#1d1d1d] dark:text-white">
@@ -124,8 +144,11 @@ export function ProductCard({ product, onSelectProduct }) {
           </div>
 
           <button
-            onClick={() => addToCart(product, 1)}
-            className="px-3.5 py-2 rounded-full bg-[#fee000] hover:bg-[#f5d600] active:scale-95 text-[#1d1d1d] text-xs font-bold shadow-sm transition-all flex items-center gap-1.5"
+            onClick={(e) => {
+              e.stopPropagation();
+              addToCart({ ...product, price: currentPrice, selectedSize }, 1, selectedSize);
+            }}
+            className="px-3.5 py-2 rounded-full bg-[#fee000] hover:bg-[#f5d600] active:scale-95 text-[#1d1d1d] text-xs font-bold shadow-sm transition-all flex items-center gap-1.5 cursor-pointer"
             aria-label={`Add ${product.name} to cart`}
           >
             <ShoppingBag size={14} />

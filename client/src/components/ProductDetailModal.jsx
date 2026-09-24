@@ -29,6 +29,8 @@ import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
 import { api } from '../services/api';
 import logoImg from '../image/logo.jpg';
+import { SizeSelector } from './SizeSelector';
+import { getPriceForSize } from '../utils/productSizes';
 
 export function ProductDetailModal({
   product: initialProduct,
@@ -79,6 +81,7 @@ export function ProductDetailModal({
   const [adminSaving, setAdminSaving] = useState(false);
   const [adminSuccessMsg, setAdminSuccessMsg] = useState('');
   const [adminErrorMsg, setAdminErrorMsg] = useState('');
+  const [selectedSize, setSelectedSize] = useState(initialProduct?.selectedSize || '250G');
 
   // 2-click back detector ref
   const lastBackClickRef = useRef(0);
@@ -100,6 +103,7 @@ export function ProductDetailModal({
   useEffect(() => {
     if (initialProduct) {
       setProduct(initialProduct);
+      setSelectedSize(initialProduct.selectedSize || '250G');
       setEditForm({
         name: initialProduct.name || '',
         category_id: initialProduct.category_id || 1,
@@ -167,7 +171,7 @@ const handleBack = (e) => {
     ? product.images
     : ['/images/products/california-almonds.jpg'];
 
-  const currentPrice = Number(product.price);
+  const currentPrice = getPriceForSize(product, selectedSize);
   const regularPrice = Math.round(currentPrice * 1.18);
   const discountPercent = Math.round(((regularPrice - currentPrice) / regularPrice) * 100);
 
@@ -196,13 +200,21 @@ const handleBack = (e) => {
   };
 
   const handleAddToCart = () => {
-    addToCart(product, quantity);
+    addToCart({
+      ...product,
+      price: currentPrice,
+      selectedSize
+    }, quantity, selectedSize);
     setJustAdded(true);
     setTimeout(() => setJustAdded(false), 2200);
   };
 
   const handleBuyNow = () => {
-    addToCart(product, quantity);
+    addToCart({
+      ...product,
+      price: currentPrice,
+      selectedSize
+    }, quantity, selectedSize);
     if (onBuyNow) {
       onBuyNow();
     } else {
@@ -868,16 +880,17 @@ const handleBack = (e) => {
                   </span>
                 </div>
 
-                {/* Pack Size / Weight Information */}
-                <div className="mb-4">
-                  <label className="block text-xs font-bold text-neutral-700 dark:text-neutral-300 mb-1.5">
-                    Pack Size / Net Weight:
-                  </label>
-                  <div className="flex items-center gap-2">
-                    <div className="px-4 py-2 rounded-xl bg-[#1d1d1d] text-white dark:bg-[#fee000] dark:text-[#1d1d1d] text-xs font-black shadow-sm">
-                      {product.cocoa_percentage >= 1000 ? `${product.cocoa_percentage / 1000}kg Luxury Pack` : `${product.cocoa_percentage}g Fresh Pack`}
-                    </div>
-                    <span className="text-xs text-neutral-500">Aroma-seal tamper-evident pouch</span>
+                {/* SIZE Selector (from screenshot requirement) */}
+                <div className="mb-5">
+                  <SizeSelector
+                    product={product}
+                    selectedSize={selectedSize}
+                    onSelectSize={setSelectedSize}
+                    showLabel={true}
+                  />
+                  <div className="flex items-center gap-2 mt-2 text-xs text-neutral-500 dark:text-neutral-400">
+                    <span className="inline-block w-2 h-2 rounded-full bg-[#108474]"></span>
+                    <span>Aroma-seal tamper-evident freshness pouch</span>
                   </div>
                 </div>
 

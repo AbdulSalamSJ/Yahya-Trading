@@ -108,67 +108,75 @@ export function CartDrawer({ onProceedToCheckout }) {
               </button>
             </div>
           ) : (
-            cartItems.map(item => (
-              <div
-                key={item.id}
-                className="flex gap-3 p-3 rounded-xl bg-[#fdfdfd] dark:bg-[#1a1a1a] border border-neutral-200 dark:border-neutral-800"
-              >
-                {/* Thumbnail */}
-                <div className="w-18 h-18 sm:w-20 sm:h-20 rounded-lg overflow-hidden bg-neutral-100 dark:bg-neutral-800 flex-shrink-0">
-                  <img
-                    src={(item.images && item.images[0]) || 'https://images.unsplash.com/photo-1596040033229-a9821ebd058d?auto=format&fit=crop&w=400&q=80'}
-                    alt={item.name}
-                    className="w-full h-full object-cover"
-                  />
-                </div>
-
-                {/* Details */}
-                <div className="flex-1 flex flex-col justify-between">
-                  <div>
-                    <div className="flex items-start justify-between gap-2">
-                      <h5 className="text-xs sm:text-sm font-bold text-[#1d1d1d] dark:text-white line-clamp-1">
-                        {item.name}
-                      </h5>
-                      <button
-                        onClick={() => removeFromCart(item.id)}
-                        className="text-neutral-400 hover:text-red-500 transition p-0.5"
-                        title="Remove item"
-                      >
-                        <Trash2 size={14} />
-                      </button>
-                    </div>
-                    <span className="text-[11px] text-[#108474] font-medium">
-                      {item.origin || 'Yahya Traders Select'}
-                    </span>
+            cartItems.map(item => {
+              const itemIdentifier = item.itemKey || item.id;
+              return (
+                <div
+                  key={itemIdentifier}
+                  className="flex gap-3 p-3 rounded-xl bg-[#fdfdfd] dark:bg-[#1a1a1a] border border-neutral-200 dark:border-neutral-800"
+                >
+                  {/* Thumbnail */}
+                  <div className="w-18 h-18 sm:w-20 sm:h-20 rounded-lg overflow-hidden bg-neutral-100 dark:bg-neutral-800 flex-shrink-0">
+                    <img
+                      src={(item.images && item.images[0]) || 'https://images.unsplash.com/photo-1596040033229-a9821ebd058d?auto=format&fit=crop&w=400&q=80'}
+                      alt={item.name}
+                      className="w-full h-full object-cover"
+                    />
                   </div>
 
-                  {/* Quantity & Price */}
-                  <div className="flex items-center justify-between mt-2">
-                    <div className="flex items-center border border-neutral-300 dark:border-neutral-700 rounded-full bg-white dark:bg-[#1f1f1f]">
-                      <button
-                        onClick={() => updateQuantity(item.id, item.quantity - 1)}
-                        className="px-2.5 py-0.5 text-xs font-bold text-neutral-700 dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-l-full"
-                      >
-                        -
-                      </button>
-                      <span className="px-2 py-0.5 text-xs font-bold text-neutral-900 dark:text-white min-w-[20px] text-center">
-                        {item.quantity}
+                  {/* Details */}
+                  <div className="flex-1 flex flex-col justify-between">
+                    <div>
+                      <div className="flex items-start justify-between gap-2">
+                        <h5 className="text-xs sm:text-sm font-bold text-[#1d1d1d] dark:text-white line-clamp-1">
+                          {item.name}
+                        </h5>
+                        <button
+                          onClick={() => removeFromCart(itemIdentifier)}
+                          className="text-neutral-400 hover:text-red-500 transition p-0.5 cursor-pointer"
+                          title="Remove item"
+                        >
+                          <Trash2 size={14} />
+                        </button>
+                      </div>
+                      <div className="flex items-center gap-2 mt-1">
+                        <span className="px-2 py-0.5 rounded text-[10px] font-black bg-neutral-200 dark:bg-neutral-800 text-neutral-800 dark:text-neutral-200">
+                          {item.selectedSize || '250G'}
+                        </span>
+                        <span className="text-[11px] text-[#108474] font-medium">
+                          {item.origin || 'Yahya Traders Select'}
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Quantity & Price */}
+                    <div className="flex items-center justify-between mt-2">
+                      <div className="flex items-center border border-neutral-300 dark:border-neutral-700 rounded-full bg-white dark:bg-[#1f1f1f]">
+                        <button
+                          onClick={() => updateQuantity(itemIdentifier, item.quantity - 1)}
+                          className="px-2.5 py-0.5 text-xs font-bold text-neutral-700 dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-l-full cursor-pointer"
+                        >
+                          -
+                        </button>
+                        <span className="px-2 py-0.5 text-xs font-bold text-neutral-900 dark:text-white min-w-[20px] text-center">
+                          {item.quantity}
+                        </span>
+                        <button
+                          onClick={() => updateQuantity(itemIdentifier, item.quantity + 1)}
+                          className="px-2.5 py-0.5 text-xs font-bold text-neutral-700 dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-r-full cursor-pointer"
+                        >
+                          +
+                        </button>
+                      </div>
+
+                      <span className="font-extrabold text-xs sm:text-sm text-[#1d1d1d] dark:text-white">
+                        ₹ {(item.price * item.quantity).toLocaleString('en-IN')}
                       </span>
-                      <button
-                        onClick={() => updateQuantity(item.id, item.quantity + 1)}
-                        className="px-2.5 py-0.5 text-xs font-bold text-neutral-700 dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-r-full"
-                      >
-                        +
-                      </button>
                     </div>
-
-                    <span className="font-extrabold text-xs sm:text-sm text-[#1d1d1d] dark:text-white">
-                      ₹ {(item.price * item.quantity).toLocaleString('en-IN')}
-                    </span>
                   </div>
                 </div>
-              </div>
-            ))
+              );
+            })
           )}
         </div>
 

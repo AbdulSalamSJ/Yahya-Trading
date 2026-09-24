@@ -151,7 +151,14 @@ export function CheckoutModal({ isOpen, onClose, onOrderPlaced }) {
           postalCode: formData.postalCode,
           phone: formData.phone
         },
-        items: cartItems,
+        items: cartItems.map(item => ({
+          product_id: item.id,
+          product_name: `${item.name} (${item.selectedSize || '250G'})`,
+          quantity: item.quantity,
+          unit_price: item.price,
+          total_price: item.price * item.quantity,
+          image_url: item.images?.[0] || null
+        })),
         subtotal,
         taxAmount,
         shippingFee,
@@ -456,10 +463,15 @@ export function CheckoutModal({ isOpen, onClose, onOrderPlaced }) {
 
                 <div className="space-y-2.5 max-h-48 overflow-y-auto pr-1 mb-4">
                   {cartItems.map(item => (
-                    <div key={item.id} className="flex justify-between text-xs">
+                    <div key={item.itemKey || item.id} className="flex justify-between text-xs">
                       <div className="flex-1 pr-2">
                         <span className="font-medium text-[#3E2723] dark:text-[#F5EFEA] line-clamp-1">{item.name}</span>
-                        <span className="text-[11px] text-[#6D4C41] dark:text-[#C8B8B0]">Qty: {item.quantity}</span>
+                        <div className="flex items-center gap-1.5 mt-0.5">
+                          <span className="px-1.5 py-0.5 rounded bg-neutral-200/80 dark:bg-neutral-800 text-[10px] font-black text-[#3E2723] dark:text-[#F5EFEA]">
+                            {item.selectedSize || '250G'}
+                          </span>
+                          <span className="text-[11px] text-[#6D4C41] dark:text-[#C8B8B0]">Qty: {item.quantity}</span>
+                        </div>
                       </div>
                       <span className="font-semibold text-[#795548] dark:text-[#A1887F]">
                         ₹ {(item.price * item.quantity).toLocaleString('en-IN')}
