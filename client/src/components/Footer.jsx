@@ -144,7 +144,7 @@ export function Footer({ onSelectItem, onOpenTracking, onSelectCategory }) {
 
         {/* Bottom Bar: Copyright & Payment Badges */}
         <div className="pt-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-neutral-500">
-          <p>© {new Date().getFullYear()} Yahiya Traders. All rights reserved. Sourced Globally.</p>
+          <p>© {new Date().getFullYear()} Data Infolenz. All rights reserved.</p>
 
           {/* Payment Badges */}
           <div className="flex items-center gap-2 text-[10px] font-bold text-neutral-400">

@@ -203,7 +203,7 @@ export async function sendOrderConfirmationEmail(order) {
 
         <!-- Footer -->
         <div style="background-color: #f7f7f7; padding: 18px 24px; text-align: center; font-size: 11px; color: #888; border-top: 1px solid #ebe5df;">
-          © ${new Date().getFullYear()} Yahiya Traders. All rights reserved. Sourced globally with 100% certified authenticity.
+          © ${new Date().getFullYear()} Data Infolenz. All rights reserved.
         </div>
 
       </div>
