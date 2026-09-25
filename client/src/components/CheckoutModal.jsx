@@ -6,6 +6,71 @@ import { useAuth } from '../context/AuthContext';
 import { api } from '../services/api';
 import { searchTamilNaduCities, loadAllTamilNaduLocations } from '../data/tamilNaduCities';
 
+const STORE_WHATSAPP_NUMBER = '91639090536';
+const STORE_WHATSAPP_DISPLAY = '+91 639090536';
+
+function WhatsAppIcon({ size = 18, className = '' }) {
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="currentColor"
+      className={className}
+    >
+      <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z" />
+    </svg>
+  );
+}
+
+function generateWhatsAppBill(order, form, items, pricing) {
+  const dateStr = new Date().toLocaleDateString('en-IN', {
+    day: 'numeric',
+    month: 'short',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit'
+  });
+
+  const itemsList = items.map((item, idx) => {
+    const size = item.selectedSize || '250G';
+    const total = (item.price * item.quantity).toLocaleString('en-IN');
+    return `${idx + 1}. *${item.name}* (${size})
+   Qty: ${item.quantity} × ₹${Number(item.price).toLocaleString('en-IN')} = *₹${total}*`;
+  }).join('\n\n');
+
+  return (
+`🧾 *YAHIYA TRADERS - OFFICIAL ORDER BILL*
+━━━━━━━━━━━━━━━━━━━━━━
+*Order ID:* ${order?.order_number || '#ORD-' + Date.now()}
+*Date:* ${dateStr}
+
+👤 *Customer Details:*
+• *Name:* ${form.fullName}
+• *Phone:* ${form.phone}
+• *Email:* ${form.email}
+
+📍 *Delivery Address:*
+${form.addressLine}
+${form.city}, ${form.state || 'Tamil Nadu'} - ${form.postalCode}
+
+📦 *Harvest Items Ordered:*
+${itemsList}
+
+━━━━━━━━━━━━━━━━━━━━━━
+*Subtotal:* ₹${Number(pricing.subtotal).toLocaleString('en-IN')}
+${pricing.discountAmount > 0 ? `*Discount (${pricing.promoCode}):* -₹${Number(pricing.discountAmount).toLocaleString('en-IN')}\n` : ''}*GST (18%):* ₹${Number(pricing.taxAmount).toLocaleString('en-IN')}
+*Insulated Fresh Shipping:* ${pricing.shippingFee === 0 ? 'FREE' : `₹${pricing.shippingFee}`}
+*Grand Total Bill:* *₹${Number(pricing.totalAmount).toLocaleString('en-IN')}*
+━━━━━━━━━━━━━━━━━━━━━━
+📦 *Packaging:* Signature Nitrogen Fresh Pack
+📍 *Shipped From:* Puliangudi, Tenkasi District, TN
+📞 *Store WhatsApp:* ${STORE_WHATSAPP_DISPLAY}
+
+🙏 *Thank you for your order with Yahiya Traders! Please confirm and dispatch my order.*`
+  );
+}
+
 export function CheckoutModal({ isOpen, onClose, onOrderPlaced }) {
   const { user } = useAuth();
   const {
@@ -29,8 +94,10 @@ export function CheckoutModal({ isOpen, onClose, onOrderPlaced }) {
     state: '',
     postalCode: '',
     shippingMethod: 'insulated', // 'insulated' (Free) | 'express_saturday' (+₹ 150)
-    paymentMethod: 'razorpay'
+    paymentMethod: 'whatsapp'
   });
+
+  const [orderCompletedData, setOrderCompletedData] = useState(null);
 
   const [errors, setErrors] = useState({});
   const [isProcessing, setIsProcessing] = useState(false);
@@ -58,6 +125,7 @@ export function CheckoutModal({ isOpen, onClose, onOrderPlaced }) {
   useEffect(() => {
     if (isOpen) {
       loadAllTamilNaduLocations();
+      setOrderCompletedData(null);
     }
   }, [isOpen]);
 
@@ -180,72 +248,12 @@ export function CheckoutModal({ isOpen, onClose, onOrderPlaced }) {
     });
   };
 
-  const handlePayNow = async () => {
+  const handlePlaceOrderViaWhatsApp = async () => {
     setIsProcessing(true);
-    setPaymentStepNotice('Initiating secure Razorpay checkout...');
+    setPaymentStepNotice('Generating bill & preparing WhatsApp dispatch...');
 
     try {
-      // 1. Create payment order on server
-      const paymentOrder = await api.createPaymentOrder({
-        amount: totalAmount,
-        currency: 'INR',
-        receipt: `rcpt_${Date.now()}`
-      });
-
-      // If Razorpay SDK is available and using real keys
-      if (!paymentOrder.isSandbox && window.Razorpay && paymentOrder.key !== 'rzp_test_placeholder') {
-        const rzp = new window.Razorpay({
-          key: paymentOrder.key,
-          amount: paymentOrder.amount,
-          currency: paymentOrder.currency,
-          name: 'Yahiya Traders',
-          description: 'Premium Dates, Dry Fruits & Chocolates',
-          order_id: paymentOrder.id,
-          prefill: {
-            name: formData.fullName,
-            email: formData.email,
-            contact: formData.phone
-          },
-          theme: {
-            color: '#fee000'
-          },
-          handler: async function (response) {
-            // Verify payment
-            await api.verifyPayment({
-              razorpay_order_id: response.razorpay_order_id,
-              razorpay_payment_id: response.razorpay_payment_id,
-              razorpay_signature: response.razorpay_signature,
-              isSandbox: false
-            });
-            await finalizeOrder(response.razorpay_payment_id, response.razorpay_order_id);
-          }
-        });
-        rzp.open();
-        setIsProcessing(false);
-        return;
-      }
-
-      // Sandbox Simulator Flow (Interactive & instant for demo without live keys required)
-      setPaymentStepNotice('Simulating Razorpay 256-bit bank handshake...');
-      setTimeout(async () => {
-        const verifyRes = await api.verifyPayment({
-          razorpay_order_id: paymentOrder.id,
-          razorpay_payment_id: 'pay_sim_' + Math.random().toString(36).substring(2, 10),
-          isSandbox: true
-        });
-
-        await finalizeOrder(verifyRes.payment_id, paymentOrder.id);
-      }, 1200);
-
-    } catch (err) {
-      console.error('Payment Error:', err);
-      setPaymentStepNotice('Payment error: ' + (err.message || 'Please try again'));
-      setIsProcessing(false);
-    }
-  };
-
-  const finalizeOrder = async (paymentId, razorpayOrderId) => {
-    try {
+      const paymentId = 'wa_' + Date.now();
       const orderPayload = {
         customerName: formData.fullName,
         customerEmail: formData.email,
@@ -254,7 +262,7 @@ export function CheckoutModal({ isOpen, onClose, onOrderPlaced }) {
           fullName: formData.fullName,
           addressLine: formData.addressLine,
           city: formData.city,
-          state: formData.state,
+          state: formData.state || 'Tamil Nadu',
           postalCode: formData.postalCode,
           phone: formData.phone
         },
@@ -273,17 +281,52 @@ export function CheckoutModal({ isOpen, onClose, onOrderPlaced }) {
         totalAmount,
         promoCode,
         paymentId,
-        razorpayOrderId
+        razorpayOrderId: null
       };
 
       const res = await api.createOrder(orderPayload);
+      const placedOrder = res.order;
+
+      // Generate complete itemized WhatsApp bill
+      const billText = generateWhatsAppBill(placedOrder, formData, cartItems, {
+        subtotal,
+        discountAmount,
+        taxAmount,
+        shippingFee,
+        totalAmount,
+        promoCode
+      });
+
+      const storeWaUrl = `https://api.whatsapp.com/send?phone=${STORE_WHATSAPP_NUMBER}&text=${encodeURIComponent(billText)}`;
+
+      // Clean customer phone number
+      const cleanPhone = formData.phone.replace(/[^0-9]/g, '');
+      const custPhone = cleanPhone.length === 10 ? `91${cleanPhone}` : cleanPhone;
+      const customerWaUrl = `https://api.whatsapp.com/send?phone=${custPhone}&text=${encodeURIComponent(billText)}`;
+
+      setOrderCompletedData({
+        order: placedOrder,
+        billText,
+        storeWaUrl,
+        customerWaUrl,
+        customerPhone: formData.phone
+      });
+
+      // Automatically launch WhatsApp with the pre-filled bill
+      try {
+        window.open(storeWaUrl, '_blank');
+      } catch (e) {
+        console.warn('Popup blocked:', e);
+      }
+
       clearCart();
       triggerCelebration();
-      onOrderPlaced(res.order);
-      onClose();
+      if (onOrderPlaced) {
+        onOrderPlaced(placedOrder);
+      }
     } catch (err) {
-      console.error('Order Finalization Error:', err);
-      setPaymentStepNotice('Order creation failed: ' + err.message);
+      console.error('Order creation error:', err);
+      setPaymentStepNotice('Order creation failed: ' + (err.message || 'Please try again'));
     } finally {
       setIsProcessing(false);
     }
@@ -341,6 +384,73 @@ export function CheckoutModal({ isOpen, onClose, onOrderPlaced }) {
         </div>
 
         {/* Content Body */}
+        {orderCompletedData ? (
+          <div className="p-6 sm:p-10 text-center space-y-6 animate-in fade-in zoom-in-95">
+            <div className="w-16 h-16 rounded-full bg-emerald-100 dark:bg-emerald-950/80 text-emerald-600 dark:text-emerald-400 flex items-center justify-center mx-auto shadow-lg shadow-emerald-500/20">
+              <Check size={36} strokeWidth={3} />
+            </div>
+
+            <div className="space-y-1.5">
+              <span className="px-3 py-1 rounded-full text-xs font-bold bg-[#25D366]/15 text-[#1EBE5B] dark:text-[#25D366] inline-flex items-center gap-1.5 mb-1">
+                <WhatsAppIcon size={14} />
+                <span>WhatsApp Bill Generated</span>
+              </span>
+              <h3 className="font-serif text-2xl font-bold text-[#3E2723] dark:text-[#F5EFEA]">
+                Order Placed Successfully!
+              </h3>
+              <p className="text-xs text-[#6D4C41] dark:text-[#C8B8B0]">
+                Order <span className="font-mono font-bold text-[#795548] dark:text-[#E8A598]">{orderCompletedData.order.order_number}</span> has been confirmed.
+              </p>
+            </div>
+
+            {/* Bill Preview Card */}
+            <div className="max-w-md mx-auto text-left p-4 rounded-xl bg-[#FDF8F5] dark:bg-[#1E1614] border border-[#EBE0D8] dark:border-[#3E2F29] text-xs space-y-2.5">
+              <div className="flex justify-between items-center pb-2 border-b border-[#EBE0D8] dark:border-[#3E2F29]">
+                <span className="font-bold text-[#3E2723] dark:text-[#F5EFEA]">Bill Summary</span>
+                <span className="font-bold text-[#795548] dark:text-[#A1887F] text-sm">
+                  ₹ {totalAmount.toLocaleString('en-IN')}
+                </span>
+              </div>
+              <div className="space-y-1 text-[#6D4C41] dark:text-[#C8B8B0] text-[11px]">
+                <p>👤 <span className="font-medium text-[#3E2723] dark:text-[#F5EFEA]">{formData.fullName}</span> ({formData.phone})</p>
+                <p>📍 {formData.addressLine}, {formData.city}, {formData.state || 'Tamil Nadu'} - {formData.postalCode}</p>
+                <p>📦 Insulated Nitrogen Fresh Pack • Dispatched from Puliangudi</p>
+              </div>
+            </div>
+
+            {/* Direct WhatsApp Action Buttons */}
+            <div className="max-w-md mx-auto space-y-2.5">
+              <a
+                href={orderCompletedData.storeWaUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="w-full py-3.5 px-4 rounded-xl bg-[#25D366] hover:bg-[#20bd5a] text-white text-sm font-bold shadow-lg shadow-emerald-600/25 flex items-center justify-center gap-2.5 transition active:scale-98"
+              >
+                <WhatsAppIcon size={18} />
+                <span>Send Bill to Store WhatsApp (+91 639090536)</span>
+              </a>
+
+              <a
+                href={orderCompletedData.customerWaUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="w-full py-2.5 px-4 rounded-xl border border-[#25D366]/40 hover:border-[#25D366] text-[#1EBE5B] dark:text-[#25D366] hover:bg-[#25D366]/10 text-xs font-semibold flex items-center justify-center gap-2 transition"
+              >
+                <WhatsAppIcon size={15} />
+                <span>Open in Customer WhatsApp ({formData.phone})</span>
+              </a>
+            </div>
+
+            <div className="pt-2">
+              <button
+                onClick={onClose}
+                className="px-6 py-2 text-xs font-medium text-[#8D6E63] dark:text-[#A1887F] hover:text-[#3E2723] dark:hover:text-[#F5EFEA] transition"
+              >
+                Close & Return to Store
+              </button>
+            </div>
+          </div>
+        ) : (
         <div className="p-6 sm:p-8">
           <div className="grid grid-cols-1 md:grid-cols-12 gap-8">
             
@@ -567,40 +677,66 @@ export function CheckoutModal({ isOpen, onClose, onOrderPlaced }) {
                 </div>
               )}
 
-              {/* STEP 3: Razorpay Payment Confirmation */}
+              {/* STEP 3: WhatsApp Pay & Order Bill Dispatch */}
               {step === 3 && (
                 <div className="space-y-4">
                   <h4 className="font-serif text-base font-bold text-[#3E2723] dark:text-[#F5EFEA]">
-                    Payment Method
+                    Confirm Order & WhatsApp Bill Dispatch
                   </h4>
 
-                  <div className="p-4 rounded-xl border-2 border-[#795548] bg-[#FDF8F5] dark:bg-[#201715] space-y-2">
+                  <div className="p-4 rounded-xl border-2 border-[#25D366] bg-[#FDF8F5] dark:bg-[#1E1614] space-y-3">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2.5">
-                        <CreditCard size={20} className="text-[#795548] dark:text-[#A1887F]" />
-                        <span className="font-serif text-sm font-bold text-[#3E2723] dark:text-[#F5EFEA]">
-                          Razorpay Secure Gateway
-                        </span>
+                        <div className="w-8 h-8 rounded-lg bg-[#25D366] text-white flex items-center justify-center shadow-sm">
+                          <WhatsAppIcon size={18} />
+                        </div>
+                        <div>
+                          <span className="font-serif text-sm font-bold text-[#3E2723] dark:text-[#F5EFEA] block">
+                            Direct WhatsApp Order & Bill
+                          </span>
+                          <span className="text-[11px] text-[#6D4C41] dark:text-[#C8B8B0]">
+                            Instant itemized invoice generated via WhatsApp
+                          </span>
+                        </div>
                       </div>
-                      <span className="text-[11px] bg-[#388E3C]/15 text-[#388E3C] px-2 py-0.5 rounded font-semibold">
-                        UPI • Cards • NetBanking
+                      <span className="text-[10px] bg-[#25D366]/15 text-[#1EBE5B] dark:text-[#25D366] px-2 py-0.5 rounded-full font-bold border border-[#25D366]/30">
+                        INSTANT BILL
                       </span>
                     </div>
-                    <p className="text-xs text-[#6D4C41] dark:text-[#C8B8B0]">
-                      Accepts Google Pay, PhonePe, Paytm, RuPay, Visa, Mastercard, and NetBanking.
-                    </p>
+
+                    <div className="p-3 rounded-lg bg-[#F5ECE5] dark:bg-[#2A1D1A] space-y-1.5 text-xs text-[#5D4037] dark:text-[#D7CCC8]">
+                      <div className="flex justify-between items-center text-[11px]">
+                        <span className="font-semibold text-[#8D6E63] dark:text-[#A1887F]">Store WhatsApp:</span>
+                        <span className="font-mono font-bold text-[#3E2723] dark:text-[#F5EFEA]">{STORE_WHATSAPP_DISPLAY}</span>
+                      </div>
+                      <div className="flex justify-between items-center text-[11px]">
+                        <span className="font-semibold text-[#8D6E63] dark:text-[#A1887F]">Customer WhatsApp:</span>
+                        <span className="font-mono font-bold text-[#3E2723] dark:text-[#F5EFEA]">{formData.phone || 'Your Phone Number'}</span>
+                      </div>
+                    </div>
+
+                    <div className="space-y-1.5 text-xs text-[#6D4C41] dark:text-[#C8B8B0]">
+                      <p className="flex items-center gap-2">
+                        <Check size={14} className="text-[#25D366] shrink-0" />
+                        <span>Itemized digital invoice sent automatically with all taxes, weights, and items.</span>
+                      </p>
+                      <p className="flex items-center gap-2">
+                        <Check size={14} className="text-[#25D366] shrink-0" />
+                        <span>Dispatched directly to Yahiya Traders packaging team at Puliangudi.</span>
+                      </p>
+                      <p className="flex items-center gap-2">
+                        <Check size={14} className="text-[#25D366] shrink-0" />
+                        <span>Supports Google Pay, PhonePe, Paytm, UPI, Bank Transfer or COD.</span>
+                      </p>
+                    </div>
                   </div>
 
                   {paymentStepNotice && (
-                    <div className="p-3 rounded-lg bg-[#795548]/10 text-[#795548] dark:text-[#A1887F] text-xs font-medium animate-pulse">
-                      {paymentStepNotice}
+                    <div className="p-3 rounded-lg bg-[#25D366]/10 text-[#1EBE5B] dark:text-[#25D366] text-xs font-medium animate-pulse flex items-center gap-2">
+                      <WhatsAppIcon size={14} />
+                      <span>{paymentStepNotice}</span>
                     </div>
                   )}
-
-                  <div className="flex items-center gap-2 text-xs text-[#6D4C41] dark:text-[#C8B8B0] pt-2">
-                    <ShieldCheck size={16} className="text-[#388E3C]" />
-                    <span>256-bit PCI-DSS Level 1 Encrypted Transaction</span>
-                  </div>
                 </div>
               )}
 
@@ -627,12 +763,12 @@ export function CheckoutModal({ isOpen, onClose, onOrderPlaced }) {
                   </button>
                 ) : (
                   <button
-                    onClick={handlePayNow}
+                    onClick={handlePlaceOrderViaWhatsApp}
                     disabled={isProcessing}
-                    className="px-7 py-3 rounded-xl bg-[#795548] hover:bg-[#5D4037] active:scale-95 text-white text-sm font-bold shadow-choco-card hover:shadow-choco-card-hover transition-all flex items-center gap-2"
+                    className="px-7 py-3 rounded-xl bg-[#25D366] hover:bg-[#20bd5a] active:scale-95 text-white text-sm font-bold shadow-lg shadow-emerald-600/25 transition-all flex items-center gap-2"
                   >
-                    <span>{isProcessing ? 'Authorizing...' : `Pay ₹ ${totalAmount.toLocaleString('en-IN')}`}</span>
-                    <ShieldCheck size={16} />
+                    <WhatsAppIcon size={18} />
+                    <span>{isProcessing ? 'Generating Bill...' : `Send Bill on WhatsApp (₹ ${totalAmount.toLocaleString('en-IN')})`}</span>
                   </button>
                 )}
               </div>
@@ -697,6 +833,7 @@ export function CheckoutModal({ isOpen, onClose, onOrderPlaced }) {
 
           </div>
         </div>
+        )}
 
       </div>
     </div>

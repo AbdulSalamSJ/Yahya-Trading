@@ -289,7 +289,7 @@ export function AdminModal({ isOpen, onClose, onRefreshProducts, onOpenAddItem, 
                   <p className="font-serif text-2xl font-bold text-[#795548] dark:text-[#A1887F]">
                     ₹ {(metrics?.totalSales || 0).toLocaleString('en-IN')}
                   </p>
-                  <p className="text-[11px] text-[#388E3C] mt-1">✓ Razorpay settlements verified</p>
+                  <p className="text-[11px] text-[#388E3C] mt-1">✓ Orders & settlements verified</p>
                 </div>
 
                 <div className="p-4 rounded-xl bg-[#FDF8F5] dark:bg-[#1C1412] border border-[#EBE0D8] dark:border-[#3E2F29]">
@@ -391,8 +391,8 @@ export function AdminModal({ isOpen, onClose, onRefreshProducts, onOpenAddItem, 
                           ₹ {Number(order.total_amount).toLocaleString('en-IN')}
                         </td>
                         <td className="p-3">
-                          <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-[#388E3C]/15 text-[#388E3C]">
-                            PAID (Razorpay)
+                          <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-[#25D366]/15 text-[#1EBE5B] dark:text-[#25D366]">
+                            {String(order.payment_id).startsWith('wa_') ? 'WhatsApp Bill' : (order.payment_status || 'PAID')}
                           </span>
                         </td>
                         <td className="p-3">

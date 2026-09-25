@@ -132,7 +132,9 @@ export function OrderTrackingModal({ order, onClose }) {
               <p className="font-semibold text-[#3E2723] dark:text-[#F5EFEA] mb-1">Payment Verification</p>
               <p>Reference: <span className="font-mono text-[#795548]">{order.payment_id}</span></p>
               <p>Total Paid: <span className="font-bold text-[#795548] dark:text-[#A1887F]">₹ {Number(order.total_amount).toLocaleString('en-IN')}</span></p>
-              <p className="text-[11px] text-[#388E3C] font-semibold mt-0.5">✓ Payment verified by Razorpay</p>
+              <p className="text-[11px] text-[#388E3C] font-semibold mt-0.5">
+                {String(order.payment_id).startsWith('wa_') ? '✓ WhatsApp Order Verified' : '✓ Verified Payment'}
+              </p>
             </div>
           </div>
 

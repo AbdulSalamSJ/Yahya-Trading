@@ -267,7 +267,7 @@ export function CartDrawer({ onProceedToCheckout }) {
 
             <div className="flex items-center justify-center gap-1.5 text-[11px] text-neutral-500 dark:text-neutral-400">
               <ShieldCheck size={13} className="text-[#108474]" />
-              <span>Razorpay 256-bit Encrypted Checkout • COD Available</span>
+              <span>Direct WhatsApp Bill & Fast Dispatch • Yahiya Traders</span>
             </div>
 
           </div>
