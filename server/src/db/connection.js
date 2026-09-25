@@ -710,22 +710,28 @@ export const db = {
            total_amount, subtotal, tax_amount, shipping_fee, discount_amount, promo_code, payment_status,
            payment_id, razorpay_order_id, shipping_address)
            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15) RETURNING id`,
-          [orderData.user_id || 1, orderNumber, orderData.customer_name, orderData.customer_email,
+          [orderData.user_id || null, orderNumber, orderData.customer_name, orderData.customer_email,
             orderData.customer_phone, orderData.total_amount, orderData.subtotal, orderData.tax_amount,
             orderData.shipping_fee, orderData.discount_amount, orderData.promo_code, orderData.payment_status,
             orderData.payment_id, orderData.razorpay_order_id, shippingJson]
         );
         const orderId = insertRes.rows[0].id;
         for (const item of orderData.items || []) {
+          const prodId = Number(item.product_id) || 1;
+          const prodName = String(item.product_name || 'Gourmet Selection');
+          const qty = Number(item.quantity) || 1;
+          const uPrice = Number(item.unit_price) || 0;
+          const tPrice = Number(item.total_price) || (uPrice * qty);
+          const imgUrl = item.image_url ? String(item.image_url) : '';
+
           await client.query(
             `INSERT INTO order_items (order_id, product_id, product_name, quantity, unit_price, total_price, image_url)
              VALUES ($1, $2, $3, $4, $5, $6, $7)`,
-            [orderId, item.product_id, item.product_name, item.quantity, item.unit_price,
-              item.total_price, item.image_url]
+            [orderId, prodId, prodName, qty, uPrice, tPrice, imgUrl]
           );
           await client.query(
             'UPDATE products SET stock = stock - $1 WHERE id = $2 AND stock >= $1',
-            [item.quantity, item.product_id]
+            [qty, prodId]
           );
         }
         await client.query('COMMIT');
@@ -748,21 +754,27 @@ export const db = {
            total_amount, subtotal, tax_amount, shipping_fee, discount_amount, promo_code, payment_status,
            payment_id, razorpay_order_id, shipping_address)
            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-          [orderData.user_id, orderNumber, orderData.customer_name, orderData.customer_email,
+          [orderData.user_id || null, orderNumber, orderData.customer_name, orderData.customer_email,
             orderData.customer_phone, orderData.total_amount, orderData.subtotal, orderData.tax_amount,
             orderData.shipping_fee, orderData.discount_amount, orderData.promo_code, orderData.payment_status,
             orderData.payment_id, orderData.razorpay_order_id, shippingJson]
         );
         for (const item of orderData.items || []) {
+          const prodId = Number(item.product_id) || 1;
+          const prodName = String(item.product_name || 'Gourmet Selection');
+          const qty = Number(item.quantity) || 1;
+          const uPrice = Number(item.unit_price) || 0;
+          const tPrice = Number(item.total_price) || (uPrice * qty);
+          const imgUrl = item.image_url ? String(item.image_url) : '';
+
           await connection.query(
             `INSERT INTO order_items (order_id, product_id, product_name, quantity, unit_price, total_price, image_url)
              VALUES (?, ?, ?, ?, ?, ?, ?)`,
-            [result.insertId, item.product_id, item.product_name, item.quantity, item.unit_price,
-              item.total_price, item.image_url]
+            [result.insertId, prodId, prodName, qty, uPrice, tPrice, imgUrl]
           );
           await connection.query(
             'UPDATE products SET stock = stock - ? WHERE id = ? AND stock >= ?',
-            [item.quantity, item.product_id, item.quantity]
+            [qty, prodId, qty]
           );
         }
         await connection.commit();

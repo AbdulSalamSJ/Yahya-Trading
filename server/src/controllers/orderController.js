@@ -29,6 +29,23 @@ export async function createOrder(req, res) {
 
     const userId = req.user ? req.user.id : null;
 
+    const mappedItems = (items || []).map(item => {
+      const prodId = Number(item.id || item.product_id || 1);
+      const prodName = item.name || item.product_name || 'Gourmet Selection';
+      const uPrice = Number(item.price ?? item.unit_price ?? 0);
+      const qty = Number(item.quantity || 1);
+      const tPrice = Number(item.total_price ?? (uPrice * qty));
+      const img = item.image_url || (item.images && item.images[0]) || '';
+      return {
+        product_id: prodId,
+        product_name: prodName,
+        quantity: qty,
+        unit_price: uPrice,
+        total_price: tPrice,
+        image_url: img
+      };
+    });
+
     const order = await db.createOrder({
       user_id: userId,
       customer_name: customerName,
@@ -44,14 +61,7 @@ export async function createOrder(req, res) {
       payment_id: paymentId || 'pay_manual_' + Date.now(),
       razorpay_order_id: razorpayOrderId || null,
       shipping_address: shippingAddress,
-      items: items.map(item => ({
-        product_id: item.id,
-        product_name: item.name,
-        quantity: item.quantity,
-        unit_price: item.price,
-        total_price: item.price * item.quantity,
-        image_url: (item.images && item.images[0]) || ''
-      }))
+      items: mappedItems
     });
 
     // Send order confirmation email (non-blocking for speedy client response)
@@ -71,7 +81,7 @@ export async function createOrder(req, res) {
     });
   } catch (err) {
     console.error('createOrder error:', err);
-    res.status(500).json({ message: 'Failed to place order' });
+    res.status(500).json({ message: err.message || 'Failed to place order' });
   }
 }
 
