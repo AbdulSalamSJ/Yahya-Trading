@@ -43,10 +43,15 @@ export function Footer({ onSelectItem, onOpenTracking, onSelectCategory }) {
             </p>
 
             <div className="space-y-1.5 text-xs text-neutral-400">
-              <p className="flex items-center gap-2">
+              <a
+                href="https://wa.me/916369090536"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-2 hover:text-[#fee000] transition"
+              >
                 <Phone size={13} className="text-[#fee000]" />
-                <span>+91 98657 84876(Mon - Sat, 9am - 7pm IST)</span>
-              </p>
+                <span>+91 63690 90536 (WhatsApp & Call)</span>
+              </a>
               <p className="flex items-center gap-2">
                 <Mail size={13} className="text-[#fee000]" />
                 <span> yahiyatraders2@gmail.com</span>

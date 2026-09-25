@@ -6,8 +6,8 @@ import { useAuth } from '../context/AuthContext';
 import { api } from '../services/api';
 import { searchTamilNaduCities, loadAllTamilNaduLocations } from '../data/tamilNaduCities';
 
-const STORE_WHATSAPP_NUMBER = '91639090536';
-const STORE_WHATSAPP_DISPLAY = '+91 639090536';
+const STORE_WHATSAPP_NUMBER = '916369090536';
+const STORE_WHATSAPP_DISPLAY = '+91 63690 90536';
 
 function WhatsAppIcon({ size = 18, className = '' }) {
   return (
@@ -427,7 +427,7 @@ export function CheckoutModal({ isOpen, onClose, onOrderPlaced }) {
                 className="w-full py-3.5 px-4 rounded-xl bg-[#25D366] hover:bg-[#20bd5a] text-white text-sm font-bold shadow-lg shadow-emerald-600/25 flex items-center justify-center gap-2.5 transition active:scale-98"
               >
                 <WhatsAppIcon size={18} />
-                <span>Send Bill to Store WhatsApp (+91 639090536)</span>
+                <span>Send Bill to Store WhatsApp (+91 63690 90536)</span>
               </a>
 
               <a
