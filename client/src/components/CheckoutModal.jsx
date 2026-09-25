@@ -324,21 +324,27 @@ export function CheckoutModal({ isOpen, onClose, onOrderPlaced }) {
       const storeWaUrl = `https://api.whatsapp.com/send?phone=${STORE_WHATSAPP_NUMBER}&text=${encodeURIComponent(billText)}`;
 
       // Clean customer phone number
-      const cleanPhone = formData.phone.replace(/[^0-9]/g, '');
+      let cleanPhone = formData.phone.replace(/[^0-9]/g, '');
+      if (cleanPhone.startsWith('0')) {
+        cleanPhone = cleanPhone.slice(1);
+      }
       const custPhone = cleanPhone.length === 10 ? `91${cleanPhone}` : cleanPhone;
       const customerWaUrl = `https://api.whatsapp.com/send?phone=${custPhone}&text=${encodeURIComponent(billText)}`;
 
+      const finalBillAmount = Number(placedOrder?.total_amount || totalAmount || 0);
+
       setOrderCompletedData({
         order: placedOrder,
+        totalAmount: finalBillAmount,
         billText,
         storeWaUrl,
         customerWaUrl,
         customerPhone: formData.phone
       });
 
-      // Automatically launch WhatsApp with the pre-filled bill
+      // Automatically launch Customer WhatsApp with the pre-filled bill
       try {
-        window.open(storeWaUrl, '_blank');
+        window.open(customerWaUrl, '_blank');
       } catch (e) {
         console.warn('Popup blocked:', e);
       }
@@ -432,36 +438,26 @@ export function CheckoutModal({ isOpen, onClose, onOrderPlaced }) {
               <div className="flex justify-between items-center pb-2 border-b border-[#EBE0D8] dark:border-[#3E2F29]">
                 <span className="font-bold text-[#3E2723] dark:text-[#F5EFEA]">Bill Summary</span>
                 <span className="font-bold text-[#795548] dark:text-[#A1887F] text-sm">
-                  ₹ {totalAmount.toLocaleString('en-IN')}
+                  ₹ {Number(orderCompletedData.totalAmount || orderCompletedData.order?.total_amount || 0).toLocaleString('en-IN')}
                 </span>
               </div>
               <div className="space-y-1 text-[#6D4C41] dark:text-[#C8B8B0] text-[11px]">
-                <p>👤 <span className="font-medium text-[#3E2723] dark:text-[#F5EFEA]">{formData.fullName}</span> ({formData.phone})</p>
+                <p>👤 <span className="font-medium text-[#3E2723] dark:text-[#F5EFEA]">{formData.fullName}</span></p>
                 <p>📍 {formData.addressLine}, {formData.city}, {formData.state || 'Tamil Nadu'} - {formData.postalCode}</p>
                 <p>📦 Insulated Nitrogen Fresh Pack • Dispatched from Puliangudi</p>
               </div>
             </div>
 
-            {/* Direct WhatsApp Action Buttons */}
-            <div className="max-w-md mx-auto space-y-2.5">
+            {/* Direct WhatsApp Action Button */}
+            <div className="max-w-md mx-auto">
               <a
-                href={orderCompletedData.storeWaUrl}
+                href={orderCompletedData.customerWaUrl}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="w-full py-3.5 px-4 rounded-xl bg-[#25D366] hover:bg-[#20bd5a] text-white text-sm font-bold shadow-lg shadow-emerald-600/25 flex items-center justify-center gap-2.5 transition active:scale-98"
               >
                 <WhatsAppIcon size={18} />
-                <span>Send Bill to Store WhatsApp ({STORE_WHATSAPP_DISPLAY})</span>
-              </a>
-
-              <a
-                href={orderCompletedData.customerWaUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="w-full py-2.5 px-4 rounded-xl border border-[#25D366]/40 hover:border-[#25D366] text-[#1EBE5B] dark:text-[#25D366] hover:bg-[#25D366]/10 text-xs font-semibold flex items-center justify-center gap-2 transition"
-              >
-                <WhatsAppIcon size={15} />
-                <span>Open in Customer WhatsApp ({formData.phone})</span>
+                <span>Send Bill to Customer WhatsApp</span>
               </a>
             </div>
 
@@ -730,12 +726,8 @@ export function CheckoutModal({ isOpen, onClose, onOrderPlaced }) {
 
                     <div className="p-3 rounded-lg bg-[#F5ECE5] dark:bg-[#2A1D1A] space-y-1.5 text-xs text-[#5D4037] dark:text-[#D7CCC8]">
                       <div className="flex justify-between items-center text-[11px]">
-                        <span className="font-semibold text-[#8D6E63] dark:text-[#A1887F]">Store WhatsApp:</span>
-                        <span className="font-mono font-bold text-[#3E2723] dark:text-[#F5EFEA]">{STORE_WHATSAPP_DISPLAY}</span>
-                      </div>
-                      <div className="flex justify-between items-center text-[11px]">
-                        <span className="font-semibold text-[#8D6E63] dark:text-[#A1887F]">Customer WhatsApp:</span>
-                        <span className="font-mono font-bold text-[#3E2723] dark:text-[#F5EFEA]">{formData.phone || 'Your Phone Number'}</span>
+                        <span className="font-semibold text-[#8D6E63] dark:text-[#A1887F]">Dispatch Channel:</span>
+                        <span className="font-semibold text-[#3E2723] dark:text-[#F5EFEA]">Customer WhatsApp</span>
                       </div>
                     </div>
 
