@@ -4,7 +4,7 @@ import confetti from 'canvas-confetti';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
 import { api } from '../services/api';
-import { searchTamilNaduCities } from '../data/tamilNaduCities';
+import { searchTamilNaduCities, loadAllTamilNaduLocations } from '../data/tamilNaduCities';
 
 export function CheckoutModal({ isOpen, onClose, onOrderPlaced }) {
   const { user } = useAuth();
@@ -54,6 +54,13 @@ export function CheckoutModal({ isOpen, onClose, onOrderPlaced }) {
     };
   }, []);
 
+  // Preload complete 11,800+ Tamil Nadu villages & cities database when checkout opens
+  useEffect(() => {
+    if (isOpen) {
+      loadAllTamilNaduLocations();
+    }
+  }, [isOpen]);
+
   const handleCityChange = (e) => {
     const val = e.target.value;
     setFormData(prev => ({ ...prev, city: val }));
@@ -62,10 +69,22 @@ export function CheckoutModal({ isOpen, onClose, onOrderPlaced }) {
     }
 
     if (val.trim().length > 0) {
-      const results = searchTamilNaduCities(val, 8);
+      const results = searchTamilNaduCities(val, 15);
       setCitySuggestions(results);
       setIsCityDropdownOpen(results.length > 0);
       setHighlightedCityIndex(-1);
+
+      // In case full 11,800+ locations database is still loading, re-run search upon resolution
+      loadAllTamilNaduLocations().then(() => {
+        setFormData(curr => {
+          if (curr.city === val) {
+            const updated = searchTamilNaduCities(val, 15);
+            setCitySuggestions(updated);
+            if (updated.length > 0) setIsCityDropdownOpen(true);
+          }
+          return curr;
+        });
+      });
     } else {
       setCitySuggestions([]);
       setIsCityDropdownOpen(false);
@@ -73,8 +92,16 @@ export function CheckoutModal({ isOpen, onClose, onOrderPlaced }) {
   };
 
   const handleCityFocus = () => {
+    loadAllTamilNaduLocations().then(() => {
+      if (formData.city && formData.city.trim().length > 0) {
+        const results = searchTamilNaduCities(formData.city, 15);
+        setCitySuggestions(results);
+        setIsCityDropdownOpen(results.length > 0);
+      }
+    });
+
     if (formData.city && formData.city.trim().length > 0) {
-      const results = searchTamilNaduCities(formData.city, 8);
+      const results = searchTamilNaduCities(formData.city, 15);
       setCitySuggestions(results);
       setIsCityDropdownOpen(results.length > 0);
     }
@@ -405,50 +432,65 @@ export function CheckoutModal({ isOpen, onClose, onOrderPlaced }) {
                       </div>
                       {errors.city && <p className="text-[11px] text-[#D32F2F] mt-1">{errors.city}</p>}
 
-                      {/* Tamil Nadu Autocomplete Dropdown */}
+                      {/* Tamil Nadu Cities & Villages Autocomplete Dropdown */}
                       {isCityDropdownOpen && citySuggestions.length > 0 && (
-                        <div className="absolute left-0 top-full mt-1.5 w-72 sm:w-80 max-w-[calc(100vw-3rem)] z-50 bg-white dark:bg-[#201715] rounded-xl shadow-2xl border border-[#E8DCCF] dark:border-[#3E2F29] overflow-hidden animate-in fade-in duration-150">
-                          <div className="px-3 py-1.5 bg-[#FDF8F5] dark:bg-[#1A1210] border-b border-[#EBE0D8] dark:border-[#3E2F29] flex items-center justify-between text-[11px] font-semibold text-[#8D6E63] dark:text-[#A1887F]">
-                            <span>Tamil Nadu Cities & Towns</span>
-                            <span className="text-[10px] opacity-75 font-normal">Auto-fills PIN</span>
+                        <div className="absolute left-0 top-full mt-1.5 w-80 sm:w-96 max-w-[calc(100vw-2.5rem)] z-50 bg-white dark:bg-[#201715] rounded-xl shadow-2xl border border-[#E8DCCF] dark:border-[#3E2F29] overflow-hidden animate-in fade-in duration-150">
+                          <div className="px-3.5 py-2 bg-[#FDF8F5] dark:bg-[#1A1210] border-b border-[#EBE0D8] dark:border-[#3E2F29] flex items-center justify-between text-[11px] font-bold text-[#8D6E63] dark:text-[#A1887F]">
+                            <span>Tamil Nadu Cities & Villages</span>
+                            <span className="text-[10px] px-1.5 py-0.5 rounded bg-[#EFEBE9] dark:bg-[#2D221E] font-semibold text-[#5D4037] dark:text-[#D7CCC8]">Auto-fills PIN</span>
                           </div>
-                          <div className="max-h-56 overflow-y-auto divide-y divide-[#F0E6DE] dark:divide-[#332520]">
-                            {citySuggestions.map((item, idx) => (
-                              <button
-                                key={`${item.city}-${item.pincode}-${idx}`}
-                                type="button"
-                                onMouseDown={(e) => {
-                                  e.preventDefault();
-                                  handleSelectCity(item);
-                                }}
-                                onMouseEnter={() => setHighlightedCityIndex(idx)}
-                                className={`w-full text-left px-3.5 py-2.5 flex items-center justify-between gap-2.5 transition ${
-                                  highlightedCityIndex === idx
-                                    ? 'bg-[#F5ECE5] dark:bg-[#2F211D]'
-                                    : 'hover:bg-[#FAF4EF] dark:hover:bg-[#261B18]'
-                                }`}
-                              >
-                                <div className="flex items-center gap-2 min-w-0">
-                                  <MapPin size={14} className="text-[#795548] dark:text-[#BCAAA4] shrink-0" />
-                                  <div className="truncate">
-                                    <div className="font-semibold text-xs text-[#3E2723] dark:text-[#F5EFEA] truncate">
-                                      {item.city}
-                                      {item.aliases && item.aliases.length > 0 && (
-                                        <span className="ml-1 text-[10px] font-normal text-[#8D6E63] dark:text-[#A1887F]">
-                                          ({item.aliases[0]})
+                          <div className="max-h-64 overflow-y-auto divide-y divide-[#F0E6DE] dark:divide-[#332520]">
+                            {citySuggestions.map((item, idx) => {
+                              const cityName = item.city || item.name;
+                              const locType = item.type || 'Village';
+                              return (
+                                <button
+                                  key={`${cityName}-${item.pincode}-${idx}`}
+                                  type="button"
+                                  onMouseDown={(e) => {
+                                    e.preventDefault();
+                                    handleSelectCity(item);
+                                  }}
+                                  onMouseEnter={() => setHighlightedCityIndex(idx)}
+                                  className={`w-full text-left px-3.5 py-2.5 flex items-center justify-between gap-2.5 transition ${
+                                    highlightedCityIndex === idx
+                                      ? 'bg-[#F5ECE5] dark:bg-[#2F211D]'
+                                      : 'hover:bg-[#FAF4EF] dark:hover:bg-[#261B18]'
+                                  }`}
+                                >
+                                  <div className="flex items-center gap-2.5 min-w-0">
+                                    <MapPin size={15} className="text-[#795548] dark:text-[#BCAAA4] shrink-0" />
+                                    <div className="truncate">
+                                      <div className="flex items-center gap-1.5 truncate">
+                                        <span className="font-semibold text-xs text-[#3E2723] dark:text-[#F5EFEA] truncate">
+                                          {cityName}
                                         </span>
-                                      )}
-                                    </div>
-                                    <div className="text-[10px] text-[#8D6E63] dark:text-[#A1887F] truncate">
-                                      {item.district} Dist., Tamil Nadu
+                                        <span className={`text-[9px] font-bold px-1.5 py-0.2 rounded shrink-0 ${
+                                          locType === 'Village'
+                                            ? 'bg-emerald-100 dark:bg-emerald-950/80 text-emerald-800 dark:text-emerald-300'
+                                            : locType === 'City'
+                                            ? 'bg-purple-100 dark:bg-purple-950/80 text-purple-800 dark:text-purple-300'
+                                            : 'bg-amber-100 dark:bg-amber-950/80 text-amber-800 dark:text-amber-300'
+                                        }`}>
+                                          {locType}
+                                        </span>
+                                        {item.aliases && item.aliases.length > 0 && (
+                                          <span className="text-[10px] text-[#8D6E63] dark:text-[#A1887F] truncate">
+                                            ({item.aliases[0]})
+                                          </span>
+                                        )}
+                                      </div>
+                                      <div className="text-[10px] text-[#8D6E63] dark:text-[#A1887F] truncate mt-0.5">
+                                        {item.taluk ? `${item.taluk} Taluk, ` : ''}{item.district} Dist., Tamil Nadu
+                                      </div>
                                     </div>
                                   </div>
-                                </div>
-                                <span className="px-2 py-0.5 rounded text-[11px] font-mono font-bold bg-[#EFEBE9] dark:bg-[#3E2F29] text-[#5D4037] dark:text-[#D7CCC8] border border-[#D7C4BC]/50 dark:border-[#4E3932] shrink-0">
-                                  {item.pincode}
-                                </span>
-                              </button>
-                            ))}
+                                  <span className="px-2 py-0.5 rounded text-[11px] font-mono font-bold bg-[#EFEBE9] dark:bg-[#3E2F29] text-[#5D4037] dark:text-[#D7CCC8] border border-[#D7C4BC]/50 dark:border-[#4E3932] shrink-0">
+                                    {item.pincode}
+                                  </span>
+                                </button>
+                              );
+                            })}
                           </div>
                         </div>
                       )}
