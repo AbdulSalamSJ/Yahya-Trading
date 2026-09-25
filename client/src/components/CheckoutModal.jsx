@@ -1,9 +1,10 @@
-import React, { useState } from 'react';
-import { X, Check, ShieldCheck, CreditCard, Truck, ArrowRight, ArrowLeft } from 'lucide-react';
+import React, { useState, useRef, useEffect } from 'react';
+import { X, Check, ShieldCheck, CreditCard, Truck, ArrowRight, ArrowLeft, MapPin } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
 import { api } from '../services/api';
+import { searchTamilNaduCities } from '../data/tamilNaduCities';
 
 export function CheckoutModal({ isOpen, onClose, onOrderPlaced }) {
   const { user } = useAuth();
@@ -35,7 +36,86 @@ export function CheckoutModal({ isOpen, onClose, onOrderPlaced }) {
   const [isProcessing, setIsProcessing] = useState(false);
   const [paymentStepNotice, setPaymentStepNotice] = useState('');
 
-  React.useEffect(() => {
+  // Tamil Nadu city autocomplete state
+  const [citySuggestions, setCitySuggestions] = useState([]);
+  const [isCityDropdownOpen, setIsCityDropdownOpen] = useState(false);
+  const [highlightedCityIndex, setHighlightedCityIndex] = useState(-1);
+  const cityDropdownRef = useRef(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (cityDropdownRef.current && !cityDropdownRef.current.contains(event.target)) {
+        setIsCityDropdownOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
+
+  const handleCityChange = (e) => {
+    const val = e.target.value;
+    setFormData(prev => ({ ...prev, city: val }));
+    if (errors.city) {
+      setErrors(prev => ({ ...prev, city: null }));
+    }
+
+    if (val.trim().length > 0) {
+      const results = searchTamilNaduCities(val, 8);
+      setCitySuggestions(results);
+      setIsCityDropdownOpen(results.length > 0);
+      setHighlightedCityIndex(-1);
+    } else {
+      setCitySuggestions([]);
+      setIsCityDropdownOpen(false);
+    }
+  };
+
+  const handleCityFocus = () => {
+    if (formData.city && formData.city.trim().length > 0) {
+      const results = searchTamilNaduCities(formData.city, 8);
+      setCitySuggestions(results);
+      setIsCityDropdownOpen(results.length > 0);
+    }
+  };
+
+  const handleSelectCity = (item) => {
+    setFormData(prev => ({
+      ...prev,
+      city: item.city,
+      state: 'Tamil Nadu',
+      postalCode: item.pincode
+    }));
+    setIsCityDropdownOpen(false);
+    setCitySuggestions([]);
+    setErrors(prev => ({
+      ...prev,
+      city: null,
+      postalCode: null
+    }));
+  };
+
+  const handleCityKeyDown = (e) => {
+    if (!isCityDropdownOpen || citySuggestions.length === 0) return;
+
+    if (e.key === 'ArrowDown') {
+      e.preventDefault();
+      setHighlightedCityIndex(prev => (prev < citySuggestions.length - 1 ? prev + 1 : 0));
+    } else if (e.key === 'ArrowUp') {
+      e.preventDefault();
+      setHighlightedCityIndex(prev => (prev > 0 ? prev - 1 : citySuggestions.length - 1));
+    } else if (e.key === 'Enter') {
+      if (highlightedCityIndex >= 0 && highlightedCityIndex < citySuggestions.length) {
+        e.preventDefault();
+        handleSelectCity(citySuggestions[highlightedCityIndex]);
+      }
+    } else if (e.key === 'Escape') {
+      setIsCityDropdownOpen(false);
+    }
+  };
+
+  useEffect(() => {
     if (isOpen && user) {
       setFormData(prev => ({
         ...prev,
@@ -184,10 +264,10 @@ export function CheckoutModal({ isOpen, onClose, onOrderPlaced }) {
 
   return (
     <div className="fixed inset-0 z-50 overflow-y-auto bg-black/60 backdrop-blur-sm flex items-center justify-center p-3 sm:p-6 animate-fadeIn">
-      <div className="relative w-full max-w-3xl bg-[#FFFFFF] dark:bg-[#271E1B] border border-[#EBE0D8] dark:border-[#3E2F29] rounded-2xl shadow-2xl overflow-hidden my-6">
+      <div className="relative w-full max-w-3xl bg-[#FFFFFF] dark:bg-[#271E1B] border border-[#EBE0D8] dark:border-[#3E2F29] rounded-2xl shadow-2xl my-6">
         
         {/* Header with Progress Steps */}
-        <div className="p-5 sm:p-6 border-b border-[#EBE0D8] dark:border-[#3E2F29] bg-[#FDF8F5] dark:bg-[#1C1412] flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div className="p-5 sm:p-6 border-b border-[#EBE0D8] dark:border-[#3E2F29] bg-[#FDF8F5] dark:bg-[#1C1412] flex flex-col sm:flex-row sm:items-center justify-between gap-4 rounded-t-2xl">
           <div>
             <h3 className="font-serif text-xl font-bold text-[#3E2723] dark:text-[#F5EFEA]">
               Checkout & Express Fresh Dispatch
@@ -305,16 +385,73 @@ export function CheckoutModal({ isOpen, onClose, onOrderPlaced }) {
                     {errors.addressLine && <p className="text-[11px] text-[#D32F2F] mt-1">{errors.addressLine}</p>}
                   </div>
 
-                  <div className="grid grid-cols-3 gap-3">
-                    <div>
-                      <label className="block text-xs font-semibold text-[#3E2723] dark:text-[#F5EFEA] mb-1">City *</label>
-                      <input
-                        type="text"
-                        value={formData.city}
-                        onChange={(e) => setFormData({ ...formData, city: e.target.value })}
-                        className="w-full h-11 px-3.5 rounded-input border border-[#D7C4BC] dark:border-[#3E2F29] bg-white dark:bg-[#271E1B] text-[#3E2723] dark:text-[#F5EFEA] text-sm focus:outline-none focus:ring-2 focus:ring-[#795548]/30 focus:border-[#795548]"
-                      />
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                    <div className="relative" ref={cityDropdownRef}>
+                      <label className="block text-xs font-semibold text-[#3E2723] dark:text-[#F5EFEA] mb-1">
+                        City / Town *
+                      </label>
+                      <div className="relative">
+                        <input
+                          type="text"
+                          value={formData.city}
+                          onChange={handleCityChange}
+                          onFocus={handleCityFocus}
+                          onKeyDown={handleCityKeyDown}
+                          autoComplete="off"
+                          placeholder="e.g. Tenkasi, Chennai"
+                          className="w-full h-11 px-3.5 pr-8 rounded-input border border-[#D7C4BC] dark:border-[#3E2F29] bg-white dark:bg-[#271E1B] text-[#3E2723] dark:text-[#F5EFEA] text-sm focus:outline-none focus:ring-2 focus:ring-[#795548]/30 focus:border-[#795548]"
+                        />
+                        <MapPin size={14} className="absolute right-3 top-3.5 text-[#8D6E63] pointer-events-none" />
+                      </div>
                       {errors.city && <p className="text-[11px] text-[#D32F2F] mt-1">{errors.city}</p>}
+
+                      {/* Tamil Nadu Autocomplete Dropdown */}
+                      {isCityDropdownOpen && citySuggestions.length > 0 && (
+                        <div className="absolute left-0 top-full mt-1.5 w-72 sm:w-80 max-w-[calc(100vw-3rem)] z-50 bg-white dark:bg-[#201715] rounded-xl shadow-2xl border border-[#E8DCCF] dark:border-[#3E2F29] overflow-hidden animate-in fade-in duration-150">
+                          <div className="px-3 py-1.5 bg-[#FDF8F5] dark:bg-[#1A1210] border-b border-[#EBE0D8] dark:border-[#3E2F29] flex items-center justify-between text-[11px] font-semibold text-[#8D6E63] dark:text-[#A1887F]">
+                            <span>Tamil Nadu Cities & Towns</span>
+                            <span className="text-[10px] opacity-75 font-normal">Auto-fills PIN</span>
+                          </div>
+                          <div className="max-h-56 overflow-y-auto divide-y divide-[#F0E6DE] dark:divide-[#332520]">
+                            {citySuggestions.map((item, idx) => (
+                              <button
+                                key={`${item.city}-${item.pincode}-${idx}`}
+                                type="button"
+                                onMouseDown={(e) => {
+                                  e.preventDefault();
+                                  handleSelectCity(item);
+                                }}
+                                onMouseEnter={() => setHighlightedCityIndex(idx)}
+                                className={`w-full text-left px-3.5 py-2.5 flex items-center justify-between gap-2.5 transition ${
+                                  highlightedCityIndex === idx
+                                    ? 'bg-[#F5ECE5] dark:bg-[#2F211D]'
+                                    : 'hover:bg-[#FAF4EF] dark:hover:bg-[#261B18]'
+                                }`}
+                              >
+                                <div className="flex items-center gap-2 min-w-0">
+                                  <MapPin size={14} className="text-[#795548] dark:text-[#BCAAA4] shrink-0" />
+                                  <div className="truncate">
+                                    <div className="font-semibold text-xs text-[#3E2723] dark:text-[#F5EFEA] truncate">
+                                      {item.city}
+                                      {item.aliases && item.aliases.length > 0 && (
+                                        <span className="ml-1 text-[10px] font-normal text-[#8D6E63] dark:text-[#A1887F]">
+                                          ({item.aliases[0]})
+                                        </span>
+                                      )}
+                                    </div>
+                                    <div className="text-[10px] text-[#8D6E63] dark:text-[#A1887F] truncate">
+                                      {item.district} Dist., Tamil Nadu
+                                    </div>
+                                  </div>
+                                </div>
+                                <span className="px-2 py-0.5 rounded text-[11px] font-mono font-bold bg-[#EFEBE9] dark:bg-[#3E2F29] text-[#5D4037] dark:text-[#D7CCC8] border border-[#D7C4BC]/50 dark:border-[#4E3932] shrink-0">
+                                  {item.pincode}
+                                </span>
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+                      )}
                     </div>
 
                     <div>
@@ -323,6 +460,7 @@ export function CheckoutModal({ isOpen, onClose, onOrderPlaced }) {
                         type="text"
                         value={formData.state}
                         onChange={(e) => setFormData({ ...formData, state: e.target.value })}
+                        placeholder="Tamil Nadu"
                         className="w-full h-11 px-3.5 rounded-input border border-[#D7C4BC] dark:border-[#3E2F29] bg-white dark:bg-[#271E1B] text-[#3E2723] dark:text-[#F5EFEA] text-sm focus:outline-none focus:ring-2 focus:ring-[#795548]/30 focus:border-[#795548]"
                       />
                     </div>
@@ -332,7 +470,12 @@ export function CheckoutModal({ isOpen, onClose, onOrderPlaced }) {
                       <input
                         type="text"
                         value={formData.postalCode}
-                        onChange={(e) => setFormData({ ...formData, postalCode: e.target.value })}
+                        onChange={(e) => {
+                          setFormData({ ...formData, postalCode: e.target.value });
+                          if (errors.postalCode) setErrors(prev => ({ ...prev, postalCode: null }));
+                        }}
+                        placeholder="e.g. 627855"
+                        maxLength={6}
                         className="w-full h-11 px-3.5 rounded-input border border-[#D7C4BC] dark:border-[#3E2F29] bg-white dark:bg-[#271E1B] text-[#3E2723] dark:text-[#F5EFEA] text-sm focus:outline-none focus:ring-2 focus:ring-[#795548]/30 focus:border-[#795548]"
                       />
                       {errors.postalCode && <p className="text-[11px] text-[#D32F2F] mt-1">{errors.postalCode}</p>}
