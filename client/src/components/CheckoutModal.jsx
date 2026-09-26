@@ -342,9 +342,9 @@ export function CheckoutModal({ isOpen, onClose, onOrderPlaced }) {
         customerPhone: formData.phone
       });
 
-      // Automatically launch Customer WhatsApp with the pre-filled bill
+      // Automatically launch WhatsApp to send bill directly to shop WhatsApp (+91 63690 90536)
       try {
-        window.open(customerWaUrl, '_blank');
+        window.open(storeWaUrl, '_blank');
       } catch (e) {
         console.warn('Popup blocked:', e);
       }
@@ -451,13 +451,13 @@ export function CheckoutModal({ isOpen, onClose, onOrderPlaced }) {
             {/* Direct WhatsApp Action Button */}
             <div className="max-w-md mx-auto">
               <a
-                href={orderCompletedData.customerWaUrl}
+                href={orderCompletedData.storeWaUrl}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="w-full py-3.5 px-4 rounded-xl bg-[#25D366] hover:bg-[#20bd5a] text-white text-sm font-bold shadow-lg shadow-emerald-600/25 flex items-center justify-center gap-2.5 transition active:scale-98"
               >
                 <WhatsAppIcon size={18} />
-                <span>Send Bill to Customer WhatsApp</span>
+                <span>Send Bill on WhatsApp (+91 63690 90536)</span>
               </a>
             </div>
 
@@ -726,8 +726,8 @@ export function CheckoutModal({ isOpen, onClose, onOrderPlaced }) {
 
                     <div className="p-3 rounded-lg bg-[#F5ECE5] dark:bg-[#2A1D1A] space-y-1.5 text-xs text-[#5D4037] dark:text-[#D7CCC8]">
                       <div className="flex justify-between items-center text-[11px]">
-                        <span className="font-semibold text-[#8D6E63] dark:text-[#A1887F]">Dispatch Channel:</span>
-                        <span className="font-semibold text-[#3E2723] dark:text-[#F5EFEA]">Customer WhatsApp</span>
+                        <span className="font-semibold text-[#8D6E63] dark:text-[#A1887F]">Send Order Bill To:</span>
+                        <span className="font-mono font-bold text-[#3E2723] dark:text-[#F5EFEA]">+91 63690 90536</span>
                       </div>
                     </div>
 
