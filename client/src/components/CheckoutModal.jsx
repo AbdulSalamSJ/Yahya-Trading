@@ -332,15 +332,7 @@ export function CheckoutModal({ isOpen, onClose, onOrderPlaced }) {
         promoCode
       });
 
-      const storeWaUrl = `https://api.whatsapp.com/send?phone=${STORE_WHATSAPP_NUMBER}&text=${encodeURIComponent(billText)}`;
-
-      // Clean customer phone number
-      let cleanPhone = formData.phone.replace(/[^0-9]/g, '');
-      if (cleanPhone.startsWith('0')) {
-        cleanPhone = cleanPhone.slice(1);
-      }
-      const custPhone = cleanPhone.length === 10 ? `91${cleanPhone}` : cleanPhone;
-      const customerWaUrl = `https://api.whatsapp.com/send?phone=${custPhone}&text=${encodeURIComponent(billText)}`;
+      const storeWaUrl = `https://wa.me/${STORE_WHATSAPP_NUMBER}?text=${encodeURIComponent(billText)}`;
 
       const finalBillAmount = Number(placedOrder?.total_amount || totalAmount || 0);
 
@@ -349,7 +341,6 @@ export function CheckoutModal({ isOpen, onClose, onOrderPlaced }) {
         totalAmount: finalBillAmount,
         billText,
         storeWaUrl,
-        customerWaUrl,
         customerPhone: formData.phone
       });
 

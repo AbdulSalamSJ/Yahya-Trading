@@ -106,7 +106,7 @@ export function OrderTrackingModal({ order, onClose }) {
 *Status:* ${stages[currentIdx]?.title || 'Order Confirmed'}
 ━━━━━━━━━━━━━━━━━━━━━━
 Hello Yahiya Traders! I am sending my order bill details. Please confirm courier dispatch!`;
-  const supportWaUrl = `https://api.whatsapp.com/send?phone=${STORE_WHATSAPP_NUMBER}&text=${encodeURIComponent(trackWaText)}`;
+  const supportWaUrl = `https://wa.me/${STORE_WHATSAPP_NUMBER}?text=${encodeURIComponent(trackWaText)}`;
 
   const contentMarkup = (
     <>
