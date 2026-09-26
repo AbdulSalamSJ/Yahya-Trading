@@ -47,7 +47,7 @@ function generateWhatsAppBill(order, form, items, pricing) {
 
 👤 *Customer Details:*
 • *Name:* ${form.fullName}
-• *Phone:* ${form.phone}
+• *Customer WhatsApp:* ${form.phone}
 • *Email:* ${form.email}
 
 📍 *Delivery Address:*
@@ -457,7 +457,7 @@ export function CheckoutModal({ isOpen, onClose, onOrderPlaced }) {
                 className="w-full py-3.5 px-4 rounded-xl bg-[#25D366] hover:bg-[#20bd5a] text-white text-sm font-bold shadow-lg shadow-emerald-600/25 flex items-center justify-center gap-2.5 transition active:scale-98"
               >
                 <WhatsAppIcon size={18} />
-                <span>Send Bill on WhatsApp (+91 63690 90536)</span>
+                <span>Send Bill on Shop WhatsApp</span>
               </a>
             </div>
 
@@ -727,7 +727,11 @@ export function CheckoutModal({ isOpen, onClose, onOrderPlaced }) {
                     <div className="p-3 rounded-lg bg-[#F5ECE5] dark:bg-[#2A1D1A] space-y-1.5 text-xs text-[#5D4037] dark:text-[#D7CCC8]">
                       <div className="flex justify-between items-center text-[11px]">
                         <span className="font-semibold text-[#8D6E63] dark:text-[#A1887F]">Send Order Bill To:</span>
-                        <span className="font-mono font-bold text-[#3E2723] dark:text-[#F5EFEA]">+91 63690 90536</span>
+                        <span className="font-mono font-bold text-[#3E2723] dark:text-[#F5EFEA]">Shop WhatsApp (+91 63690 90536)</span>
+                      </div>
+                      <div className="flex justify-between items-center text-[11px]">
+                        <span className="font-semibold text-[#8D6E63] dark:text-[#A1887F]">From Customer WhatsApp:</span>
+                        <span className="font-mono font-bold text-[#3E2723] dark:text-[#F5EFEA]">{formData.phone || 'Your Phone Number'}</span>
                       </div>
                     </div>
 
@@ -784,7 +788,7 @@ export function CheckoutModal({ isOpen, onClose, onOrderPlaced }) {
                     className="px-7 py-3 rounded-xl bg-[#25D366] hover:bg-[#20bd5a] active:scale-95 text-white text-sm font-bold shadow-lg shadow-emerald-600/25 transition-all flex items-center gap-2"
                   >
                     <WhatsAppIcon size={18} />
-                    <span>{isProcessing ? 'Generating Bill...' : `Send Bill on WhatsApp (₹ ${totalAmount.toLocaleString('en-IN')})`}</span>
+                    <span>{isProcessing ? 'Generating Bill...' : `Send Bill on Shop WhatsApp (₹ ${totalAmount.toLocaleString('en-IN')})`}</span>
                   </button>
                 )}
               </div>
