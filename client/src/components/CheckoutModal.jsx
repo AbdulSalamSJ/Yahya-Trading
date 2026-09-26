@@ -449,26 +449,9 @@ export function CheckoutModal({ isOpen, onClose, onOrderPlaced }) {
               </div>
               <div className="space-y-1 text-[#6D4C41] dark:text-[#C8B8B0] text-[11px]">
                 <p>👤 <span className="font-medium text-[#3E2723] dark:text-[#F5EFEA]">{formData.fullName}</span></p>
-                <p>📞 Customer WhatsApp: <span className="font-mono font-medium text-[#3E2723] dark:text-[#F5EFEA]">{formData.phone}</span></p>
                 <p>📍 {formData.addressLine}, {formData.city}, {formData.state || 'Tamil Nadu'} - {formData.postalCode}</p>
                 <p>📦 Insulated Nitrogen Fresh Pack • Dispatched from Puliangudi</p>
               </div>
-            </div>
-
-            {/* Direct WhatsApp Action Button */}
-            <div className="max-w-md mx-auto space-y-2">
-              <a
-                href={orderCompletedData.storeWaUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="w-full py-3.5 px-4 rounded-xl bg-[#25D366] hover:bg-[#20bd5a] text-white text-sm font-bold shadow-lg shadow-emerald-600/25 flex items-center justify-center gap-2.5 transition active:scale-98"
-              >
-                <WhatsAppIcon size={18} />
-                <span>Send Bill on Shop WhatsApp (+91 63690 90536)</span>
-              </a>
-              <p className="text-[11px] text-[#6D4C41] dark:text-[#C8B8B0]">
-                Sent directly from customer WhatsApp ({formData.phone}) to shop WhatsApp number +91 63690 90536
-              </p>
             </div>
 
             <div className="pt-2 flex flex-col sm:flex-row items-center justify-center gap-3">
@@ -477,13 +460,13 @@ export function CheckoutModal({ isOpen, onClose, onOrderPlaced }) {
                   if (onOrderPlaced) onOrderPlaced(orderCompletedData.order);
                   onClose();
                 }}
-                className="w-full sm:w-auto px-5 py-2.5 rounded-xl bg-[#795548] hover:bg-[#5D4037] text-white text-xs font-semibold shadow-sm transition"
+                className="w-full sm:w-auto px-6 py-3 rounded-xl bg-[#795548] hover:bg-[#5D4037] text-white text-sm font-bold shadow-sm transition"
               >
                 Track Order Live
               </button>
               <button
                 onClick={onClose}
-                className="w-full sm:w-auto px-5 py-2.5 rounded-xl border border-[#EBE0D8] dark:border-[#3E2F29] text-xs font-medium text-[#8D6E63] dark:text-[#A1887F] hover:bg-[#EFEBE9] dark:hover:bg-[#271E1B] transition"
+                className="w-full sm:w-auto px-6 py-3 rounded-xl border border-[#EBE0D8] dark:border-[#3E2F29] text-xs font-medium text-[#8D6E63] dark:text-[#A1887F] hover:bg-[#EFEBE9] dark:hover:bg-[#271E1B] transition"
               >
                 Close & Return to Store
               </button>
@@ -744,13 +727,9 @@ export function CheckoutModal({ isOpen, onClose, onOrderPlaced }) {
                     </div>
 
                     <div className="p-3 rounded-lg bg-[#F5ECE5] dark:bg-[#2A1D1A] space-y-1.5 text-xs text-[#5D4037] dark:text-[#D7CCC8]">
-                      <div className="flex justify-between items-center text-[11px]">
-                        <span className="font-semibold text-[#8D6E63] dark:text-[#A1887F]">Send Order Bill To:</span>
-                        <span className="font-mono font-bold text-[#3E2723] dark:text-[#F5EFEA]">Shop WhatsApp (+91 63690 90536)</span>
-                      </div>
-                      <div className="flex justify-between items-center text-[11px]">
-                        <span className="font-semibold text-[#8D6E63] dark:text-[#A1887F]">From Customer WhatsApp:</span>
-                        <span className="font-mono font-bold text-[#3E2723] dark:text-[#F5EFEA]">{formData.phone || 'Your Phone Number'}</span>
+                      <div className="flex justify-between items-center text-xs">
+                        <span className="font-semibold text-[#8D6E63] dark:text-[#A1887F]">Total Bill Amount:</span>
+                        <span className="font-bold text-[#795548] dark:text-[#A1887F] text-sm">₹ {totalAmount.toLocaleString('en-IN')}</span>
                       </div>
                     </div>
 

@@ -430,7 +430,7 @@ Hello Yahiya Traders! I am sending my order bill details. Please confirm courier
                 className="w-full py-3 px-4 rounded-xl bg-[#25D366] hover:bg-[#20bd5a] text-white text-xs font-bold shadow-md shadow-emerald-600/20 flex items-center justify-center gap-2 transition active:scale-98"
               >
                 <WhatsAppIcon size={16} />
-                <span>Send Bill on Shop WhatsApp (+91 63690 90536)</span>
+                <span>Send Bill on Shop WhatsApp</span>
               </a>
             </div>
 
