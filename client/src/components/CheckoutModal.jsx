@@ -47,7 +47,7 @@ function generateWhatsAppBill(order, form, items, pricing) {
 
 👤 *Customer Details:*
 • *Name:* ${form.fullName}
-• *Customer WhatsApp:* ${form.phone}
+• *Phone:* ${form.phone}
 • *Email:* ${form.email}
 
 📍 *Delivery Address:*
@@ -252,6 +252,17 @@ export function CheckoutModal({ isOpen, onClose, onOrderPlaced }) {
     setIsProcessing(true);
     setPaymentStepNotice('Generating bill & preparing WhatsApp dispatch...');
 
+    // Detect mobile vs desktop to optimize link launch & avoid popup blockers
+    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+    let desktopWaTab = null;
+    if (!isMobile) {
+      try {
+        desktopWaTab = window.open('about:blank', '_blank');
+      } catch (e) {
+        console.warn('Could not pre-open desktop WhatsApp tab:', e);
+      }
+    }
+
     try {
       const paymentId = 'wa_' + Date.now();
       const orderPayload = {
@@ -342,19 +353,23 @@ export function CheckoutModal({ isOpen, onClose, onOrderPlaced }) {
         customerPhone: formData.phone
       });
 
-      // Automatically launch WhatsApp to send bill directly to shop WhatsApp (+91 63690 90536)
-      try {
-        window.open(storeWaUrl, '_blank');
-      } catch (e) {
-        console.warn('Popup blocked:', e);
+      // Launch WhatsApp to send bill directly to shop WhatsApp (+91 63690 90536)
+      if (desktopWaTab && !desktopWaTab.closed) {
+        desktopWaTab.location.href = storeWaUrl;
+      } else {
+        try {
+          window.location.href = storeWaUrl;
+        } catch (e) {
+          console.warn('Redirect to WhatsApp failed:', e);
+        }
       }
 
       clearCart();
       triggerCelebration();
-      if (onOrderPlaced) {
-        onOrderPlaced(placedOrder);
-      }
     } catch (err) {
+      if (desktopWaTab && !desktopWaTab.closed) {
+        try { desktopWaTab.close(); } catch (_) {}
+      }
       console.error('Order creation error:', err);
       setPaymentStepNotice('Order creation failed: ' + (err.message || 'Please try again'));
     } finally {
@@ -443,13 +458,14 @@ export function CheckoutModal({ isOpen, onClose, onOrderPlaced }) {
               </div>
               <div className="space-y-1 text-[#6D4C41] dark:text-[#C8B8B0] text-[11px]">
                 <p>👤 <span className="font-medium text-[#3E2723] dark:text-[#F5EFEA]">{formData.fullName}</span></p>
+                <p>📞 Customer WhatsApp: <span className="font-mono font-medium text-[#3E2723] dark:text-[#F5EFEA]">{formData.phone}</span></p>
                 <p>📍 {formData.addressLine}, {formData.city}, {formData.state || 'Tamil Nadu'} - {formData.postalCode}</p>
                 <p>📦 Insulated Nitrogen Fresh Pack • Dispatched from Puliangudi</p>
               </div>
             </div>
 
             {/* Direct WhatsApp Action Button */}
-            <div className="max-w-md mx-auto">
+            <div className="max-w-md mx-auto space-y-2">
               <a
                 href={orderCompletedData.storeWaUrl}
                 target="_blank"
@@ -457,14 +473,26 @@ export function CheckoutModal({ isOpen, onClose, onOrderPlaced }) {
                 className="w-full py-3.5 px-4 rounded-xl bg-[#25D366] hover:bg-[#20bd5a] text-white text-sm font-bold shadow-lg shadow-emerald-600/25 flex items-center justify-center gap-2.5 transition active:scale-98"
               >
                 <WhatsAppIcon size={18} />
-                <span>Send Bill on Shop WhatsApp</span>
+                <span>Send Bill on Shop WhatsApp (+91 63690 90536)</span>
               </a>
+              <p className="text-[11px] text-[#6D4C41] dark:text-[#C8B8B0]">
+                Sent directly from customer WhatsApp ({formData.phone}) to shop WhatsApp number +91 63690 90536
+              </p>
             </div>
 
-            <div className="pt-2">
+            <div className="pt-2 flex flex-col sm:flex-row items-center justify-center gap-3">
+              <button
+                onClick={() => {
+                  if (onOrderPlaced) onOrderPlaced(orderCompletedData.order);
+                  onClose();
+                }}
+                className="w-full sm:w-auto px-5 py-2.5 rounded-xl bg-[#795548] hover:bg-[#5D4037] text-white text-xs font-semibold shadow-sm transition"
+              >
+                Track Order Live
+              </button>
               <button
                 onClick={onClose}
-                className="px-6 py-2 text-xs font-medium text-[#8D6E63] dark:text-[#A1887F] hover:text-[#3E2723] dark:hover:text-[#F5EFEA] transition"
+                className="w-full sm:w-auto px-5 py-2.5 rounded-xl border border-[#EBE0D8] dark:border-[#3E2F29] text-xs font-medium text-[#8D6E63] dark:text-[#A1887F] hover:bg-[#EFEBE9] dark:hover:bg-[#271E1B] transition"
               >
                 Close & Return to Store
               </button>

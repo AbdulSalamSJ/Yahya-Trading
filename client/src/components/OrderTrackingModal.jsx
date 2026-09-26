@@ -96,7 +96,16 @@ export function OrderTrackingModal({ order, onClose }) {
 
   const totalAmountNum = Number(order.total_amount || 0);
 
-  const trackWaText = `Hello Yahiya Traders! I am tracking my order *#${order.order_number}* (Amount: ₹${totalAmountNum.toLocaleString('en-IN')}). Could you please update me on courier dispatch?`;
+  const trackWaText = `🧾 *YAHIYA TRADERS - ORDER BILL & DISPATCH INQUIRY*
+━━━━━━━━━━━━━━━━━━━━━━
+*Order ID:* #${order.order_number}
+*Customer:* ${shippingAddress?.fullName || order.customer_name || ''}
+*Phone:* ${shippingAddress?.phone || order.customer_phone || ''}
+*Delivery Address:* ${shippingAddress?.addressLine || ''}, ${shippingAddress?.city || 'Tamil Nadu'} - ${shippingAddress?.postalCode || ''}
+*Total Bill Amount:* ₹${totalAmountNum.toLocaleString('en-IN')}
+*Status:* ${stages[currentIdx]?.title || 'Order Confirmed'}
+━━━━━━━━━━━━━━━━━━━━━━
+Hello Yahiya Traders! I am sending my order bill details. Please confirm courier dispatch!`;
   const supportWaUrl = `https://api.whatsapp.com/send?phone=${STORE_WHATSAPP_NUMBER}&text=${encodeURIComponent(trackWaText)}`;
 
   const contentMarkup = (
@@ -421,7 +430,7 @@ export function OrderTrackingModal({ order, onClose }) {
                 className="w-full py-3 px-4 rounded-xl bg-[#25D366] hover:bg-[#20bd5a] text-white text-xs font-bold shadow-md shadow-emerald-600/20 flex items-center justify-center gap-2 transition active:scale-98"
               >
                 <WhatsAppIcon size={16} />
-                <span>Message Store on WhatsApp (+91 63690 90536)</span>
+                <span>Send Bill on Shop WhatsApp (+91 63690 90536)</span>
               </a>
             </div>
 
