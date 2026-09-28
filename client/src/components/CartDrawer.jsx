@@ -24,6 +24,17 @@ export function CartDrawer({ onProceedToCheckout }) {
 
   const [inputCode, setInputCode] = useState('');
 
+  // Prevent background page from moving/scrolling on mobile while cart is open
+  React.useEffect(() => {
+    if (isCartOpen) {
+      const prevOverflow = document.body.style.overflow;
+      document.body.style.overflow = 'hidden';
+      return () => {
+        document.body.style.overflow = prevOverflow;
+      };
+    }
+  }, [isCartOpen]);
+
   if (!isCartOpen) return null;
 
   const FREE_SHIPPING_GOAL = 1999;
@@ -90,7 +101,7 @@ export function CartDrawer({ onProceedToCheckout }) {
         </div>
 
         {/* Cart Items List */}
-        <div className="flex-1 overflow-y-auto p-4 sm:p-5 space-y-4">
+        <div className="flex-1 overflow-y-auto overscroll-contain p-3.5 sm:p-5 space-y-3 sm:space-y-4">
           {cartItems.length === 0 ? (
             <div className="text-center py-16 space-y-3">
               <div className="w-16 h-16 rounded-full overflow-hidden border-2 border-[#fee000] mx-auto shadow-sm bg-white">
@@ -113,19 +124,20 @@ export function CartDrawer({ onProceedToCheckout }) {
               return (
                 <div
                   key={itemIdentifier}
-                  className="flex gap-3 p-3 rounded-xl bg-[#fdfdfd] dark:bg-[#1a1a1a] border border-neutral-200 dark:border-neutral-800"
+                  className="flex gap-3 p-3 rounded-xl bg-[#fdfdfd] dark:bg-[#1a1a1a] border border-neutral-200 dark:border-neutral-800 items-center"
                 >
-                  {/* Thumbnail */}
-                  <div className="w-18 h-18 sm:w-20 sm:h-20 rounded-lg overflow-hidden bg-neutral-100 dark:bg-neutral-800 flex-shrink-0">
+                  {/* Fixed Thumbnail - Fits to screen & never moves */}
+                  <div className="w-16 h-16 sm:w-20 sm:h-20 min-w-[64px] min-h-[64px] rounded-xl overflow-hidden bg-neutral-100 dark:bg-neutral-800 flex-shrink-0 border border-neutral-200 dark:border-neutral-700/60 aspect-square">
                     <img
-                      src={(item.images && item.images[0]) || 'https://images.unsplash.com/photo-1596040033229-a9821ebd058d?auto=format&fit=crop&w=400&q=80'}
+                      src={(item.images && item.images[0]) || '/images/products/california-almonds.jpg'}
                       alt={item.name}
-                      className="w-full h-full object-cover"
+                      className="w-full h-full object-cover object-center block select-none pointer-events-none"
+                      onError={(e) => { e.currentTarget.src = '/images/products/california-almonds.jpg'; }}
                     />
                   </div>
 
                   {/* Details */}
-                  <div className="flex-1 flex flex-col justify-between">
+                  <div className="flex-1 min-w-0 flex flex-col justify-between self-stretch">
                     <div>
                       <div className="flex items-start justify-between gap-2">
                         <h5 className="text-xs sm:text-sm font-bold text-[#1d1d1d] dark:text-white line-clamp-1">

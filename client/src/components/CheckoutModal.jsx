@@ -220,6 +220,17 @@ export function CheckoutModal({ isOpen, onClose, onOrderPlaced }) {
     }
   }, [isOpen, user]);
 
+  // Prevent background page & product images from moving/scrolling on mobile while checkout modal is open
+  useEffect(() => {
+    if (isOpen) {
+      const prevOverflow = document.body.style.overflow;
+      document.body.style.overflow = 'hidden';
+      return () => {
+        document.body.style.overflow = prevOverflow;
+      };
+    }
+  }, [isOpen]);
+
   if (!isOpen) return null;
 
   const validateStep1 = () => {
@@ -369,11 +380,11 @@ export function CheckoutModal({ isOpen, onClose, onOrderPlaced }) {
   };
 
   return (
-    <div className="fixed inset-0 z-50 overflow-y-auto bg-black/60 backdrop-blur-sm flex items-center justify-center p-3 sm:p-6 animate-fadeIn">
-      <div className="relative w-full max-w-3xl bg-[#FFFFFF] dark:bg-[#271E1B] border border-[#EBE0D8] dark:border-[#3E2F29] rounded-2xl shadow-2xl my-6">
+    <div className="fixed inset-0 z-50 overflow-y-auto overscroll-contain bg-black/60 backdrop-blur-sm flex items-center justify-center p-2 sm:p-6 animate-fadeIn">
+      <div className="relative w-full max-w-3xl bg-[#FFFFFF] dark:bg-[#271E1B] border border-[#EBE0D8] dark:border-[#3E2F29] rounded-2xl shadow-2xl my-auto max-h-[94vh] overflow-y-auto overscroll-contain">
         
         {/* Header with Progress Steps */}
-        <div className="p-5 sm:p-6 border-b border-[#EBE0D8] dark:border-[#3E2F29] bg-[#FDF8F5] dark:bg-[#1C1412] flex flex-col sm:flex-row sm:items-center justify-between gap-4 rounded-t-2xl">
+        <div className="p-4 sm:p-6 border-b border-[#EBE0D8] dark:border-[#3E2F29] bg-[#FDF8F5] dark:bg-[#1C1412] flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4 rounded-t-2xl">
           <div>
             <h3 className="font-serif text-xl font-bold text-[#3E2723] dark:text-[#F5EFEA]">
               Checkout & Express Fresh Dispatch
@@ -815,25 +826,34 @@ export function CheckoutModal({ isOpen, onClose, onOrderPlaced }) {
             </div>
 
             {/* Right Summary Area */}
-            <div className="md:col-span-5 bg-[#FDF8F5] dark:bg-[#1C1412] p-5 rounded-xl border border-[#EBE0D8] dark:border-[#3E2F29] flex flex-col justify-between">
+            <div className="md:col-span-5 bg-[#FDF8F5] dark:bg-[#1C1412] p-4 sm:p-5 rounded-2xl border border-[#EBE0D8] dark:border-[#3E2F29] flex flex-col justify-between">
               <div>
                 <h4 className="font-serif text-sm font-bold text-[#3E2723] dark:text-[#F5EFEA] mb-3">
                   Order Summary ({cartItems.length} items)
                 </h4>
 
-                <div className="space-y-2.5 max-h-48 overflow-y-auto pr-1 mb-4">
+                <div className="space-y-3 max-h-56 overflow-y-auto overscroll-contain pr-1 mb-4 divide-y divide-[#EBE0D8]/60 dark:divide-[#3E2F29]/60">
                   {cartItems.map(item => (
-                    <div key={item.itemKey || item.id} className="flex justify-between text-xs">
-                      <div className="flex-1 pr-2">
-                        <span className="font-medium text-[#3E2723] dark:text-[#F5EFEA] line-clamp-1">{item.name}</span>
+                    <div key={item.itemKey || item.id} className="flex items-center gap-3 pt-2.5 first:pt-0 text-xs">
+                      {/* Fixed Product Thumbnail - Fits to screen & never moves */}
+                      <div className="w-12 h-12 min-w-[48px] min-h-[48px] rounded-lg overflow-hidden bg-neutral-100 dark:bg-neutral-800 flex-shrink-0 border border-neutral-200 dark:border-neutral-700/60 aspect-square">
+                        <img
+                          src={(item.images && item.images[0]) || '/images/products/california-almonds.jpg'}
+                          alt={item.name}
+                          className="w-full h-full object-cover object-center block select-none pointer-events-none"
+                          onError={(e) => { e.currentTarget.src = '/images/products/california-almonds.jpg'; }}
+                        />
+                      </div>
+                      <div className="flex-1 min-w-0 pr-1">
+                        <span className="font-bold text-[#3E2723] dark:text-[#F5EFEA] line-clamp-1 block">{item.name}</span>
                         <div className="flex items-center gap-1.5 mt-0.5">
-                          <span className="px-1.5 py-0.5 rounded bg-neutral-200/80 dark:bg-neutral-800 text-[10px] font-black text-[#3E2723] dark:text-[#F5EFEA]">
+                          <span className="px-1.5 py-0.2 rounded bg-neutral-200/80 dark:bg-neutral-800 text-[10px] font-black text-[#3E2723] dark:text-[#F5EFEA]">
                             {item.selectedSize || '250G'}
                           </span>
                           <span className="text-[11px] text-[#6D4C41] dark:text-[#C8B8B0]">Qty: {item.quantity}</span>
                         </div>
                       </div>
-                      <span className="font-semibold text-[#795548] dark:text-[#A1887F]">
+                      <span className="font-extrabold text-[#795548] dark:text-[#A1887F] flex-shrink-0">
                         ₹ {(item.price * item.quantity).toLocaleString('en-IN')}
                       </span>
                     </div>
