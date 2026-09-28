@@ -203,17 +203,17 @@ export function App() {
 
       {/* Admin Quick Action Banner on Front Page */}
       {isFrontPage && isAdmin && (
-        <div className="max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 pt-4">
-          <div className="p-3.5 sm:p-4 rounded-2xl bg-amber-500/15 border-2 border-amber-500/30 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-sm">
+        <div className="max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 pt-3 sm:pt-4">
+          <div className="p-3 sm:p-4 rounded-2xl bg-amber-500/15 border border-amber-500/30 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-xs">
             <div className="flex items-center gap-2.5">
               <span className="w-2.5 h-2.5 rounded-full bg-[#108474] flex-shrink-0 animate-pulse"></span>
-              <span className="text-xs sm:text-sm font-black text-amber-900 dark:text-amber-200">
+              <span className="text-xs sm:text-sm font-black text-amber-900 dark:text-amber-200 leading-snug">
                 👑 Admin Logged In: You can publish new harvest items across any category.
               </span>
             </div>
             <button
               onClick={() => setIsAddItemOpen(true)}
-              className="px-4 py-2 rounded-full bg-[#fee000] hover:bg-[#f5d600] text-[#1d1d1d] text-xs font-black shadow transition flex items-center gap-1.5 cursor-pointer self-start sm:self-auto"
+              className="w-full sm:w-auto px-4 py-2 rounded-full bg-[#fee000] hover:bg-[#f5d600] active:scale-[0.99] text-[#1d1d1d] text-xs font-black shadow transition flex items-center justify-center gap-1.5 cursor-pointer flex-shrink-0"
             >
               <Plus size={15} />
               <span>+ Add New Harvest Item</span>

@@ -71,6 +71,10 @@ export function Hero({ onExploreClick, onSelectCategory }) {
   const [isPaused, setIsPaused] = useState(false);
   const slideTimerRef = useRef(null);
 
+  // Touch swipe support for mobile
+  const [touchStartX, setTouchStartX] = useState(null);
+  const [touchEndX, setTouchEndX] = useState(null);
+
   // Auto-advance banner every 6.5 seconds when not hovered
   useEffect(() => {
     if (!isPaused) {
@@ -93,6 +97,25 @@ export function Hero({ onExploreClick, onSelectCategory }) {
     setCurrentSlide((prev) => (prev - 1 + bannerSlides.length) % bannerSlides.length);
   };
 
+  const handleTouchStart = (e) => {
+    setTouchEndX(null);
+    setTouchStartX(e.targetTouches[0].clientX);
+  };
+
+  const handleTouchMove = (e) => {
+    setTouchEndX(e.targetTouches[0].clientX);
+  };
+
+  const handleTouchEnd = () => {
+    if (!touchStartX || !touchEndX) return;
+    const distance = touchStartX - touchEndX;
+    if (distance > 45) {
+      handleNext();
+    } else if (distance < -45) {
+      handlePrev();
+    }
+  };
+
   const handleCta = (slug) => {
     if (slug === 'all') {
       if (onExploreClick) onExploreClick();
@@ -103,12 +126,15 @@ export function Hero({ onExploreClick, onSelectCategory }) {
 
   return (
     <section
-      className="relative w-full overflow-hidden bg-[#1c140e] border-b border-amber-900/30"
+      className="relative w-full overflow-hidden bg-[#1c140e] border-b border-amber-900/30 select-none"
       onMouseEnter={() => setIsPaused(true)}
       onMouseLeave={() => setIsPaused(false)}
+      onTouchStart={handleTouchStart}
+      onTouchMove={handleTouchMove}
+      onTouchEnd={handleTouchEnd}
     >
       {/* Sliding Images Background with cross-fade */}
-      <div className="relative h-[500px] sm:h-[560px] lg:h-[620px] w-full">
+      <div className="relative min-h-[540px] sm:min-h-[580px] lg:h-[620px] w-full flex items-center">
         {bannerSlides.map((item, index) => {
           const isActive = index === currentSlide;
           return (
@@ -127,9 +153,9 @@ export function Hero({ onExploreClick, onSelectCategory }) {
                 }`}
               />
 
-              {/* Luminous colorful gradient overlay: left-side readable gradient, right-side bright and open */}
-              <div className={`absolute inset-0 bg-gradient-to-r ${item.gradient}`} />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-black/15" />
+              {/* Luminous colorful gradient overlay for maximum readability on mobile */}
+              <div className={`absolute inset-0 bg-gradient-to-t sm:bg-gradient-to-r ${item.gradient} opacity-95 sm:opacity-90`} />
+              <div className="absolute inset-0 bg-black/45 sm:bg-black/25" />
 
               {/* Radiant light bloom highlights */}
               <div className={`absolute -right-16 -top-16 w-96 h-96 rounded-full blur-3xl opacity-35 pointer-events-none ${item.bloomColor}`} />
@@ -138,69 +164,71 @@ export function Hero({ onExploreClick, onSelectCategory }) {
           );
         })}
 
-        {/* Slide Content Layer */}
-        <div className="relative z-20 max-w-7xl mx-auto h-full px-4 sm:px-6 lg:px-8 flex flex-col justify-center">
-          <div className="max-w-2xl text-white space-y-4 sm:space-y-5">
+        {/* Slide Content Layer - Aligned and balanced for mobile & desktop */}
+        <div className="relative z-20 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 pt-8 pb-16 sm:py-14 flex flex-col justify-center">
+          <div className="max-w-2xl text-white space-y-3.5 sm:space-y-5">
             
             {/* Tag / Category Badge & Starting Price Tag */}
-            <div className="flex flex-wrap items-center gap-2.5 animate-fadeIn">
-              <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/20 backdrop-blur-md border border-white/30 text-xs font-black text-white shadow-md">
-                <span className="w-2.5 h-2.5 rounded-full bg-[#fee000] animate-pulse" />
-                <span className="tracking-wide uppercase text-[11px]">{slide.tag}</span>
+            <div className="flex flex-wrap items-center gap-2 sm:gap-2.5 animate-fadeIn">
+              <div className="inline-flex items-center gap-1.5 sm:gap-2 px-3 py-1 sm:py-1.5 rounded-full bg-white/20 backdrop-blur-md border border-white/30 text-[10px] sm:text-xs font-black text-white shadow-md">
+                <span className="w-2 h-2 rounded-full bg-[#fee000] animate-pulse" />
+                <span className="tracking-wide uppercase text-[10px] sm:text-[11px]">{slide.tag}</span>
               </div>
 
-              <div className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-[#fee000] text-[#1d1d1d] font-black text-xs sm:text-sm shadow-md">
-                <span className="text-[11px] uppercase tracking-wider font-bold">Starts from</span>
-                <span className="text-sm sm:text-base font-black">₹ {slide.startingPrice.toLocaleString('en-IN')}</span>
-                <span className="text-[10px] font-semibold text-neutral-700">/{slide.unit}</span>
+              <div className="inline-flex items-center gap-1 sm:gap-1.5 px-3 py-1 sm:py-1.5 rounded-full bg-[#fee000] text-[#1d1d1d] font-black text-[11px] sm:text-sm shadow-md">
+                <span className="text-[10px] sm:text-[11px] uppercase tracking-wider font-bold">Starts from</span>
+                <span className="text-xs sm:text-base font-black">₹ {slide.startingPrice.toLocaleString('en-IN')}</span>
+                <span className="text-[9px] sm:text-[10px] font-semibold text-neutral-700">/{slide.unit}</span>
               </div>
             </div>
 
             {/* Banner Headline */}
-            <h1 className="text-3xl sm:text-5xl lg:text-5xl font-black text-white tracking-tight leading-[1.15] drop-shadow-lg">
+            <h1 className="text-2xl sm:text-4xl lg:text-5xl font-black text-white tracking-tight leading-[1.2] drop-shadow-lg">
               {slide.title}
             </h1>
 
             {/* Subtitle */}
-            <p className="text-sm sm:text-base text-neutral-100 leading-relaxed max-w-xl font-normal drop-shadow">
+            <p className="text-xs sm:text-sm md:text-base text-neutral-100/90 leading-relaxed max-w-xl font-normal drop-shadow line-clamp-3 sm:line-clamp-none">
               {slide.subtitle}
             </p>
 
             {/* Feature Pills */}
-            <div className="flex flex-wrap items-center gap-2 pt-1 text-xs">
+            <div className="flex flex-wrap items-center gap-1.5 sm:gap-2 pt-0.5 sm:pt-1 text-[11px] sm:text-xs">
               {slide.features.map((feat, i) => (
                 <span
                   key={i}
-                  className="px-3 py-1 rounded-full bg-black/40 backdrop-blur-md border border-white/20 text-white font-medium flex items-center gap-1.5 shadow-sm"
+                  className="px-2.5 sm:px-3 py-0.5 sm:py-1 rounded-full bg-black/40 backdrop-blur-md border border-white/20 text-white font-medium flex items-center gap-1.5 shadow-xs"
                 >
-                  <Sparkles size={12} className="text-[#fee000]" />
+                  <Sparkles size={11} className="text-[#fee000]" />
                   <span>{feat}</span>
                 </span>
               ))}
             </div>
 
-            {/* Varieties Preview Chips with Bright White Glass Cards & Rupee Price Tags */}
-            <div className="pt-2">
-              <div className="text-xs font-black uppercase tracking-wider text-[#fee000] mb-2.5 flex items-center gap-1.5">
-                <Sparkles size={13} className="text-[#fee000]" />
+            {/* Varieties Preview Chips */}
+            <div className="pt-1 sm:pt-2">
+              <div className="text-[11px] sm:text-xs font-black uppercase tracking-wider text-[#fee000] mb-2 flex items-center gap-1.5">
+                <Sparkles size={12} className="text-[#fee000]" />
                 <span>Featured Varieties &amp; Prices:</span>
               </div>
-              <div className="flex flex-wrap items-center gap-2 sm:gap-2.5">
+              <div className="flex flex-wrap items-center gap-1.5 sm:gap-2.5">
                 {slide.varieties.map((item, idx) => (
                   <div
                     key={idx}
                     onClick={() => handleCta(slide.categorySlug)}
-                    className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/95 hover:bg-white text-neutral-900 border-2 border-[#fee000] hover:border-amber-400 shadow-md hover:shadow-lg hover:scale-105 cursor-pointer transition-all group/v select-none"
+                    className={`items-center gap-1.5 sm:gap-2 px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-full bg-white/95 hover:bg-white text-neutral-900 border-2 border-[#fee000] hover:border-amber-400 shadow-md hover:shadow-lg active:scale-95 cursor-pointer transition-all select-none ${
+                      idx >= 3 ? 'hidden sm:flex' : 'flex'
+                    }`}
                   >
                     <img
                       src={item.image}
                       alt={item.name}
-                      className="w-6 h-6 rounded-full object-cover border border-amber-300 group-hover/v:scale-110 transition-transform"
+                      className="w-5 h-5 sm:w-6 sm:h-6 rounded-full object-cover border border-amber-300"
                     />
-                    <span className="text-xs font-bold text-neutral-900 group-hover/v:text-[#92400e] transition-colors">
+                    <span className="text-[11px] sm:text-xs font-bold text-neutral-900">
                       {item.name}
                     </span>
-                    <span className="text-xs font-black text-[#108474] bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">
+                    <span className="text-[10px] sm:text-xs font-black text-[#108474] bg-emerald-50 px-1.5 sm:px-2 py-0.5 rounded-full border border-emerald-200">
                       ₹ {item.price.toLocaleString('en-IN')}
                     </span>
                   </div>
@@ -208,19 +236,19 @@ export function Hero({ onExploreClick, onSelectCategory }) {
               </div>
             </div>
 
-            {/* Action Buttons */}
-            <div className="flex flex-wrap items-center gap-3 pt-3">
+            {/* Action CTA Buttons */}
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-3 pt-2 sm:pt-3 max-w-sm sm:max-w-none">
               <button
                 onClick={() => handleCta(slide.categorySlug)}
-                className="px-7 sm:px-9 py-3.5 bg-[#fee000] hover:bg-[#f5d600] active:scale-95 text-[#1d1d1d] text-sm sm:text-base font-black rounded-full shadow-xl hover:shadow-2xl transition-all flex items-center gap-2 group cursor-pointer"
+                className="w-full sm:w-auto px-6 sm:px-9 py-3 sm:py-3.5 bg-[#fee000] hover:bg-[#f5d600] active:scale-95 text-[#1d1d1d] text-xs sm:text-base font-black rounded-full shadow-xl hover:shadow-2xl transition-all flex items-center justify-center gap-2 group cursor-pointer"
               >
                 <span>{slide.ctaText}</span>
-                <ArrowRight size={17} className="group-hover:translate-x-1 transition-transform" />
+                <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />
               </button>
 
               <button
                 onClick={() => handleCta('all')}
-                className="px-6 sm:px-7 py-3.5 bg-white/20 hover:bg-white/30 active:scale-95 backdrop-blur-md border-2 border-white/50 text-white text-sm font-bold rounded-full transition-all cursor-pointer shadow-md"
+                className="w-full sm:w-auto px-5 sm:px-7 py-2.5 sm:py-3.5 bg-white/20 hover:bg-white/30 active:scale-95 backdrop-blur-md border-2 border-white/50 text-white text-xs sm:text-sm font-bold rounded-full transition-all cursor-pointer shadow-md text-center"
               >
                 View All Harvest
               </button>
@@ -229,40 +257,40 @@ export function Hero({ onExploreClick, onSelectCategory }) {
           </div>
         </div>
 
-        {/* Left & Right Arrow Navigation Controls */}
+        {/* Left & Right Arrow Navigation Controls - Hidden on mobile so they don't cover text */}
         <button
           onClick={handlePrev}
           aria-label="Previous Slide"
-          className="absolute left-3 sm:left-6 top-1/2 -translate-y-1/2 z-30 w-11 h-11 rounded-full bg-white/80 hover:bg-white text-neutral-900 border border-white shadow-xl flex items-center justify-center transition-all cursor-pointer hover:scale-110 active:scale-95"
+          className="hidden sm:flex absolute left-3 sm:left-6 top-1/2 -translate-y-1/2 z-30 w-10 h-10 sm:w-11 sm:h-11 rounded-full bg-white/85 hover:bg-white text-neutral-900 border border-white shadow-xl items-center justify-center transition-all cursor-pointer hover:scale-110 active:scale-95"
         >
-          <ChevronLeft size={24} />
+          <ChevronLeft size={22} />
         </button>
 
         <button
           onClick={handleNext}
           aria-label="Next Slide"
-          className="absolute right-3 sm:right-6 top-1/2 -translate-y-1/2 z-30 w-11 h-11 rounded-full bg-white/80 hover:bg-white text-neutral-900 border border-white shadow-xl flex items-center justify-center transition-all cursor-pointer hover:scale-110 active:scale-95"
+          className="hidden sm:flex absolute right-3 sm:right-6 top-1/2 -translate-y-1/2 z-30 w-10 h-10 sm:w-11 sm:h-11 rounded-full bg-white/85 hover:bg-white text-neutral-900 border border-white shadow-xl items-center justify-center transition-all cursor-pointer hover:scale-110 active:scale-95"
         >
-          <ChevronRight size={24} />
+          <ChevronRight size={22} />
         </button>
 
         {/* Bottom Banner Slide Indicators with Category Names & Starting Price */}
-        <div className="absolute bottom-6 left-0 right-0 z-30 flex items-center justify-center gap-2 sm:gap-3 px-4">
+        <div className="absolute bottom-3 sm:bottom-6 left-0 right-0 z-30 flex items-center justify-center gap-1.5 sm:gap-3 px-3">
           {bannerSlides.map((item, idx) => {
             const isActive = idx === currentSlide;
             return (
               <button
                 key={item.id}
                 onClick={() => setCurrentSlide(idx)}
-                className={`px-3.5 sm:px-4 py-1.5 rounded-full text-xs font-bold transition-all flex items-center gap-2 cursor-pointer shadow-md backdrop-blur-md ${
+                className={`px-3 sm:px-4 py-1 sm:py-1.5 rounded-full text-[11px] sm:text-xs font-bold transition-all flex items-center gap-1.5 sm:gap-2 cursor-pointer shadow-md backdrop-blur-md ${
                   isActive
                     ? 'bg-[#fee000] text-[#1d1d1d] font-black scale-105 ring-2 ring-[#fee000]/50'
                     : 'bg-white/80 hover:bg-white text-neutral-800 border border-white/60'
                 }`}
               >
-                <span className={`w-2 h-2 rounded-full ${isActive ? 'bg-[#1d1d1d]' : 'bg-neutral-500'}`} />
+                <span className={`w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full ${isActive ? 'bg-[#1d1d1d]' : 'bg-neutral-500'}`} />
                 <span className="capitalize">{item.categorySlug.replace('-', ' ')}</span>
-                <span className={`text-[10px] font-extrabold ${isActive ? 'text-neutral-900' : 'text-[#108474]'}`}>
+                <span className={`hidden sm:inline text-[10px] font-extrabold ${isActive ? 'text-neutral-900' : 'text-[#108474]'}`}>
                   from ₹ {item.startingPrice}
                 </span>
               </button>

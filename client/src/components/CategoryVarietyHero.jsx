@@ -12,8 +12,8 @@ export function CategoryVarietyHero({
   const categoryImg = category.image_url || `/images/categories/${category.slug}.jpg`;
 
   return (
-    <section className="mb-10 rounded-3xl overflow-hidden border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-[#181818] shadow-md transition-all p-4 sm:p-6">
-      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3 sm:gap-4">
+    <section className="mb-6 sm:mb-10 rounded-2xl sm:rounded-3xl overflow-hidden border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-[#181818] shadow-sm sm:shadow-md transition-all p-3 sm:p-6">
+      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-2.5 sm:gap-4">
         {products.map((product) => {
           const isSelected = selectedProductId === product.id;
           const varietyImage = product.images && product.images.length > 0

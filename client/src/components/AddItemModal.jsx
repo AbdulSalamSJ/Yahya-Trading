@@ -227,22 +227,22 @@ export function AddItemModal({ isOpen, onClose, categories = [], onProductCreate
   const selectedCategoryObj = categories.find(c => String(c.id) === String(formData.category_id));
 
   return (
-    <div className="fixed inset-0 z-50 overflow-y-auto bg-black/75 backdrop-blur-sm flex items-center justify-center p-3 sm:p-6 animate-fadeIn">
-      <div className="relative w-full max-w-4xl bg-white dark:bg-[#1c1c1c] border border-neutral-200 dark:border-neutral-800 rounded-3xl shadow-2xl overflow-hidden my-6 max-h-[92vh] flex flex-col">
+    <div className="fixed inset-0 z-50 overflow-y-auto bg-black/75 backdrop-blur-sm flex items-center justify-center p-2 sm:p-6 animate-fadeIn">
+      <div className="relative w-full max-w-4xl bg-white dark:bg-[#1c1c1c] border border-neutral-200 dark:border-neutral-800 rounded-2xl sm:rounded-3xl shadow-2xl overflow-hidden my-auto max-h-[94vh] flex flex-col">
         
         {/* Modal Top Header */}
-        <div className="p-5 sm:px-8 border-b border-neutral-200 dark:border-neutral-800 bg-[#fafafa] dark:bg-[#141414] flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-full overflow-hidden border-2 border-[#fee000] shadow-sm flex-shrink-0 bg-white">
+        <div className="p-3.5 sm:p-5 sm:px-8 border-b border-neutral-200 dark:border-neutral-800 bg-[#fafafa] dark:bg-[#141414] flex items-center justify-between gap-3">
+          <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
+            <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-full overflow-hidden border-2 border-[#fee000] shadow-sm flex-shrink-0 bg-white">
               <img src={logoImg} alt="Yahiya Traders" className="w-full h-full object-cover" />
             </div>
-            <div>
-              <h3 className="text-base sm:text-lg font-black text-[#1d1d1d] dark:text-white flex items-center gap-2">
-                <Plus size={18} className="text-[#108474]" />
-                <span>Add New Item to Catalog</span>
+            <div className="min-w-0">
+              <h3 className="text-sm sm:text-lg font-black text-[#1d1d1d] dark:text-white flex items-center gap-1.5 truncate">
+                <Plus size={16} className="text-[#108474] flex-shrink-0" />
+                <span className="truncate">Add New Item to Catalog</span>
               </h3>
-              <p className="text-xs text-neutral-500 dark:text-neutral-400">
-                Fill the empty form below and upload a product image from your system.
+              <p className="text-[10px] sm:text-xs text-neutral-500 dark:text-neutral-400 truncate">
+                Upload image and configure product details
               </p>
             </div>
           </div>
@@ -250,7 +250,7 @@ export function AddItemModal({ isOpen, onClose, categories = [], onProductCreate
           <button
             type="button"
             onClick={onClose}
-            className="p-2 text-neutral-400 hover:text-black dark:hover:text-white rounded-full bg-neutral-100 dark:bg-neutral-800 transition cursor-pointer"
+            className="p-1.5 sm:p-2 text-neutral-400 hover:text-black dark:hover:text-white rounded-full bg-neutral-100 dark:bg-neutral-800 transition cursor-pointer flex-shrink-0"
             aria-label="Close dialog"
           >
             <X size={18} />
@@ -368,7 +368,7 @@ export function AddItemModal({ isOpen, onClose, categories = [], onProductCreate
                       <span className="absolute right-3.5 top-1/2 -translate-y-1/2 text-xs font-bold text-neutral-400">grams</span>
                     </div>
                     {/* Quick presets */}
-                    <div className="flex items-center gap-1">
+                    <div className="flex items-center gap-1 flex-wrap">
                       <span className="text-[10px] text-neutral-400">Presets:</span>
                       {[100, 150, 250, 400, 500, 1000].map(wt => (
                         <button

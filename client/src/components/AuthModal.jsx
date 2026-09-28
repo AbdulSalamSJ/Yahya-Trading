@@ -46,24 +46,25 @@ export function AuthModal({ isOpen, onClose }) {
   };
 
   return (
-    <div className="fixed inset-0 z-50 overflow-y-auto bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 animate-fadeIn">
-      <div className="relative w-full max-w-md bg-[#FFFFFF] dark:bg-[#271E1B] border border-[#EBE0D8] dark:border-[#3E2F29] rounded-2xl shadow-2xl overflow-hidden p-6 sm:p-8">
+    <div className="fixed inset-0 z-50 overflow-y-auto bg-black/60 backdrop-blur-sm flex items-center justify-center p-3 sm:p-4 animate-fadeIn">
+      <div className="relative w-full max-w-md bg-[#FFFFFF] dark:bg-[#271E1B] border border-[#EBE0D8] dark:border-[#3E2F29] rounded-2xl shadow-2xl overflow-y-auto max-h-[94vh] p-5 sm:p-8 my-auto">
         
         <button
           onClick={onClose}
-          className="absolute top-4 right-4 p-1.5 text-[#6D4C41] dark:text-[#C8B8B0] hover:text-[#3E2723] dark:hover:text-[#F5EFEA] rounded-lg transition"
+          className="absolute top-3.5 right-3.5 sm:top-4 sm:right-4 p-2 text-[#6D4C41] dark:text-[#C8B8B0] hover:text-[#3E2723] dark:hover:text-[#F5EFEA] hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-xl transition"
+          aria-label="Close dialog"
         >
           <X size={18} />
         </button>
 
-        <div className="text-center mb-6">
-          <div className="w-16 h-16 rounded-full overflow-hidden border-2 border-[#fee000] mx-auto mb-3 shadow-md bg-white">
+        <div className="text-center mb-5 sm:mb-6 pt-1">
+          <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-full overflow-hidden border-2 border-[#fee000] mx-auto mb-2.5 sm:mb-3 shadow-md bg-white">
             <img src={logoImg} alt="Yahiya Traders" className="w-full h-full object-cover" />
           </div>
-          <h3 className="text-2xl font-black text-[#1d1d1d] dark:text-white">
+          <h3 className="text-xl sm:text-2xl font-black text-[#1d1d1d] dark:text-white leading-tight">
             {isRegistering ? 'Join Yahiya Traders Club' : 'Welcome to Yahiya Traders'}
           </h3>
-          <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-1">
+          <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-1 sm:mt-1.5 leading-relaxed px-1">
             {isRegistering
               ? 'Receive fresh harvest previews, royal dates announcements, and member discounts.'
               : 'Sign in to access your orders, delivery tracking, and store administration.'}
@@ -71,35 +72,37 @@ export function AuthModal({ isOpen, onClose }) {
         </div>
 
         {error && (
-          <div className="mb-4 p-3 rounded-lg bg-[#D32F2F]/10 text-[#D32F2F] text-xs font-semibold">
+          <div className="mb-4 p-3 rounded-xl bg-[#D32F2F]/10 text-[#D32F2F] text-xs font-semibold">
             {error}
           </div>
         )}
 
-        {/* Quick Demo Fill Buttons */}
-        <div className="mb-5 p-3 rounded-xl bg-[#FDF8F5] dark:bg-[#1C1412] border border-[#EBE0D8] dark:border-[#3E2F29]">
-          <span className="text-[11px] font-semibold text-[#6D4C41] dark:text-[#C8B8B0] block mb-2">
-            Instant Demo Logins (Click to auto-fill):
+        {/* Quick Demo Fill Buttons - Perfect Mobile Fit */}
+        <div className="mb-4 sm:mb-5 p-3 rounded-xl bg-[#FDF8F5] dark:bg-[#1C1412] border border-[#EBE0D8] dark:border-[#3E2F29]">
+          <span className="text-[11px] font-semibold text-[#6D4C41] dark:text-[#C8B8B0] block mb-2 text-center sm:text-left">
+            Instant Demo Logins (Tap to auto-fill):
           </span>
-          <div className="flex gap-2">
+          <div className="grid grid-cols-2 gap-2">
             <button
               type="button"
               onClick={() => handleDemoFill('admin')}
-              className="flex-1 py-1.5 px-2 bg-white dark:bg-[#271E1B] border border-[#D7C4BC] dark:border-[#3E2F29] rounded-lg text-xs font-bold text-[#795548] dark:text-[#A1887F] hover:bg-[#EFEBE9] transition cursor-pointer"
+              className="w-full py-2 px-1.5 sm:px-2 bg-white dark:bg-[#271E1B] border border-[#D7C4BC] dark:border-[#3E2F29] rounded-lg text-[11px] sm:text-xs font-bold text-[#795548] dark:text-[#A1887F] hover:bg-[#EFEBE9] transition cursor-pointer text-center truncate"
+              title="Admin Account"
             >
               👑 Admin Account
             </button>
             <button
               type="button"
               onClick={() => handleDemoFill('customer')}
-              className="flex-1 py-1.5 px-2 bg-white dark:bg-[#271E1B] border border-[#D7C4BC] dark:border-[#3E2F29] rounded-lg text-xs font-bold text-[#6D4C41] dark:text-[#C8B8B0] hover:bg-[#EFEBE9] transition cursor-pointer"
+              className="w-full py-2 px-1.5 sm:px-2 bg-white dark:bg-[#271E1B] border border-[#D7C4BC] dark:border-[#3E2F29] rounded-lg text-[11px] sm:text-xs font-bold text-[#6D4C41] dark:text-[#C8B8B0] hover:bg-[#EFEBE9] transition cursor-pointer text-center truncate"
+              title="Customer Account"
             >
               🌴 Customer Account
             </button>
           </div>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-3.5 sm:space-y-4">
           {isRegistering && (
             <div>
               <label className="block text-xs font-semibold text-[#3E2723] dark:text-[#F5EFEA] mb-1">
@@ -113,7 +116,7 @@ export function AuthModal({ isOpen, onClose }) {
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   placeholder="Claire Delacroix"
-                  className="w-full h-11 pl-10 pr-3.5 rounded-input border border-[#D7C4BC] dark:border-[#3E2F29] bg-white dark:bg-[#271E1B] text-[#3E2723] dark:text-[#F5EFEA] text-sm focus:outline-none focus:ring-2 focus:ring-[#795548]/30 focus:border-[#795548]"
+                  className="w-full h-11 pl-10 pr-3.5 rounded-xl border border-[#D7C4BC] dark:border-[#3E2F29] bg-white dark:bg-[#271E1B] text-[#3E2723] dark:text-[#F5EFEA] text-base sm:text-sm focus:outline-none focus:ring-2 focus:ring-[#795548]/30 focus:border-[#795548]"
                 />
               </div>
             </div>
@@ -131,7 +134,7 @@ export function AuthModal({ isOpen, onClose }) {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="claire@domain.com"
-                className="w-full h-11 pl-10 pr-3.5 rounded-input border border-[#D7C4BC] dark:border-[#3E2F29] bg-white dark:bg-[#271E1B] text-[#3E2723] dark:text-[#F5EFEA] text-sm focus:outline-none focus:ring-2 focus:ring-[#795548]/30 focus:border-[#795548]"
+                className="w-full h-11 pl-10 pr-3.5 rounded-xl border border-[#D7C4BC] dark:border-[#3E2F29] bg-white dark:bg-[#271E1B] text-[#3E2723] dark:text-[#F5EFEA] text-base sm:text-sm focus:outline-none focus:ring-2 focus:ring-[#795548]/30 focus:border-[#795548]"
               />
             </div>
           </div>
@@ -148,7 +151,7 @@ export function AuthModal({ isOpen, onClose }) {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="••••••••"
-                className="w-full h-11 pl-10 pr-3.5 rounded-input border border-[#D7C4BC] dark:border-[#3E2F29] bg-white dark:bg-[#271E1B] text-[#3E2723] dark:text-[#F5EFEA] text-sm focus:outline-none focus:ring-2 focus:ring-[#795548]/30 focus:border-[#795548]"
+                className="w-full h-11 pl-10 pr-3.5 rounded-xl border border-[#D7C4BC] dark:border-[#3E2F29] bg-white dark:bg-[#271E1B] text-[#3E2723] dark:text-[#F5EFEA] text-base sm:text-sm focus:outline-none focus:ring-2 focus:ring-[#795548]/30 focus:border-[#795548]"
               />
             </div>
           </div>
@@ -156,20 +159,20 @@ export function AuthModal({ isOpen, onClose }) {
           <button
             type="submit"
             disabled={loading}
-            className="w-full h-11 rounded-full bg-[#fee000] hover:bg-[#f5d600] text-[#1d1d1d] text-sm font-black shadow-md transition-all mt-2 flex items-center justify-center gap-2"
+            className="w-full h-11 rounded-full bg-[#fee000] hover:bg-[#f5d600] active:scale-[0.99] text-[#1d1d1d] text-sm font-black shadow-md transition-all mt-2 flex items-center justify-center gap-2 cursor-pointer"
           >
             <span>{loading ? 'Authenticating...' : isRegistering ? 'Join Yahiya Traders' : 'Sign In'}</span>
           </button>
         </form>
 
-        <div className="mt-5 text-center text-xs text-[#6D4C41] dark:text-[#C8B8B0]">
+        <div className="mt-4 sm:mt-5 text-center text-xs text-[#6D4C41] dark:text-[#C8B8B0]">
           {isRegistering ? (
             <span>
               Already a member?{' '}
               <button
                 type="button"
                 onClick={() => setIsRegistering(false)}
-                className="font-semibold text-[#795548] dark:text-[#A1887F] hover:underline"
+                className="font-bold text-[#795548] dark:text-[#A1887F] hover:underline cursor-pointer"
               >
                 Sign In
               </button>
@@ -180,7 +183,7 @@ export function AuthModal({ isOpen, onClose }) {
               <button
                 type="button"
                 onClick={() => setIsRegistering(true)}
-                className="font-bold text-[#1d1d1d] dark:text-[#fee000] hover:underline"
+                className="font-bold text-[#1d1d1d] dark:text-[#fee000] hover:underline cursor-pointer"
               >
                 Create an Account
               </button>

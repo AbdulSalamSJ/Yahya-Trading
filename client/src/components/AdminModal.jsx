@@ -211,40 +211,41 @@ export function AdminModal({ isOpen, onClose, onRefreshProducts, onOpenAddItem, 
   };
 
   return (
-    <div className="fixed inset-0 z-50 overflow-y-auto bg-black/60 backdrop-blur-sm flex items-center justify-center p-3 sm:p-6 animate-fadeIn">
-      <div className="relative w-full max-w-5xl bg-[#FFFFFF] dark:bg-[#271E1B] border border-[#EBE0D8] dark:border-[#3E2F29] rounded-2xl shadow-2xl overflow-hidden my-6 max-h-[90vh] flex flex-col">
+    <div className="fixed inset-0 z-50 overflow-y-auto bg-black/60 backdrop-blur-sm flex items-center justify-center p-2 sm:p-6 animate-fadeIn">
+      <div className="relative w-full max-w-5xl bg-[#FFFFFF] dark:bg-[#271E1B] border border-[#EBE0D8] dark:border-[#3E2F29] rounded-2xl shadow-2xl overflow-hidden my-auto max-h-[92vh] flex flex-col">
         
         {/* Top Bar */}
-        <div className="p-5 border-b border-neutral-200 dark:border-neutral-800 bg-[#fafafa] dark:bg-[#181818] flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-full overflow-hidden border-2 border-[#fee000] shadow-sm flex-shrink-0 bg-white">
+        <div className="p-3.5 sm:p-5 border-b border-neutral-200 dark:border-neutral-800 bg-[#fafafa] dark:bg-[#181818] flex items-center justify-between gap-3">
+          <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
+            <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-full overflow-hidden border-2 border-[#fee000] shadow-sm flex-shrink-0 bg-white">
               <img src={logoImg} alt="Yahiya Traders" className="w-full h-full object-cover" />
             </div>
-            <div>
-              <h3 className="text-lg font-black text-[#1d1d1d] dark:text-white">
-                Yahiya Traders Store Administration & Orders
+            <div className="min-w-0">
+              <h3 className="text-sm sm:text-lg font-black text-[#1d1d1d] dark:text-white truncate">
+                Yahiya Traders Administration
               </h3>
-              <p className="text-xs text-neutral-500 dark:text-neutral-400">
-                Manage dates, nuts, dry fruits & chocolates catalog, order fulfillment, and metrics.
+              <p className="text-[10px] sm:text-xs text-neutral-500 dark:text-neutral-400 truncate">
+                Manage harvest catalog, orders & metrics
               </p>
             </div>
           </div>
 
           <button
             onClick={onClose}
-            className="p-1.5 text-[#6D4C41] dark:text-[#C8B8B0] hover:text-[#3E2723] dark:hover:text-[#F5EFEA] rounded-lg transition"
+            className="p-1.5 sm:p-2 text-[#6D4C41] dark:text-[#C8B8B0] hover:text-[#3E2723] dark:hover:text-[#F5EFEA] hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-xl transition flex-shrink-0 cursor-pointer"
+            aria-label="Close admin modal"
           >
-            <X size={20} />
+            <X size={18} />
           </button>
         </div>
 
-        {/* Tab Navigation */}
-        <div className="px-6 border-b border-[#EBE0D8] dark:border-[#3E2F29] bg-white dark:bg-[#271E1B] flex gap-6 text-sm font-medium">
+        {/* Tab Navigation - Horizontal Scrolling for Mobile */}
+        <div className="px-3 sm:px-6 border-b border-[#EBE0D8] dark:border-[#3E2F29] bg-white dark:bg-[#271E1B] flex gap-2 sm:gap-6 text-xs sm:text-sm font-medium overflow-x-auto scrollbar-none whitespace-nowrap">
           <button
             onClick={() => setActiveTab('metrics')}
-            className={`py-3 border-b-2 transition ${
+            className={`py-2.5 sm:py-3 px-2 border-b-2 transition whitespace-nowrap cursor-pointer ${
               activeTab === 'metrics'
-                ? 'border-[#795548] text-[#3E2723] dark:text-[#F5EFEA] font-semibold'
+                ? 'border-[#795548] text-[#3E2723] dark:text-[#F5EFEA] font-bold'
                 : 'border-transparent text-[#6D4C41] dark:text-[#C8B8B0] hover:text-[#3E2723]'
             }`}
           >
@@ -252,9 +253,9 @@ export function AdminModal({ isOpen, onClose, onRefreshProducts, onOpenAddItem, 
           </button>
           <button
             onClick={() => setActiveTab('orders')}
-            className={`py-3 border-b-2 transition ${
+            className={`py-2.5 sm:py-3 px-2 border-b-2 transition whitespace-nowrap cursor-pointer ${
               activeTab === 'orders'
-                ? 'border-[#795548] text-[#3E2723] dark:text-[#F5EFEA] font-semibold'
+                ? 'border-[#795548] text-[#3E2723] dark:text-[#F5EFEA] font-bold'
                 : 'border-transparent text-[#6D4C41] dark:text-[#C8B8B0] hover:text-[#3E2723]'
             }`}
           >
@@ -262,18 +263,18 @@ export function AdminModal({ isOpen, onClose, onRefreshProducts, onOpenAddItem, 
           </button>
           <button
             onClick={() => setActiveTab('products')}
-            className={`py-3 border-b-2 transition ${
+            className={`py-2.5 sm:py-3 px-2 border-b-2 transition whitespace-nowrap cursor-pointer ${
               activeTab === 'products'
-                ? 'border-[#795548] text-[#3E2723] dark:text-[#F5EFEA] font-semibold'
+                ? 'border-[#795548] text-[#3E2723] dark:text-[#F5EFEA] font-bold'
                 : 'border-transparent text-[#6D4C41] dark:text-[#C8B8B0] hover:text-[#3E2723]'
             }`}
           >
-            Catalog: Edit Weight & Price ({products.length})
+            Catalog & Price ({products.length})
           </button>
         </div>
 
         {/* Main Content Area */}
-        <div className="p-6 overflow-y-auto flex-1 space-y-6">
+        <div className="p-3.5 sm:p-6 overflow-y-auto flex-1 space-y-4 sm:space-y-6">
           
           {/* TAB 1: METRICS */}
           {activeTab === 'metrics' && (
