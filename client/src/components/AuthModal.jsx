@@ -122,24 +122,15 @@ export function AuthModal({ isOpen, onClose, isAdminAccess = false }) {
                 Admin Mode
               </span>
             </div>
-            <div className="grid grid-cols-2 gap-2">
-              <button
-                type="button"
-                onClick={() => handleDemoFill('admin')}
-                className="w-full py-2 px-1.5 sm:px-2 bg-[#fee000] hover:bg-[#f5d600] active:scale-[0.99] border border-amber-400 rounded-lg text-[11px] sm:text-xs font-black text-[#1d1d1d] shadow-sm transition cursor-pointer text-center truncate"
-                title="Admin Account"
-              >
-                👑 Admin Account
-              </button>
-              <button
-                type="button"
-                onClick={() => handleDemoFill('customer')}
-                className="w-full py-2 px-1.5 sm:px-2 bg-white dark:bg-[#271E1B] border border-[#D7C4BC] dark:border-[#3E2F29] rounded-lg text-[11px] sm:text-xs font-bold text-[#6D4C41] dark:text-[#C8B8B0] hover:bg-[#EFEBE9] transition cursor-pointer text-center truncate"
-                title="Customer Account"
-              >
-                🌴 Customer Account
-              </button>
-            </div>
+            <button
+              type="button"
+              onClick={() => handleDemoFill('admin')}
+              className="w-full py-2.5 px-3 bg-[#fee000] hover:bg-[#f5d600] active:scale-[0.99] border border-amber-400 rounded-lg text-xs font-black text-[#1d1d1d] shadow-sm transition cursor-pointer text-center flex items-center justify-center gap-2"
+              title="Admin Account"
+            >
+              <ShieldCheck size={16} />
+              <span>👑 Admin Account (Auto-fill)</span>
+            </button>
           </div>
         ) : (
           <div className="mb-4 sm:mb-5 p-3 rounded-xl bg-[#FDF8F5] dark:bg-[#1C1412] border border-[#EBE0D8] dark:border-[#3E2F29]">
@@ -216,35 +207,37 @@ export function AuthModal({ isOpen, onClose, isAdminAccess = false }) {
             disabled={loading}
             className="w-full h-11 rounded-full bg-[#fee000] hover:bg-[#f5d600] active:scale-[0.99] text-[#1d1d1d] text-sm font-black shadow-md transition-all mt-2 flex items-center justify-center gap-2 cursor-pointer"
           >
-            <span>{loading ? 'Authenticating...' : isRegistering ? 'Join Yahiya Traders' : 'Sign In'}</span>
+            <span>{loading ? 'Authenticating...' : isRegistering ? 'Join Yahiya Traders' : isRahman ? 'Sign In as Administrator' : 'Sign In'}</span>
           </button>
         </form>
 
-        <div className="mt-4 sm:mt-5 text-center text-xs text-[#6D4C41] dark:text-[#C8B8B0]">
-          {isRegistering ? (
-            <span>
-              Already a member?{' '}
-              <button
-                type="button"
-                onClick={() => setIsRegistering(false)}
-                className="font-bold text-[#795548] dark:text-[#A1887F] hover:underline cursor-pointer"
-              >
-                Sign In
-              </button>
-            </span>
-          ) : (
-            <span>
-              New to Yahiya Traders?{' '}
-              <button
-                type="button"
-                onClick={() => setIsRegistering(true)}
-                className="font-bold text-[#1d1d1d] dark:text-[#fee000] hover:underline cursor-pointer"
-              >
-                Create an Account
-              </button>
-            </span>
-          )}
-        </div>
+        {!isRahman && (
+          <div className="mt-4 sm:mt-5 text-center text-xs text-[#6D4C41] dark:text-[#C8B8B0]">
+            {isRegistering ? (
+              <span>
+                Already a member?{' '}
+                <button
+                  type="button"
+                  onClick={() => setIsRegistering(false)}
+                  className="font-bold text-[#795548] dark:text-[#A1887F] hover:underline cursor-pointer"
+                >
+                  Sign In
+                </button>
+              </span>
+            ) : (
+              <span>
+                New to Yahiya Traders?{' '}
+                <button
+                  type="button"
+                  onClick={() => setIsRegistering(true)}
+                  className="font-bold text-[#1d1d1d] dark:text-[#fee000] hover:underline cursor-pointer"
+                >
+                  Create an Account
+                </button>
+              </span>
+            )}
+          </div>
+        )}
 
       </div>
     </div>
