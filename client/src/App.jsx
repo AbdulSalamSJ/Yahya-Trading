@@ -40,9 +40,42 @@ export function App() {
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
   const [isAuthOpen, setIsAuthOpen] = useState(false);
+  const [isRahmanAdmin, setIsRahmanAdmin] = useState(false);
   const [isAdminOpen, setIsAdminOpen] = useState(false);
   const [isAddItemOpen, setIsAddItemOpen] = useState(false);
   const [trackedOrder, setTrackedOrder] = useState(null);
+
+  // Secret admin route listener: automatically opens admin portal when URL contains or ends with /rahman
+  useEffect(() => {
+    const checkRahmanRoute = () => {
+      if (typeof window === 'undefined') return;
+      const path = (window.location.pathname || '').toLowerCase();
+      const hash = (window.location.hash || '').toLowerCase();
+      const search = (window.location.search || '').toLowerCase();
+
+      const isRahman =
+        path.endsWith('/rahman') ||
+        path.endsWith('/rahman/') ||
+        path.includes('/rahman') ||
+        hash.includes('/rahman') ||
+        hash.includes('rahman') ||
+        search.includes('rahman');
+
+      if (isRahman) {
+        setIsRahmanAdmin(true);
+        setIsAuthOpen(true);
+      }
+    };
+
+    checkRahmanRoute();
+    window.addEventListener('popstate', checkRahmanRoute);
+    window.addEventListener('hashchange', checkRahmanRoute);
+
+    return () => {
+      window.removeEventListener('popstate', checkRahmanRoute);
+      window.removeEventListener('hashchange', checkRahmanRoute);
+    };
+  }, []);
 
   // Sync tab navigation with categories
   useEffect(() => {
@@ -184,7 +217,19 @@ export function App() {
 
       {/* Header Navigation */}
       <Navbar
-        onOpenAuth={() => setIsAuthOpen(true)}
+        onOpenAuth={() => {
+          if (
+            typeof window !== 'undefined' && (
+              window.location.pathname.toLowerCase().includes('rahman') ||
+              window.location.hash.toLowerCase().includes('rahman') ||
+              window.location.search.toLowerCase().includes('rahman')
+            )
+          ) {
+            window.history.replaceState({}, '', '/');
+          }
+          setIsRahmanAdmin(false);
+          setIsAuthOpen(true);
+        }}
         onOpenAdmin={() => setIsAdminOpen(true)}
         onOpenAddItem={() => setIsAddItemOpen(true)}
         onOpenTracking={handleOpenTrackingFromNav}
@@ -589,7 +634,20 @@ export function App() {
       {isAuthOpen && (
         <AuthModal
           isOpen={isAuthOpen}
-          onClose={() => setIsAuthOpen(false)}
+          isAdminAccess={isRahmanAdmin}
+          onClose={() => {
+            setIsAuthOpen(false);
+            setIsRahmanAdmin(false);
+            if (
+              typeof window !== 'undefined' && (
+                window.location.pathname.toLowerCase().includes('rahman') ||
+                window.location.hash.toLowerCase().includes('rahman') ||
+                window.location.search.toLowerCase().includes('rahman')
+              )
+            ) {
+              window.history.replaceState({}, '', '/');
+            }
+          }}
         />
       )}
 

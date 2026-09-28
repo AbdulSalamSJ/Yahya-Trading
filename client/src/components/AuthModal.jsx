@@ -3,7 +3,7 @@ import { X, Lock, Mail, User, ShieldCheck } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import logoImg from '../image/logo.jpg';
 
-export function AuthModal({ isOpen, onClose }) {
+export function AuthModal({ isOpen, onClose, isAdminAccess = false }) {
   const { login, register } = useAuth();
   const [isRegistering, setIsRegistering] = useState(false);
   const [name, setName] = useState('');
@@ -11,6 +11,33 @@ export function AuthModal({ isOpen, onClose }) {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+
+  // Check if current URL ends with /rahman or contains rahman, or isAdminAccess prop is set
+  const isRahman = isAdminAccess || (
+    typeof window !== 'undefined' && (
+      window.location.pathname.toLowerCase().endsWith('/rahman') ||
+      window.location.pathname.toLowerCase().endsWith('/rahman/') ||
+      window.location.pathname.toLowerCase().includes('/rahman') ||
+      window.location.search.toLowerCase().includes('rahman') ||
+      window.location.hash.toLowerCase().includes('rahman')
+    )
+  );
+
+  // If opening specifically via /rahman, auto-fill admin credentials; otherwise keep clean
+  React.useEffect(() => {
+    if (isOpen) {
+      if (isRahman) {
+        setEmail('admin@yahiyatraders.com');
+        setPassword('Admin@123');
+        setIsRegistering(false);
+      } else {
+        setEmail('');
+        setPassword('');
+        setName('');
+        setError('');
+      }
+    }
+  }, [isOpen, isRahman]);
 
   if (!isOpen) return null;
 
@@ -51,7 +78,7 @@ export function AuthModal({ isOpen, onClose }) {
         
         <button
           onClick={onClose}
-          className="absolute top-3.5 right-3.5 sm:top-4 sm:right-4 p-2 text-[#6D4C41] dark:text-[#C8B8B0] hover:text-[#3E2723] dark:hover:text-[#F5EFEA] hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-xl transition"
+          className="absolute top-3.5 right-3.5 sm:top-4 sm:right-4 p-2 text-[#6D4C41] dark:text-[#C8B8B0] hover:text-[#3E2723] dark:hover:text-[#F5EFEA] hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-xl transition cursor-pointer"
           aria-label="Close dialog"
         >
           <X size={18} />
@@ -62,12 +89,18 @@ export function AuthModal({ isOpen, onClose }) {
             <img src={logoImg} alt="Yahiya Traders" className="w-full h-full object-cover" />
           </div>
           <h3 className="text-xl sm:text-2xl font-black text-[#1d1d1d] dark:text-white leading-tight">
-            {isRegistering ? 'Join Yahiya Traders Club' : 'Welcome to Yahiya Traders'}
+            {isRegistering
+              ? 'Join Yahiya Traders Club'
+              : isRahman
+              ? 'Yahiya Traders Admin Login'
+              : 'Welcome to Yahiya Traders'}
           </h3>
           <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-1 sm:mt-1.5 leading-relaxed px-1">
             {isRegistering
               ? 'Receive fresh harvest previews, royal dates announcements, and member discounts.'
-              : 'Sign in to access your orders, delivery tracking, and store administration.'}
+              : isRahman
+              ? 'Enter authorized administrator credentials to manage storefront, catalog, and orders.'
+              : 'Sign in to access your orders, member savings, and delivery tracking.'}
           </p>
         </div>
 
@@ -77,30 +110,52 @@ export function AuthModal({ isOpen, onClose }) {
           </div>
         )}
 
-        {/* Quick Demo Fill Buttons - Perfect Mobile Fit */}
-        <div className="mb-4 sm:mb-5 p-3 rounded-xl bg-[#FDF8F5] dark:bg-[#1C1412] border border-[#EBE0D8] dark:border-[#3E2F29]">
-          <span className="text-[11px] font-semibold text-[#6D4C41] dark:text-[#C8B8B0] block mb-2 text-center sm:text-left">
-            Instant Demo Logins (Tap to auto-fill):
-          </span>
-          <div className="grid grid-cols-2 gap-2">
-            <button
-              type="button"
-              onClick={() => handleDemoFill('admin')}
-              className="w-full py-2 px-1.5 sm:px-2 bg-white dark:bg-[#271E1B] border border-[#D7C4BC] dark:border-[#3E2F29] rounded-lg text-[11px] sm:text-xs font-bold text-[#795548] dark:text-[#A1887F] hover:bg-[#EFEBE9] transition cursor-pointer text-center truncate"
-              title="Admin Account"
-            >
-              👑 Admin Account
-            </button>
+        {/* Quick Demo Fill Buttons - Admin ONLY shown when URL ends with /rahman */}
+        {isRahman ? (
+          <div className="mb-4 sm:mb-5 p-3 rounded-xl bg-amber-500/10 border-2 border-amber-500/40 animate-fadeIn">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-[11px] font-black text-amber-900 dark:text-amber-200 flex items-center gap-1.5">
+                <span className="w-2 h-2 rounded-full bg-[#108474] animate-pulse"></span>
+                👑 Store Admin Portal (/rahman)
+              </span>
+              <span className="text-[10px] font-black px-2 py-0.5 rounded bg-[#fee000] text-[#1d1d1d]">
+                Admin Mode
+              </span>
+            </div>
+            <div className="grid grid-cols-2 gap-2">
+              <button
+                type="button"
+                onClick={() => handleDemoFill('admin')}
+                className="w-full py-2 px-1.5 sm:px-2 bg-[#fee000] hover:bg-[#f5d600] active:scale-[0.99] border border-amber-400 rounded-lg text-[11px] sm:text-xs font-black text-[#1d1d1d] shadow-sm transition cursor-pointer text-center truncate"
+                title="Admin Account"
+              >
+                👑 Admin Account
+              </button>
+              <button
+                type="button"
+                onClick={() => handleDemoFill('customer')}
+                className="w-full py-2 px-1.5 sm:px-2 bg-white dark:bg-[#271E1B] border border-[#D7C4BC] dark:border-[#3E2F29] rounded-lg text-[11px] sm:text-xs font-bold text-[#6D4C41] dark:text-[#C8B8B0] hover:bg-[#EFEBE9] transition cursor-pointer text-center truncate"
+                title="Customer Account"
+              >
+                🌴 Customer Account
+              </button>
+            </div>
+          </div>
+        ) : (
+          <div className="mb-4 sm:mb-5 p-3 rounded-xl bg-[#FDF8F5] dark:bg-[#1C1412] border border-[#EBE0D8] dark:border-[#3E2F29]">
+            <span className="text-[11px] font-semibold text-[#6D4C41] dark:text-[#C8B8B0] block mb-2 text-center sm:text-left">
+              Quick Customer Demo Login:
+            </span>
             <button
               type="button"
               onClick={() => handleDemoFill('customer')}
-              className="w-full py-2 px-1.5 sm:px-2 bg-white dark:bg-[#271E1B] border border-[#D7C4BC] dark:border-[#3E2F29] rounded-lg text-[11px] sm:text-xs font-bold text-[#6D4C41] dark:text-[#C8B8B0] hover:bg-[#EFEBE9] transition cursor-pointer text-center truncate"
+              className="w-full py-2 px-2 bg-white dark:bg-[#271E1B] border border-[#D7C4BC] dark:border-[#3E2F29] rounded-lg text-xs font-bold text-[#6D4C41] dark:text-[#C8B8B0] hover:bg-[#EFEBE9] transition cursor-pointer text-center"
               title="Customer Account"
             >
-              🌴 Customer Account
+              🌴 Instant Customer Demo Account
             </button>
           </div>
-        </div>
+        )}
 
         <form onSubmit={handleSubmit} className="space-y-3.5 sm:space-y-4">
           {isRegistering && (
