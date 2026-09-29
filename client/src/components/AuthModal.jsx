@@ -12,34 +12,56 @@ export function AuthModal({ isOpen, onClose, isAdminAccess = false }) {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
-  // Check if current URL ends with /rahman or contains rahman, or isAdminAccess prop is set
-  const isRahman = isAdminAccess || (
+  // Check if current URL ends with /rahman, /admin, or isAdminAccess prop is set
+  const isRahmanUrl = isAdminAccess || (
     typeof window !== 'undefined' && (
       window.location.pathname.toLowerCase().endsWith('/rahman') ||
       window.location.pathname.toLowerCase().endsWith('/rahman/') ||
       window.location.pathname.toLowerCase().includes('/rahman') ||
       window.location.search.toLowerCase().includes('rahman') ||
-      window.location.hash.toLowerCase().includes('rahman')
+      window.location.hash.toLowerCase().includes('rahman') ||
+      window.location.pathname.toLowerCase().endsWith('/admin') ||
+      window.location.pathname.toLowerCase().endsWith('/admin/') ||
+      window.location.pathname.toLowerCase().includes('/admin') ||
+      window.location.search.toLowerCase().includes('admin') ||
+      window.location.hash.toLowerCase().includes('admin')
     )
   );
 
-  // If opening specifically via /rahman, auto-fill admin credentials; otherwise keep clean
+  const [isAdminMode, setIsAdminMode] = useState(isRahmanUrl);
+
+  // If opening specifically via /rahman or /admin, auto-fill admin credentials
   React.useEffect(() => {
     if (isOpen) {
-      if (isRahman) {
-        setEmail('admin@yahiyatraders.com');
+      if (isRahmanUrl) {
+        setIsAdminMode(true);
+        setEmail('admin@yahyatraders.com');
         setPassword('Admin@123');
         setIsRegistering(false);
       } else {
+        setIsAdminMode(false);
         setEmail('');
         setPassword('');
         setName('');
         setError('');
       }
     }
-  }, [isOpen, isRahman]);
+  }, [isOpen, isRahmanUrl]);
 
   if (!isOpen) return null;
+
+  const handleToggleAdminMode = (enable) => {
+    setIsAdminMode(enable);
+    setError('');
+    if (enable) {
+      setIsRegistering(false);
+      setEmail('admin@yahyatraders.com');
+      setPassword('Admin@123');
+    } else {
+      setEmail('');
+      setPassword('');
+    }
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -62,7 +84,7 @@ export function AuthModal({ isOpen, onClose, isAdminAccess = false }) {
 
   const handleDemoFill = (type) => {
     if (type === 'admin') {
-      setEmail('admin@yahiyatraders.com');
+      setEmail('admin@yahyatraders.com');
       setPassword('Admin@123');
       setIsRegistering(false);
     } else {
@@ -91,14 +113,14 @@ export function AuthModal({ isOpen, onClose, isAdminAccess = false }) {
           <h3 className="text-xl sm:text-2xl font-black text-[#1d1d1d] dark:text-white leading-tight">
             {isRegistering
               ? 'Join Yahiya Traders Club'
-              : isRahman
+              : isAdminMode
               ? 'Yahiya Traders Admin Login'
               : 'Welcome to Yahiya Traders'}
           </h3>
           <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-1 sm:mt-1.5 leading-relaxed px-1">
             {isRegistering
               ? 'Receive fresh harvest previews, royal dates announcements, and member discounts.'
-              : isRahman
+              : isAdminMode
               ? 'Enter authorized administrator credentials to manage storefront, catalog, and orders.'
               : 'Sign in to access your orders, member savings, and delivery tracking.'}
           </p>
@@ -110,13 +132,13 @@ export function AuthModal({ isOpen, onClose, isAdminAccess = false }) {
           </div>
         )}
 
-        {/* Quick Demo Fill Buttons - Admin ONLY shown when URL ends with /rahman */}
-        {isRahman ? (
+        {/* Quick Demo / Admin Fill Box */}
+        {isAdminMode ? (
           <div className="mb-4 sm:mb-5 p-3 rounded-xl bg-amber-500/10 border-2 border-amber-500/40 animate-fadeIn">
             <div className="flex items-center justify-between mb-2">
               <span className="text-[11px] font-black text-amber-900 dark:text-amber-200 flex items-center gap-1.5">
                 <span className="w-2 h-2 rounded-full bg-[#108474] animate-pulse"></span>
-                👑 Store Admin Portal (/rahman)
+                👑 Store Admin Portal
               </span>
               <span className="text-[10px] font-black px-2 py-0.5 rounded bg-[#fee000] text-[#1d1d1d]">
                 Admin Mode
@@ -126,10 +148,10 @@ export function AuthModal({ isOpen, onClose, isAdminAccess = false }) {
               type="button"
               onClick={() => handleDemoFill('admin')}
               className="w-full py-2.5 px-3 bg-[#fee000] hover:bg-[#f5d600] active:scale-[0.99] border border-amber-400 rounded-lg text-xs font-black text-[#1d1d1d] shadow-sm transition cursor-pointer text-center flex items-center justify-center gap-2"
-              title="Admin Account"
+              title="Auto-fill Store Admin Credentials"
             >
               <ShieldCheck size={16} />
-              <span>👑 Admin Account (Auto-fill)</span>
+              <span>👑 Auto-fill Admin Credentials</span>
             </button>
           </div>
         ) : (
@@ -170,7 +192,7 @@ export function AuthModal({ isOpen, onClose, isAdminAccess = false }) {
 
           <div>
             <label className="block text-xs font-semibold text-[#3E2723] dark:text-[#F5EFEA] mb-1">
-              Email Address
+              {isAdminMode ? 'Admin Email Address' : 'Email Address'}
             </label>
             <div className="relative">
               <Mail size={16} className="absolute left-3.5 top-3.5 text-[#A1887F]" />
@@ -179,7 +201,7 @@ export function AuthModal({ isOpen, onClose, isAdminAccess = false }) {
                 required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                placeholder="claire@domain.com"
+                placeholder={isAdminMode ? 'admin@yahyatraders.com' : 'claire@domain.com'}
                 className="w-full h-11 pl-10 pr-3.5 rounded-xl border border-[#D7C4BC] dark:border-[#3E2F29] bg-white dark:bg-[#271E1B] text-[#3E2723] dark:text-[#F5EFEA] text-base sm:text-sm focus:outline-none focus:ring-2 focus:ring-[#795548]/30 focus:border-[#795548]"
               />
             </div>
@@ -187,7 +209,7 @@ export function AuthModal({ isOpen, onClose, isAdminAccess = false }) {
 
           <div>
             <label className="block text-xs font-semibold text-[#3E2723] dark:text-[#F5EFEA] mb-1">
-              Password
+              {isAdminMode ? 'Admin Password' : 'Password'}
             </label>
             <div className="relative">
               <Lock size={16} className="absolute left-3.5 top-3.5 text-[#A1887F]" />
@@ -207,35 +229,58 @@ export function AuthModal({ isOpen, onClose, isAdminAccess = false }) {
             disabled={loading}
             className="w-full h-11 rounded-full bg-[#fee000] hover:bg-[#f5d600] active:scale-[0.99] text-[#1d1d1d] text-sm font-black shadow-md transition-all mt-2 flex items-center justify-center gap-2 cursor-pointer"
           >
-            <span>{loading ? 'Authenticating...' : isRegistering ? 'Join Yahiya Traders' : isRahman ? 'Sign In as Administrator' : 'Sign In'}</span>
+            <span>{loading ? 'Authenticating...' : isRegistering ? 'Join Yahiya Traders' : isAdminMode ? 'Sign In as Administrator' : 'Sign In'}</span>
           </button>
         </form>
 
-        {!isRahman && (
-          <div className="mt-4 sm:mt-5 text-center text-xs text-[#6D4C41] dark:text-[#C8B8B0]">
-            {isRegistering ? (
-              <span>
-                Already a member?{' '}
-                <button
-                  type="button"
-                  onClick={() => setIsRegistering(false)}
-                  className="font-bold text-[#795548] dark:text-[#A1887F] hover:underline cursor-pointer"
-                >
-                  Sign In
-                </button>
-              </span>
-            ) : (
-              <span>
-                New to Yahiya Traders?{' '}
-                <button
-                  type="button"
-                  onClick={() => setIsRegistering(true)}
-                  className="font-bold text-[#1d1d1d] dark:text-[#fee000] hover:underline cursor-pointer"
-                >
-                  Create an Account
-                </button>
-              </span>
-            )}
+        {isAdminMode ? (
+          <div className="mt-4 pt-3 border-t border-neutral-100 dark:border-neutral-800 text-center">
+            <button
+              type="button"
+              onClick={() => handleToggleAdminMode(false)}
+              className="text-xs text-[#6D4C41] dark:text-[#C8B8B0] hover:underline cursor-pointer"
+            >
+              ← Back to Customer Login
+            </button>
+          </div>
+        ) : (
+          <div className="mt-4 sm:mt-5 text-center text-xs text-[#6D4C41] dark:text-[#C8B8B0] space-y-2.5">
+            <div>
+              {isRegistering ? (
+                <span>
+                  Already a member?{' '}
+                  <button
+                    type="button"
+                    onClick={() => setIsRegistering(false)}
+                    className="font-bold text-[#795548] dark:text-[#A1887F] hover:underline cursor-pointer"
+                  >
+                    Sign In
+                  </button>
+                </span>
+              ) : (
+                <span>
+                  New to Yahiya Traders?{' '}
+                  <button
+                    type="button"
+                    onClick={() => setIsRegistering(true)}
+                    className="font-bold text-[#1d1d1d] dark:text-[#fee000] hover:underline cursor-pointer"
+                  >
+                    Create an Account
+                  </button>
+                </span>
+              )}
+            </div>
+
+            <div className="pt-2 border-t border-neutral-100 dark:border-neutral-800">
+              <button
+                type="button"
+                onClick={() => handleToggleAdminMode(true)}
+                className="text-[11px] text-neutral-400 hover:text-amber-600 dark:hover:text-amber-400 flex items-center justify-center gap-1 mx-auto transition cursor-pointer"
+              >
+                <ShieldCheck size={13} />
+                <span>Store Management? Admin Sign In</span>
+              </button>
+            </div>
           </div>
         )}
 

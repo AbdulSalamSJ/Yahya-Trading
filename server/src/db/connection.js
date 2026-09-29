@@ -325,6 +325,7 @@ export async function initDatabase() {
       if (test && test.rows) {
         isPg = true;
         console.log('✓ Connected to Supabase PostgreSQL database.');
+        await ensureSupabaseAdminUser();
         return;
       }
     } catch (err) {
@@ -377,6 +378,27 @@ export async function initDatabase() {
     console.warn(`! MySQL connection skipped or failed (${err.code || err.message}).`);
     console.log('→ Using resilient embedded JSON store. (To use MySQL, set DB_PASSWORD in server/.env)');
     await initLocalDb();
+  }
+}
+
+async function ensureSupabaseAdminUser() {
+  if (!isPg || !pgPool) return;
+  try {
+    const salt = await bcrypt.genSalt(10);
+    const adminHash = await bcrypt.hash('Admin@123', salt);
+    // Ensure both spellings are available and role is admin
+    await pgPool.query(`
+      INSERT INTO users (name, email, password_hash, role)
+      VALUES 
+        ('Yahya Traders Admin', 'admin@yahyatraders.com', $1, 'admin'),
+        ('Yahiya Traders Admin', 'admin@yahiyatraders.com', $1, 'admin')
+      ON CONFLICT (email) DO UPDATE SET
+        password_hash = EXCLUDED.password_hash,
+        role = 'admin'
+    `, [adminHash]);
+    console.log('✓ Supabase administrator accounts verified.');
+  } catch (err) {
+    console.warn('Admin account check notice:', err.message);
   }
 }
 
