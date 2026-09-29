@@ -1,26 +1,22 @@
 import React, { useState } from 'react';
 import { Star, ShoppingBag, Eye, Check } from 'lucide-react';
 import { useCart } from '../context/CartContext';
-import { SizeSelector } from './SizeSelector';
-import { getPriceForSize } from '../utils/productSizes';
 
 export function ProductCard({ product, onSelectProduct }) {
   const { addToCart } = useCart();
-  const [selectedSize, setSelectedSize] = useState(product.selectedSize || '250G');
 
   const primaryImage = product.images && product.images.length > 0
     ? product.images[0]
     : 'https://images.unsplash.com/photo-1549007994-cb92caebd54b?auto=format&fit=crop&w=800&q=80';
 
-  // Calculate dynamic price based on selected size
-  const currentPrice = getPriceForSize(product, selectedSize);
+  // Direct product price
+  const currentPrice = Number(product.price || 0);
   const regularPrice = Math.round(currentPrice * 1.18);
-  const discountPercent = Math.round(((regularPrice - currentPrice) / regularPrice) * 100);
+  const discountPercent = regularPrice > currentPrice ? Math.round(((regularPrice - currentPrice) / regularPrice) * 100) : 0;
 
   const handleOpenDetail = () => {
     onSelectProduct({
       ...product,
-      selectedSize,
       price: currentPrice
     });
   };
@@ -77,13 +73,10 @@ export function ProductCard({ product, onSelectProduct }) {
       {/* Product Content Details */}
       <div className="p-4 flex-1 flex flex-col justify-between">
         <div>
-          {/* Sourcing Origin & Brand */}
+          {/* Sourcing Origin */}
           <div className="flex items-center justify-between text-[11px] text-neutral-500 dark:text-neutral-400 mb-1">
             <span className="font-bold uppercase tracking-wider text-[10px] text-[#108474] dark:text-[#14b8a6]">
               {product.origin || 'Sourced Globally'}
-            </span>
-            <span className="font-semibold text-neutral-600 dark:text-neutral-400">
-              {selectedSize}
             </span>
           </div>
 
@@ -116,19 +109,8 @@ export function ProductCard({ product, onSelectProduct }) {
           </div>
         </div>
 
-        {/* Pack Size Selector */}
-        <div className="mt-3 pt-1" onClick={(e) => e.stopPropagation()}>
-          <SizeSelector
-            product={product}
-            selectedSize={selectedSize}
-            onSelectSize={setSelectedSize}
-            showLabel={true}
-            compact={true}
-          />
-        </div>
-
         {/* Price & Add to Cart */}
-        <div className="mt-3 pt-3 border-t border-neutral-100 dark:border-neutral-800 flex items-center justify-between gap-2">
+        <div className="mt-4 pt-3 border-t border-neutral-100 dark:border-neutral-800 flex items-center justify-between gap-2">
           <div>
             <div className="flex items-baseline gap-1.5">
               <span className="text-base sm:text-lg font-extrabold text-[#1d1d1d] dark:text-white">
@@ -146,7 +128,7 @@ export function ProductCard({ product, onSelectProduct }) {
           <button
             onClick={(e) => {
               e.stopPropagation();
-              addToCart({ ...product, price: currentPrice, selectedSize }, 1, selectedSize);
+              addToCart({ ...product, price: currentPrice }, 1);
             }}
             className="px-3.5 py-2 rounded-full bg-[#fee000] hover:bg-[#f5d600] active:scale-95 text-[#1d1d1d] text-xs font-bold shadow-sm transition-all flex items-center gap-1.5 cursor-pointer"
             aria-label={`Add ${product.name} to cart`}

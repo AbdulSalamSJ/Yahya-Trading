@@ -330,61 +330,23 @@ export function AddItemModal({ isOpen, onClose, categories = [], onProductCreate
                   </div>
                 </div>
 
-                {/* 3. Price & Net Weight */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-xs font-black uppercase tracking-wider text-neutral-700 dark:text-neutral-300 mb-1.5">
-                      Price (₹ INR) *
-                    </label>
-                    <div className="relative">
-                      <span className="absolute left-3.5 top-1/2 -translate-y-1/2 font-black text-neutral-400">₹</span>
-                      <input
-                        type="number"
-                        step="any"
-                        min="1"
-                        required
-                        placeholder="e.g. 750"
-                        value={formData.price}
-                        onChange={(e) => setFormData({ ...formData, price: e.target.value })}
-                        className="w-full pl-8 pr-4 py-2.5 text-xs font-black rounded-xl border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-[#262626] text-[#1d1d1d] dark:text-white focus:outline-none focus:border-[#fee000]"
-                      />
-                    </div>
-                  </div>
-
-                  <div>
-                    <label className="block text-xs font-black uppercase tracking-wider text-neutral-700 dark:text-neutral-300 mb-1.5">
-                      Net Weight (grams)
-                    </label>
-                    <div className="relative mb-1.5">
-                      <input
-                        type="number"
-                        step="any"
-                        min="1"
-                        placeholder="e.g. 500"
-                        value={formData.cocoa_percentage}
-                        onChange={(e) => setFormData({ ...formData, cocoa_percentage: e.target.value })}
-                        className="w-full px-4 py-2.5 text-xs font-black rounded-xl border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-[#262626] text-[#1d1d1d] dark:text-white focus:outline-none focus:border-[#fee000]"
-                      />
-                      <span className="absolute right-3.5 top-1/2 -translate-y-1/2 text-xs font-bold text-neutral-400">grams</span>
-                    </div>
-                    {/* Quick presets */}
-                    <div className="flex items-center gap-1 flex-wrap">
-                      <span className="text-[10px] text-neutral-400">Presets:</span>
-                      {[100, 150, 250, 400, 500, 1000].map(wt => (
-                        <button
-                          key={wt}
-                          type="button"
-                          onClick={() => setFormData({ ...formData, cocoa_percentage: wt })}
-                          className={`text-[10px] font-bold px-1.5 py-0.5 rounded transition cursor-pointer ${
-                            Number(formData.cocoa_percentage) === wt
-                              ? 'bg-[#108474] text-white'
-                              : 'bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400 hover:bg-neutral-200'
-                          }`}
-                        >
-                          {wt >= 1000 ? `${wt/1000}kg` : `${wt}g`}
-                        </button>
-                      ))}
-                    </div>
+                {/* 3. Price */}
+                <div>
+                  <label className="block text-xs font-black uppercase tracking-wider text-neutral-700 dark:text-neutral-300 mb-1.5">
+                    Price (₹ INR) *
+                  </label>
+                  <div className="relative">
+                    <span className="absolute left-3.5 top-1/2 -translate-y-1/2 font-black text-neutral-400">₹</span>
+                    <input
+                      type="number"
+                      step="any"
+                      min="1"
+                      required
+                      placeholder="e.g. 750"
+                      value={formData.price}
+                      onChange={(e) => setFormData({ ...formData, price: e.target.value })}
+                      className="w-full pl-8 pr-4 py-2.5 text-xs font-black rounded-xl border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-[#262626] text-[#1d1d1d] dark:text-white focus:outline-none focus:border-[#fee000]"
+                    />
                   </div>
                 </div>
 
@@ -607,7 +569,7 @@ export function AddItemModal({ isOpen, onClose, categories = [], onProductCreate
                       {formData.name || 'Item Name'}
                     </h4>
                     <p className="text-[11px] text-neutral-400">
-                      {formData.cocoa_percentage ? `${formData.cocoa_percentage}g` : '500g'} • {formData.origin || 'Imported'}
+                      {formData.origin || 'Imported'}
                     </p>
                     <div className="pt-2 flex items-baseline justify-between border-t border-neutral-100 dark:border-neutral-800">
                       <span className="text-sm font-black text-[#1d1d1d] dark:text-[#fee000]">

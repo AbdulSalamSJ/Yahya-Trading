@@ -2357,18 +2357,6 @@ export function AdminDashboard({ isOpen, onClose, onRefreshProducts, onOpenAddIt
                 </div>
 
 
-
-                <div>
-                  <label className="block font-bold text-neutral-700 dark:text-neutral-300 mb-1">Weight (grams)</label>
-                  <input
-                    type="number"
-                    placeholder="500"
-                    value={newProduct.cocoa_percentage}
-                    onChange={(e) => setNewProduct({ ...newProduct, cocoa_percentage: e.target.value })}
-                    className="w-full h-10 px-3 rounded-lg border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white font-medium"
-                  />
-                </div>
-
                 <div>
                   <label className="block font-bold text-neutral-700 dark:text-neutral-300 mb-1">Harvest Origin</label>
                   <input

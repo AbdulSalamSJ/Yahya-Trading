@@ -29,13 +29,12 @@ export function CartProvider({ children }) {
     }, 3500);
   };
 
-  const addToCart = (product, quantity = 1, size = null) => {
-    const selectedSize = size || product.selectedSize || '250G';
-    const itemKey = `${product.id}-${selectedSize}`;
+  const addToCart = (product, quantity = 1) => {
+    const itemKey = String(product.id);
     const price = product.price != null ? Number(product.price) : 0;
 
     setCartItems(prev => {
-      const existingIndex = prev.findIndex(item => item.itemKey === itemKey || (!item.itemKey && item.id === product.id && item.selectedSize === selectedSize));
+      const existingIndex = prev.findIndex(item => item.itemKey === itemKey || item.id === product.id);
       if (existingIndex > -1) {
         const updated = [...prev];
         updated[existingIndex].quantity += quantity;
@@ -44,12 +43,11 @@ export function CartProvider({ children }) {
       return [...prev, {
         ...product,
         itemKey,
-        selectedSize,
         price,
         quantity
       }];
     });
-    showToast(`Added "${product.name} (${selectedSize})" to cart`);
+    showToast(`Added "${product.name}" to cart`);
   };
 
   const updateQuantity = (itemKeyOrId, newQuantity) => {

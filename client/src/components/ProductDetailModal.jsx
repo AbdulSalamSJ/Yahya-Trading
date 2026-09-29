@@ -29,8 +29,6 @@ import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
 import { api } from '../services/api';
 import logoImg from '../image/logo.jpg';
-import { SizeSelector } from './SizeSelector';
-import { getPriceForSize } from '../utils/productSizes';
 
 export function ProductDetailModal({
   product: initialProduct,
@@ -171,9 +169,9 @@ const handleBack = (e) => {
     ? product.images
     : ['/images/products/california-almonds.jpg'];
 
-  const currentPrice = getPriceForSize(product, selectedSize);
+  const currentPrice = Number(product.price || 0);
   const regularPrice = Math.round(currentPrice * 1.18);
-  const discountPercent = Math.round(((regularPrice - currentPrice) / regularPrice) * 100);
+  const discountPercent = regularPrice > currentPrice ? Math.round(((regularPrice - currentPrice) / regularPrice) * 100) : 0;
 
   // Customer handlers
   const handleAddReview = async (e) => {
@@ -202,9 +200,8 @@ const handleBack = (e) => {
   const handleAddToCart = () => {
     addToCart({
       ...product,
-      price: currentPrice,
-      selectedSize
-    }, quantity, selectedSize);
+      price: currentPrice
+    }, quantity);
     setJustAdded(true);
     setTimeout(() => setJustAdded(false), 2200);
   };
@@ -212,9 +209,8 @@ const handleBack = (e) => {
   const handleBuyNow = () => {
     addToCart({
       ...product,
-      price: currentPrice,
-      selectedSize
-    }, quantity, selectedSize);
+      price: currentPrice
+    }, quantity);
     if (onBuyNow) {
       onBuyNow();
     } else {
@@ -647,65 +643,23 @@ const handleBack = (e) => {
                   </div>
                 </div>
 
-                {/* 3. Price & Net Weight (with quick presets) */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  {/* Price */}
-                  <div>
-                    <label className="block text-xs font-black text-neutral-700 dark:text-neutral-300 uppercase tracking-wider mb-1.5">
-                      Price (₹ INR) *
-                    </label>
-                    <div className="relative">
-                      <span className="absolute left-3.5 top-1/2 -translate-y-1/2 font-black text-neutral-400">₹</span>
-                      <input
-                        type="number"
-                        step="any"
-                        min="1"
-                        required
-                        value={editForm.price}
-                        onChange={(e) => setEditForm({ ...editForm, price: e.target.value })}
-                        placeholder="850"
-                        className="w-full pl-8 pr-4 py-2.5 rounded-xl border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-[#202020] text-sm font-black text-[#1d1d1d] dark:text-white focus:outline-none focus:border-[#108474]"
-                      />
-                    </div>
-                  </div>
-
-                  {/* Net Weight */}
-                  <div>
-                    <label className="block text-xs font-black text-neutral-700 dark:text-neutral-300 uppercase tracking-wider mb-1.5">
-                      Net Weight (grams) *
-                    </label>
-                    <div className="relative mb-1.5">
-                      <input
-                        type="number"
-                        step="any"
-                        min="1"
-                        required
-                        value={editForm.cocoa_percentage}
-                        onChange={(e) => setEditForm({ ...editForm, cocoa_percentage: e.target.value })}
-                        placeholder="500"
-                        className="w-full px-4 py-2.5 rounded-xl border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-[#202020] text-sm font-black text-[#1d1d1d] dark:text-white focus:outline-none focus:border-[#108474]"
-                      />
-                      <span className="absolute right-3.5 top-1/2 -translate-y-1/2 text-xs font-bold text-neutral-400">grams</span>
-                    </div>
-
-                    {/* Quick presets */}
-                    <div className="flex items-center gap-1">
-                      <span className="text-[10px] text-neutral-400">Presets:</span>
-                      {[100, 150, 250, 400, 500, 1000].map(wt => (
-                        <button
-                          key={wt}
-                          type="button"
-                          onClick={() => setEditForm({ ...editForm, cocoa_percentage: wt })}
-                          className={`text-[10px] font-bold px-1.5 py-0.5 rounded transition cursor-pointer ${
-                            Number(editForm.cocoa_percentage) === wt
-                              ? 'bg-[#108474] text-white'
-                              : 'bg-neutral-200 dark:bg-neutral-700 text-neutral-700 dark:text-neutral-300 hover:bg-neutral-300'
-                          }`}
-                        >
-                          {wt >= 1000 ? `${wt/1000}kg` : `${wt}g`}
-                        </button>
-                      ))}
-                    </div>
+                {/* 3. Price */}
+                <div>
+                  <label className="block text-xs font-black text-neutral-700 dark:text-neutral-300 uppercase tracking-wider mb-1.5">
+                    Price (₹ INR) *
+                  </label>
+                  <div className="relative">
+                    <span className="absolute left-3.5 top-1/2 -translate-y-1/2 font-black text-neutral-400">₹</span>
+                    <input
+                      type="number"
+                      step="any"
+                      min="1"
+                      required
+                      value={editForm.price}
+                      onChange={(e) => setEditForm({ ...editForm, price: e.target.value })}
+                      placeholder="850"
+                      className="w-full pl-8 pr-4 py-2.5 rounded-xl border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-[#202020] text-sm font-black text-[#1d1d1d] dark:text-white focus:outline-none focus:border-[#108474]"
+                    />
                   </div>
                 </div>
 
@@ -863,18 +817,10 @@ const handleBack = (e) => {
                   </span>
                 </div>
 
-                {/* SIZE Selector (from screenshot requirement) */}
-                <div className="mb-5">
-                  <SizeSelector
-                    product={product}
-                    selectedSize={selectedSize}
-                    onSelectSize={setSelectedSize}
-                    showLabel={true}
-                  />
-                  <div className="flex items-center gap-2 mt-2 text-xs text-neutral-500 dark:text-neutral-400">
-                    <span className="inline-block w-2 h-2 rounded-full bg-[#108474]"></span>
-                    <span>Aroma-seal tamper-evident freshness pouch</span>
-                  </div>
+                {/* Freshness Badge */}
+                <div className="mb-5 flex items-center gap-2 text-xs text-neutral-500 dark:text-neutral-400">
+                  <span className="inline-block w-2 h-2 rounded-full bg-[#108474]"></span>
+                  <span>Aroma-seal tamper-evident freshness pouch</span>
                 </div>
 
                 {/* Stock Status */}
