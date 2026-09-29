@@ -619,9 +619,8 @@ export function AdminModal({ isOpen, onClose, onRefreshProducts, onOpenAddItem, 
                 <table className="w-full text-left text-xs text-[#3E2723] dark:text-[#F5EFEA]">
                   <thead className="bg-[#FDF8F5] dark:bg-[#1C1412] border-b border-[#EBE0D8] dark:border-[#3E2F29] text-[#6D4C41] dark:text-[#C8B8B0]">
                     <tr>
-                      <th className="p-3">Item Details</th>
+                      <th className="p-3">Product Item</th>
                       <th className="p-3">Category</th>
-                      <th className="p-3">Current Weight</th>
                       <th className="p-3">Current Price</th>
                       <th className="p-3 text-right">Actions</th>
                     </tr>
@@ -651,23 +650,13 @@ export function AdminModal({ isOpen, onClose, onRefreshProducts, onOpenAddItem, 
                                       onError={(e) => { e.currentTarget.src = '/images/products/california-almonds.jpg'; }}
                                     />
                                   </div>
-                                  <div>
-                                    <p className="font-bold text-[#1d1d1d] dark:text-white line-clamp-1">{p.name}</p>
-                                    <p className="text-[11px] text-neutral-400">ID #{p.id} • {p.origin || 'Imported'}</p>
-                                  </div>
+                                  <p className="font-bold text-[#1d1d1d] dark:text-white line-clamp-1">{p.name}</p>
                                 </div>
                               </td>
 
                               <td className="p-3">
                                 <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-[#108474]/15 text-[#108474] dark:text-[#14b8a6]">
                                   {p.category_name || 'Harvest'}
-                                </span>
-                              </td>
-
-                              <td className="p-3 font-semibold text-neutral-700 dark:text-neutral-300">
-                                <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md bg-neutral-100 dark:bg-neutral-800 text-xs font-bold text-neutral-800 dark:text-neutral-200">
-                                  <Scale size={12} className="text-[#108474]" />
-                                  {p.cocoa_percentage || 500}g
                                 </span>
                               </td>
 
@@ -690,78 +679,39 @@ export function AdminModal({ isOpen, onClose, onRefreshProducts, onOpenAddItem, 
                                     }`}
                                   >
                                     <Edit size={13} />
-                                    <span>{isEditing ? 'Cancel' : 'Edit Weight & Price'}</span>
+                                    <span>{isEditing ? 'Cancel' : 'Edit Price'}</span>
                                   </button>
                                 )}
                               </td>
                             </tr>
 
-                            {/* Inline Weight & Price Editor Row */}
+                            {/* Inline Price Editor Row */}
                             {isEditing && (
                               <tr className="bg-amber-50/60 dark:bg-amber-950/20 border-b border-amber-200 dark:border-amber-800/50">
-                                <td colSpan={5} className="p-4">
+                                <td colSpan={4} className="p-4">
                                   <div className="p-4 rounded-xl bg-white dark:bg-[#1f1614] border border-amber-300 dark:border-amber-700/60 shadow-md space-y-4">
                                     <div className="flex items-center justify-between">
                                       <h6 className="font-bold text-xs text-[#1d1d1d] dark:text-white flex items-center gap-1.5">
                                         <Edit size={14} className="text-[#108474]" />
-                                        <span>Editing: <span className="underline">{p.name}</span></span>
+                                        <span>Editing Price: <span className="underline">{p.name}</span></span>
                                       </h6>
                                       <span className="text-[11px] text-neutral-400">Values immediately sync with DB & storefront</span>
                                     </div>
 
-                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                    <div className="max-w-xs">
                                       {/* Price Field */}
-                                      <div>
-                                        <label className="block text-xs font-bold text-neutral-700 dark:text-neutral-300 mb-1">
-                                          Price (₹ INR) *
-                                        </label>
-                                        <div className="relative">
-                                          <span className="absolute left-3 top-1/2 -translate-y-1/2 font-bold text-neutral-400">₹</span>
-                                          <input
-                                            type="number"
-                                            value={editForm.price}
-                                            onChange={(e) => setEditForm({ ...editForm, price: e.target.value })}
-                                            className="w-full pl-8 pr-3 py-2 text-xs font-bold rounded-lg border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white focus:outline-none focus:border-[#fee000]"
-                                          />
-                                        </div>
+                                      <label className="block text-xs font-bold text-neutral-700 dark:text-neutral-300 mb-1">
+                                        Price (₹ INR) *
+                                      </label>
+                                      <div className="relative">
+                                        <span className="absolute left-3 top-1/2 -translate-y-1/2 font-bold text-neutral-400">₹</span>
+                                        <input
+                                          type="number"
+                                          value={editForm.price}
+                                          onChange={(e) => setEditForm({ ...editForm, price: e.target.value })}
+                                          className="w-full pl-8 pr-3 py-2 text-xs font-bold rounded-lg border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white focus:outline-none focus:border-[#fee000]"
+                                        />
                                       </div>
-
-                                      {/* Weight Field & Quick Presets */}
-                                      <div>
-                                        <label className="block text-xs font-bold text-neutral-700 dark:text-neutral-300 mb-1">
-                                          Net Weight (grams) *
-                                        </label>
-                                        <div className="relative mb-1.5">
-                                          <input
-                                            type="number"
-                                            step="any"
-                                            min="1"
-                                            value={editForm.weight}
-                                            onChange={(e) => setEditForm({ ...editForm, weight: e.target.value })}
-                                            className="w-full px-3 py-2 text-xs font-bold rounded-lg border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white focus:outline-none focus:border-[#fee000]"
-                                          />
-                                          <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-bold text-neutral-400">grams</span>
-                                        </div>
-                                        {/* Quick Weight Presets */}
-                                        <div className="flex items-center gap-1">
-                                          <span className="text-[10px] text-neutral-400">Presets:</span>
-                                          {[100, 150, 250, 400, 500, 1000].map(w => (
-                                            <button
-                                              key={w}
-                                              type="button"
-                                              onClick={() => setEditForm({ ...editForm, weight: w })}
-                                              className={`px-1.5 py-0.5 rounded text-[10px] font-bold cursor-pointer transition ${
-                                                Number(editForm.weight) === w
-                                                  ? 'bg-[#108474] text-white'
-                                                  : 'bg-neutral-100 dark:bg-neutral-700 text-neutral-700 dark:text-neutral-300 hover:bg-neutral-200'
-                                              }`}
-                                            >
-                                              {w >= 1000 ? `${w/1000}kg` : `${w}g`}
-                                            </button>
-                                          ))}
-                                        </div>
-                                      </div>
-
                                     </div>
 
                                     {/* Action Buttons */}

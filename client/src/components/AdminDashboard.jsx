@@ -1445,7 +1445,7 @@ export function AdminDashboard({ isOpen, onClose, onRefreshProducts, onOpenAddIt
                           <span>Catalog Management ({filteredProducts.length})</span>
                         </h2>
                         <p className="text-xs text-neutral-500 dark:text-neutral-400">
-                          Edit net packaging weight, pricing in ₹, or add new harvest lines.
+                          Edit pricing in ₹ or add new products to the catalog.
                         </p>
                       </div>
 
@@ -1492,9 +1492,8 @@ export function AdminDashboard({ isOpen, onClose, onRefreshProducts, onOpenAddIt
                       <table className="w-full text-left text-xs text-neutral-800 dark:text-neutral-200">
                         <thead className="bg-neutral-50 dark:bg-neutral-800/50 border-b border-neutral-200 dark:border-neutral-800 text-neutral-500 uppercase text-[10px] font-black tracking-wider">
                           <tr>
-                            <th className="p-3.5">Harvest Item</th>
+                            <th className="p-3.5">Product Item</th>
                             <th className="p-3.5">Category</th>
-                            <th className="p-3.5">Pack Weight</th>
                             <th className="p-3.5">Price (₹)</th>
                             <th className="p-3.5 text-right">Actions</th>
                           </tr>
@@ -1517,23 +1516,13 @@ export function AdminDashboard({ isOpen, onClose, onRefreshProducts, onOpenAddIt
                                           onError={(e) => { e.currentTarget.src = '/images/products/california-almonds.jpg'; }}
                                         />
                                       </div>
-                                      <div className="min-w-0">
-                                        <p className="font-bold text-neutral-900 dark:text-white truncate max-w-[200px] sm:max-w-xs">{p.name}</p>
-                                        <p className="text-[11px] text-neutral-400">ID #{p.id} • {p.origin || 'Imported'}</p>
-                                      </div>
+                                      <p className="font-bold text-neutral-900 dark:text-white truncate max-w-[280px] sm:max-w-md">{p.name}</p>
                                     </div>
                                   </td>
 
                                   <td className="p-3.5 whitespace-nowrap">
                                     <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-[#108474]/15 text-[#108474]">
                                       {p.category_name || categories.find(c => c.id === p.category_id)?.name || 'Harvest'}
-                                    </span>
-                                  </td>
-
-                                  <td className="p-3.5 whitespace-nowrap">
-                                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-neutral-100 dark:bg-neutral-800 font-bold text-neutral-700 dark:text-neutral-300">
-                                      <Scale size={11} className="text-[#108474]" />
-                                      {p.cocoa_percentage || 500}g
                                     </span>
                                   </td>
 
@@ -1569,59 +1558,27 @@ export function AdminDashboard({ isOpen, onClose, onRefreshProducts, onOpenAddIt
                                 {/* Inline Editor Panel */}
                                 {isEditing && (
                                   <tr className="bg-amber-50/70 dark:bg-amber-950/30 border-b border-amber-200 dark:border-amber-900/60">
-                                    <td colSpan={5} className="p-4">
+                                    <td colSpan={4} className="p-4">
                                       <div className="p-4 rounded-xl bg-white dark:bg-[#1a1310] border border-amber-300 dark:border-amber-700/60 shadow-md space-y-4">
                                         <div className="flex items-center justify-between">
                                           <h4 className="font-bold text-xs text-neutral-900 dark:text-white flex items-center gap-1.5">
                                             <Edit3 size={14} className="text-[#108474]" />
-                                            <span>Quick Edit for <strong className="underline">{p.name}</strong></span>
+                                            <span>Quick Edit Price for <strong className="underline">{p.name}</strong></span>
                                           </h4>
                                           <span className="text-[10px] text-neutral-400">Values immediately sync with DB and storefront</span>
                                         </div>
 
-                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                        <div className="max-w-xs">
                                           {/* Price */}
-                                          <div>
-                                            <label className="block text-xs font-bold text-neutral-700 dark:text-neutral-300 mb-1">
-                                              Price (₹ INR) *
-                                            </label>
-                                            <input
-                                              type="number"
-                                              value={editForm.price}
-                                              onChange={(e) => setEditForm({ ...editForm, price: e.target.value })}
-                                              className="w-full px-3 py-2 text-xs font-bold rounded-lg border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white focus:outline-none focus:border-[#fee000]"
-                                            />
-                                          </div>
-
-                                          {/* Weight & Presets */}
-                                          <div>
-                                            <label className="block text-xs font-bold text-neutral-700 dark:text-neutral-300 mb-1">
-                                              Net Weight (grams) *
-                                            </label>
-                                            <input
-                                              type="number"
-                                              value={editForm.weight}
-                                              onChange={(e) => setEditForm({ ...editForm, weight: e.target.value })}
-                                              className="w-full px-3 py-2 text-xs font-bold rounded-lg border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white focus:outline-none focus:border-[#fee000] mb-1"
-                                            />
-                                            <div className="flex items-center gap-1">
-                                              <span className="text-[10px] text-neutral-400">Presets:</span>
-                                              {[100, 250, 500, 1000].map(w => (
-                                                <button
-                                                  key={w}
-                                                  type="button"
-                                                  onClick={() => setEditForm({ ...editForm, weight: w })}
-                                                  className={`px-1.5 py-0.5 rounded text-[10px] font-bold cursor-pointer ${
-                                                    Number(editForm.weight) === w
-                                                      ? 'bg-[#108474] text-white'
-                                                      : 'bg-neutral-100 dark:bg-neutral-700 text-neutral-700 dark:text-neutral-300'
-                                                  }`}
-                                                >
-                                                  {w >= 1000 ? `${w/1000}kg` : `${w}g`}
-                                                </button>
-                                              ))}
-                                            </div>
-                                          </div>
+                                          <label className="block text-xs font-bold text-neutral-700 dark:text-neutral-300 mb-1">
+                                            Price (₹ INR) *
+                                          </label>
+                                          <input
+                                            type="number"
+                                            value={editForm.price}
+                                            onChange={(e) => setEditForm({ ...editForm, price: e.target.value })}
+                                            className="w-full px-3 py-2 text-xs font-bold rounded-lg border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white focus:outline-none focus:border-[#fee000]"
+                                          />
                                         </div>
 
                                         <div className="flex items-center justify-end gap-2 pt-2 border-t border-neutral-100 dark:border-neutral-800">
