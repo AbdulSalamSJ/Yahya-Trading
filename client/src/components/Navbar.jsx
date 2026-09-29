@@ -135,16 +135,26 @@ export function Navbar({ onOpenAuth, onOpenAdmin, onOpenAddItem, onOpenTracking,
             {isDark ? <Sun size={18} /> : <Moon size={18} />}
           </button>
 
-          {/* Admin Direct Add Item Action */}
+          {/* Admin Direct Actions */}
           {user && isAdmin && (
-            <button
-              onClick={onOpenAddItem}
-              className="inline-flex items-center gap-1.5 p-2 sm:px-3 sm:py-1.5 rounded-full bg-[#108474] hover:bg-[#0d6e61] text-white text-xs font-black shadow-sm transition cursor-pointer"
-              title="Add new item to catalog"
-            >
-              <Plus size={15} />
-              <span className="hidden sm:inline">+ Add Item</span>
-            </button>
+            <div className="flex items-center gap-1.5">
+              <button
+                onClick={onOpenAdmin}
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#fee000] hover:bg-[#f5d600] active:scale-[0.98] text-[#1d1d1d] text-xs font-black shadow-xs transition cursor-pointer"
+                title="Open Admin Dashboard"
+              >
+                <Shield size={14} />
+                <span className="hidden sm:inline">Admin Dashboard</span>
+              </button>
+              <button
+                onClick={onOpenAddItem}
+                className="inline-flex items-center gap-1.5 p-2 sm:px-3 sm:py-1.5 rounded-full bg-[#108474] hover:bg-[#0d6e61] text-white text-xs font-black shadow-xs transition cursor-pointer"
+                title="Add new item to catalog"
+              >
+                <Plus size={15} />
+                <span className="hidden sm:inline">+ Add Item</span>
+              </button>
+            </div>
           )}
 
           {/* User Account / Admin */}

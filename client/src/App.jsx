@@ -7,7 +7,7 @@ import { ProductDetailModal } from './components/ProductDetailModal';
 import { CartDrawer } from './components/CartDrawer';
 import { CheckoutModal } from './components/CheckoutModal';
 import { OrderTrackingModal } from './components/OrderTrackingModal';
-import { AdminModal } from './components/AdminModal';
+import { AdminDashboard } from './components/AdminDashboard';
 import { AddItemModal } from './components/AddItemModal';
 import { AuthModal } from './components/AuthModal';
 import { Toast } from './components/Toast';
@@ -53,17 +53,25 @@ export function App() {
       const hash = (window.location.hash || '').toLowerCase();
       const search = (window.location.search || '').toLowerCase();
 
-      const isRahman =
+      const isRahmanOrAdmin =
         path.endsWith('/rahman') ||
         path.endsWith('/rahman/') ||
         path.includes('/rahman') ||
         hash.includes('/rahman') ||
         hash.includes('rahman') ||
-        search.includes('rahman');
+        search.includes('rahman') ||
+        path.endsWith('/admin') ||
+        path.endsWith('/admin/') ||
+        hash.includes('admin') ||
+        search.includes('admin');
 
-      if (isRahman) {
-        setIsRahmanAdmin(true);
-        setIsAuthOpen(true);
+      if (isRahmanOrAdmin) {
+        if (isAdmin) {
+          setIsAdminOpen(true);
+        } else {
+          setIsRahmanAdmin(true);
+          setIsAuthOpen(true);
+        }
       }
     };
 
@@ -256,13 +264,21 @@ export function App() {
                 👑 Admin Logged In: You can publish new harvest items across any category.
               </span>
             </div>
-            <button
-              onClick={() => setIsAddItemOpen(true)}
-              className="w-full sm:w-auto px-4 py-2 rounded-full bg-[#fee000] hover:bg-[#f5d600] active:scale-[0.99] text-[#1d1d1d] text-xs font-black shadow transition flex items-center justify-center gap-1.5 cursor-pointer flex-shrink-0"
-            >
-              <Plus size={15} />
-              <span>+ Add New Harvest Item</span>
-            </button>
+            <div className="flex items-center gap-2 w-full sm:w-auto">
+              <button
+                onClick={() => setIsAdminOpen(true)}
+                className="flex-1 sm:flex-initial px-4 py-2 rounded-full bg-[#108474] hover:bg-[#0d6e61] active:scale-[0.99] text-white text-xs font-black shadow transition flex items-center justify-center gap-1.5 cursor-pointer"
+              >
+                <span>👑 Open Admin Dashboard</span>
+              </button>
+              <button
+                onClick={() => setIsAddItemOpen(true)}
+                className="flex-1 sm:flex-initial px-4 py-2 rounded-full bg-[#fee000] hover:bg-[#f5d600] active:scale-[0.99] text-[#1d1d1d] text-xs font-black shadow transition flex items-center justify-center gap-1.5 cursor-pointer"
+              >
+                <Plus size={15} />
+                <span>+ Add Item</span>
+              </button>
+            </div>
           </div>
         </div>
       )}
@@ -606,9 +622,9 @@ export function App() {
         />
       )}
 
-      {/* Admin Dashboard Modal */}
+      {/* Admin Executive Dashboard */}
       {isAdminOpen && (
-        <AdminModal
+        <AdminDashboard
           isOpen={isAdminOpen}
           onClose={() => setIsAdminOpen(false)}
           onRefreshProducts={fetchProducts}

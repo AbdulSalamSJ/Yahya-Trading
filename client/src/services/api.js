@@ -71,5 +71,6 @@ export const api = {
   updateProduct: (id, data) => request(`/admin/products/${id}`, { method: 'PUT', body: JSON.stringify(data) }),
   deleteProduct: (id) => request(`/admin/products/${id}`, { method: 'DELETE' }),
   getAllOrders: () => request('/admin/orders'),
-  updateOrderStatus: (id, status) => request(`/admin/orders/${id}/status`, { method: 'PUT', body: JSON.stringify({ status }) })
+  updateOrderStatus: (id, status) => request(`/admin/orders/${id}/status`, { method: 'PUT', body: JSON.stringify({ status }) }),
+  testMailConnection: () => request('/admin/mail/status')
 };
