@@ -291,8 +291,8 @@ export function CheckoutModal({ isOpen, onClose, onOrderPlaced }) {
         items: cartItems.map(item => ({
           id: item.id,
           product_id: item.id,
-          name: item.name,
-          product_name: item.name,
+          name: `${item.name} (${item.selectedSize || '250G'})`,
+          product_name: `${item.name} (${item.selectedSize || '250G'})`,
           quantity: Number(item.quantity || 1),
           price: Number(item.price || 0),
           unit_price: Number(item.price || 0),
@@ -847,6 +847,9 @@ export function CheckoutModal({ isOpen, onClose, onOrderPlaced }) {
                       <div className="flex-1 min-w-0 pr-1">
                         <span className="font-bold text-[#3E2723] dark:text-[#F5EFEA] line-clamp-1 block">{item.name}</span>
                         <div className="flex items-center gap-1.5 mt-0.5">
+                          <span className="px-1.5 py-0.2 rounded bg-neutral-200/80 dark:bg-neutral-800 text-[10px] font-black text-[#3E2723] dark:text-[#F5EFEA]">
+                            {item.selectedSize || '250G'}
+                          </span>
                           <span className="text-[11px] text-[#6D4C41] dark:text-[#C8B8B0]">Qty: {item.quantity}</span>
                         </div>
                       </div>

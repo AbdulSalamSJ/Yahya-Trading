@@ -152,6 +152,9 @@ export function CartDrawer({ onProceedToCheckout }) {
                         </button>
                       </div>
                       <div className="flex items-center gap-2 mt-1">
+                        <span className="px-2 py-0.5 rounded text-[10px] font-black bg-neutral-200 dark:bg-neutral-800 text-neutral-800 dark:text-neutral-200">
+                          {item.selectedSize || '250G'}
+                        </span>
                         <span className="text-[11px] text-[#108474] font-medium">
                           {item.origin || 'Yahiya Traders Select'}
                         </span>

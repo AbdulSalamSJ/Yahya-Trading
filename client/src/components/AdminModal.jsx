@@ -481,6 +481,19 @@ export function AdminModal({ isOpen, onClose, onRefreshProducts, onOpenAddItem, 
                       />
                     </div>
 
+
+
+                    <div>
+                      <label className="block text-xs font-semibold text-[#3E2723] dark:text-[#F5EFEA] mb-1">Weight / Pack Size (grams)</label>
+                      <input
+                        type="number"
+                        placeholder="e.g. 500"
+                        value={newProduct.cocoa_percentage}
+                        onChange={(e) => setNewProduct({ ...newProduct, cocoa_percentage: e.target.value })}
+                        className="w-full h-10 px-3 text-xs rounded-lg border border-[#D7C4BC] dark:border-[#3E2F29] bg-white dark:bg-[#271E1B] text-[#3E2723] dark:text-[#F5EFEA]"
+                      />
+                    </div>
+
                     <div>
                       <label className="block text-xs font-semibold text-[#3E2723] dark:text-[#F5EFEA] mb-1">Single Origin</label>
                       <input
