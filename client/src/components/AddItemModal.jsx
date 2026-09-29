@@ -388,34 +388,18 @@ export function AddItemModal({ isOpen, onClose, categories = [], onProductCreate
                   </div>
                 </div>
 
-                {/* 4. Stock & Harvest Origin */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-xs font-black uppercase tracking-wider text-neutral-700 dark:text-neutral-300 mb-1.5">
-                      Stock Units
-                    </label>
-                    <input
-                      type="number"
-                      min="0"
-                      placeholder="e.g. 50"
-                      value={formData.stock}
-                      onChange={(e) => setFormData({ ...formData, stock: e.target.value })}
-                      className="w-full px-4 py-2.5 text-xs font-bold rounded-xl border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-[#262626] text-[#1d1d1d] dark:text-white focus:outline-none focus:border-[#fee000]"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-xs font-black uppercase tracking-wider text-neutral-700 dark:text-neutral-300 mb-1.5">
-                      Harvest Origin / Region
-                    </label>
-                    <input
-                      type="text"
-                      placeholder="e.g. Medina, Saudi Arabia / California"
-                      value={formData.origin}
-                      onChange={(e) => setFormData({ ...formData, origin: e.target.value })}
-                      className="w-full px-4 py-2.5 text-xs font-bold rounded-xl border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-[#262626] text-[#1d1d1d] dark:text-white focus:outline-none focus:border-[#fee000]"
-                    />
-                  </div>
+                {/* 4. Harvest Origin */}
+                <div>
+                  <label className="block text-xs font-black uppercase tracking-wider text-neutral-700 dark:text-neutral-300 mb-1.5">
+                    Harvest Origin / Region
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="e.g. Medina, Saudi Arabia / California"
+                    value={formData.origin}
+                    onChange={(e) => setFormData({ ...formData, origin: e.target.value })}
+                    className="w-full px-4 py-2.5 text-xs font-bold rounded-xl border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-[#262626] text-[#1d1d1d] dark:text-white focus:outline-none focus:border-[#fee000]"
+                  />
                 </div>
 
                 {/* 5. SYSTEM FILE UPLOAD SECTION */}

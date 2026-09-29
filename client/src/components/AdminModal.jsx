@@ -481,16 +481,7 @@ export function AdminModal({ isOpen, onClose, onRefreshProducts, onOpenAddItem, 
                       />
                     </div>
 
-                    <div>
-                      <label className="block text-xs font-semibold text-[#3E2723] dark:text-[#F5EFEA] mb-1">Batch Stock Units</label>
-                      <input
-                        type="number"
-                        placeholder="e.g. 50"
-                        value={newProduct.stock}
-                        onChange={(e) => setNewProduct({ ...newProduct, stock: e.target.value })}
-                        className="w-full h-10 px-3 text-xs rounded-lg border border-[#D7C4BC] dark:border-[#3E2F29] bg-white dark:bg-[#271E1B] text-[#3E2723] dark:text-[#F5EFEA]"
-                      />
-                    </div>
+
 
                     <div>
                       <label className="block text-xs font-semibold text-[#3E2723] dark:text-[#F5EFEA] mb-1">Weight / Pack Size (grams)</label>
@@ -632,7 +623,6 @@ export function AdminModal({ isOpen, onClose, onRefreshProducts, onOpenAddItem, 
                       <th className="p-3">Category</th>
                       <th className="p-3">Current Weight</th>
                       <th className="p-3">Current Price</th>
-                      <th className="p-3">Stock Units</th>
                       <th className="p-3 text-right">Actions</th>
                     </tr>
                   </thead>
@@ -685,16 +675,6 @@ export function AdminModal({ isOpen, onClose, onRefreshProducts, onOpenAddItem, 
                                 ₹ {Number(p.price).toLocaleString('en-IN')}
                               </td>
 
-                              <td className="p-3">
-                                <span className={`px-2 py-0.5 rounded text-[11px] font-bold ${
-                                  Number(p.stock) <= 10
-                                    ? 'bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-300'
-                                    : 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300'
-                                }`}>
-                                  {p.stock} units
-                                </span>
-                              </td>
-
                               <td className="p-3 text-right">
                                 {justSaved ? (
                                   <span className="inline-flex items-center gap-1 text-xs font-bold text-green-600 dark:text-green-400">
@@ -719,7 +699,7 @@ export function AdminModal({ isOpen, onClose, onRefreshProducts, onOpenAddItem, 
                             {/* Inline Weight & Price Editor Row */}
                             {isEditing && (
                               <tr className="bg-amber-50/60 dark:bg-amber-950/20 border-b border-amber-200 dark:border-amber-800/50">
-                                <td colSpan={6} className="p-4">
+                                <td colSpan={5} className="p-4">
                                   <div className="p-4 rounded-xl bg-white dark:bg-[#1f1614] border border-amber-300 dark:border-amber-700/60 shadow-md space-y-4">
                                     <div className="flex items-center justify-between">
                                       <h6 className="font-bold text-xs text-[#1d1d1d] dark:text-white flex items-center gap-1.5">
@@ -729,7 +709,7 @@ export function AdminModal({ isOpen, onClose, onRefreshProducts, onOpenAddItem, 
                                       <span className="text-[11px] text-neutral-400">Values immediately sync with DB & storefront</span>
                                     </div>
 
-                                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                       {/* Price Field */}
                                       <div>
                                         <label className="block text-xs font-bold text-neutral-700 dark:text-neutral-300 mb-1">
@@ -782,18 +762,6 @@ export function AdminModal({ isOpen, onClose, onRefreshProducts, onOpenAddItem, 
                                         </div>
                                       </div>
 
-                                      {/* Stock Units */}
-                                      <div>
-                                        <label className="block text-xs font-bold text-neutral-700 dark:text-neutral-300 mb-1">
-                                          Stock Available (Units) *
-                                        </label>
-                                        <input
-                                          type="number"
-                                          value={editForm.stock}
-                                          onChange={(e) => setEditForm({ ...editForm, stock: e.target.value })}
-                                          className="w-full px-3 py-2 text-xs font-bold rounded-lg border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white focus:outline-none focus:border-[#fee000]"
-                                        />
-                                      </div>
                                     </div>
 
                                     {/* Action Buttons */}

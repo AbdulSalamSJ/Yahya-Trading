@@ -68,7 +68,6 @@ export function AdminDashboard({ isOpen, onClose, onRefreshProducts, onOpenAddIt
   const [orderStatusFilter, setOrderStatusFilter] = useState('all');
   const [productSearch, setProductSearch] = useState('');
   const [productCategoryFilter, setProductCategoryFilter] = useState('all');
-  const [productStockFilter, setProductStockFilter] = useState('all');
   const [customerSearch, setCustomerSearch] = useState('');
   const [analyticsRange, setAnalyticsRange] = useState('30d');
 
@@ -257,14 +256,9 @@ export function AdminDashboard({ isOpen, onClose, onRefreshProducts, onOpenAddIt
         productCategoryFilter === 'all' ||
         String(product.category_id) === String(productCategoryFilter);
 
-      let matchesStock = true;
-      if (productStockFilter === 'low') matchesStock = Number(product.stock) < 25 && Number(product.stock) > 0;
-      else if (productStockFilter === 'out') matchesStock = Number(product.stock) <= 0;
-      else if (productStockFilter === 'instock') matchesStock = Number(product.stock) >= 25;
-
-      return matchesSearch && matchesCategory && matchesStock;
+      return matchesSearch && matchesCategory;
     });
-  }, [products, productSearch, productCategoryFilter, productStockFilter]);
+  }, [products, productSearch, productCategoryFilter]);
 
   // Filtered Customers
   const filteredCustomers = useMemo(() => {
@@ -1448,10 +1442,10 @@ export function AdminDashboard({ isOpen, onClose, onRefreshProducts, onOpenAddIt
                       <div>
                         <h2 className="text-lg font-black text-neutral-900 dark:text-white flex items-center gap-2">
                           <Package size={20} className="text-[#108474]" />
-                          <span>Catalog & Stock Management ({filteredProducts.length})</span>
+                          <span>Catalog Management ({filteredProducts.length})</span>
                         </h2>
                         <p className="text-xs text-neutral-500 dark:text-neutral-400">
-                          Edit net packaging weight, pricing in ₹, inventory units, or add new harvest lines.
+                          Edit net packaging weight, pricing in ₹, or add new harvest lines.
                         </p>
                       </div>
 
@@ -1490,18 +1484,6 @@ export function AdminDashboard({ isOpen, onClose, onRefreshProducts, onOpenAddIt
                             <option key={cat.id} value={cat.id}>{cat.name}</option>
                           ))}
                         </select>
-
-                        {/* Stock Filter */}
-                        <select
-                          value={productStockFilter}
-                          onChange={(e) => setProductStockFilter(e.target.value)}
-                          className="px-3 py-2 text-xs font-bold rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-neutral-800 dark:text-neutral-200 focus:outline-none cursor-pointer"
-                        >
-                          <option value="all">All Stock Levels</option>
-                          <option value="low">⚠️ Low Stock (&lt;25)</option>
-                          <option value="out">❌ Out of Stock (0)</option>
-                          <option value="instock">✅ Healthy Stock (&gt;=25)</option>
-                        </select>
                       </div>
                     </div>
 
@@ -1514,7 +1496,6 @@ export function AdminDashboard({ isOpen, onClose, onRefreshProducts, onOpenAddIt
                             <th className="p-3.5">Category</th>
                             <th className="p-3.5">Pack Weight</th>
                             <th className="p-3.5">Price (₹)</th>
-                            <th className="p-3.5">Inventory Units</th>
                             <th className="p-3.5 text-right">Actions</th>
                           </tr>
                         </thead>
@@ -1560,18 +1541,6 @@ export function AdminDashboard({ isOpen, onClose, onRefreshProducts, onOpenAddIt
                                     ₹ {Number(p.price).toLocaleString('en-IN')}
                                   </td>
 
-                                  <td className="p-3.5 whitespace-nowrap">
-                                    <span className={`px-2 py-0.5 rounded text-[11px] font-black ${
-                                      Number(p.stock) <= 10
-                                        ? 'bg-rose-100 text-rose-800 dark:bg-rose-950/40 dark:text-rose-300'
-                                        : Number(p.stock) < 25
-                                        ? 'bg-amber-100 text-amber-800 dark:bg-amber-950/40 dark:text-amber-300'
-                                        : 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-300'
-                                    }`}>
-                                      {p.stock} units
-                                    </span>
-                                  </td>
-
                                   <td className="p-3.5 text-right whitespace-nowrap">
                                     <div className="flex items-center justify-end gap-1.5">
                                       <button
@@ -1600,7 +1569,7 @@ export function AdminDashboard({ isOpen, onClose, onRefreshProducts, onOpenAddIt
                                 {/* Inline Editor Panel */}
                                 {isEditing && (
                                   <tr className="bg-amber-50/70 dark:bg-amber-950/30 border-b border-amber-200 dark:border-amber-900/60">
-                                    <td colSpan={6} className="p-4">
+                                    <td colSpan={5} className="p-4">
                                       <div className="p-4 rounded-xl bg-white dark:bg-[#1a1310] border border-amber-300 dark:border-amber-700/60 shadow-md space-y-4">
                                         <div className="flex items-center justify-between">
                                           <h4 className="font-bold text-xs text-neutral-900 dark:text-white flex items-center gap-1.5">
@@ -1610,7 +1579,7 @@ export function AdminDashboard({ isOpen, onClose, onRefreshProducts, onOpenAddIt
                                           <span className="text-[10px] text-neutral-400">Values immediately sync with DB and storefront</span>
                                         </div>
 
-                                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                           {/* Price */}
                                           <div>
                                             <label className="block text-xs font-bold text-neutral-700 dark:text-neutral-300 mb-1">
@@ -1652,19 +1621,6 @@ export function AdminDashboard({ isOpen, onClose, onRefreshProducts, onOpenAddIt
                                                 </button>
                                               ))}
                                             </div>
-                                          </div>
-
-                                          {/* Stock */}
-                                          <div>
-                                            <label className="block text-xs font-bold text-neutral-700 dark:text-neutral-300 mb-1">
-                                              Stock Units Available *
-                                            </label>
-                                            <input
-                                              type="number"
-                                              value={editForm.stock}
-                                              onChange={(e) => setEditForm({ ...editForm, stock: e.target.value })}
-                                              className="w-full px-3 py-2 text-xs font-bold rounded-lg border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white focus:outline-none focus:border-[#fee000]"
-                                            />
                                           </div>
                                         </div>
 
@@ -2443,16 +2399,7 @@ export function AdminDashboard({ isOpen, onClose, onRefreshProducts, onOpenAddIt
                   />
                 </div>
 
-                <div>
-                  <label className="block font-bold text-neutral-700 dark:text-neutral-300 mb-1">Stock Units</label>
-                  <input
-                    type="number"
-                    placeholder="50"
-                    value={newProduct.stock}
-                    onChange={(e) => setNewProduct({ ...newProduct, stock: e.target.value })}
-                    className="w-full h-10 px-3 rounded-lg border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white font-medium"
-                  />
-                </div>
+
 
                 <div>
                   <label className="block font-bold text-neutral-700 dark:text-neutral-300 mb-1">Weight (grams)</label>

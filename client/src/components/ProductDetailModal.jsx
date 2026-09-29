@@ -469,7 +469,7 @@ const handleBack = (e) => {
                   Admin Workspace: Edit All Item Details
                 </h4>
                 <p className="text-[11px] text-neutral-600 dark:text-neutral-300">
-                  Update title, category, weight, price, origin, stock, image, and description.
+                  Update title, category, weight, price, origin, image, and description.
                   <span className="font-bold text-amber-700 dark:text-amber-400 ml-1">
                     (Add to Cart and Buy Now buttons are disabled for Admin)
                   </span>
@@ -709,35 +709,18 @@ const handleBack = (e) => {
                   </div>
                 </div>
 
-                {/* 4. Stock Units & Origin */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-xs font-black text-neutral-700 dark:text-neutral-300 uppercase tracking-wider mb-1.5">
-                      Stock Available (Packs) *
-                    </label>
-                    <input
-                      type="number"
-                      min="0"
-                      required
-                      value={editForm.stock}
-                      onChange={(e) => setEditForm({ ...editForm, stock: e.target.value })}
-                      placeholder="50"
-                      className="w-full px-4 py-2.5 rounded-xl border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-[#202020] text-xs font-bold text-[#1d1d1d] dark:text-white focus:outline-none focus:border-[#108474]"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-xs font-black text-neutral-700 dark:text-neutral-300 uppercase tracking-wider mb-1.5">
-                      Harvest Origin / Country
-                    </label>
-                    <input
-                      type="text"
-                      value={editForm.origin}
-                      onChange={(e) => setEditForm({ ...editForm, origin: e.target.value })}
-                      placeholder="e.g. Al-Madinah, Saudi Arabia"
-                      className="w-full px-4 py-2.5 rounded-xl border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-[#202020] text-xs font-bold text-[#1d1d1d] dark:text-white focus:outline-none focus:border-[#108474]"
-                    />
-                  </div>
+                {/* 4. Harvest Origin */}
+                <div>
+                  <label className="block text-xs font-black text-neutral-700 dark:text-neutral-300 uppercase tracking-wider mb-1.5">
+                    Harvest Origin / Country
+                  </label>
+                  <input
+                    type="text"
+                    value={editForm.origin}
+                    onChange={(e) => setEditForm({ ...editForm, origin: e.target.value })}
+                    placeholder="e.g. Al-Madinah, Saudi Arabia"
+                    className="w-full px-4 py-2.5 rounded-xl border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-[#202020] text-xs font-bold text-[#1d1d1d] dark:text-white focus:outline-none focus:border-[#108474]"
+                  />
                 </div>
 
                 {/* 5. Image URL */}
