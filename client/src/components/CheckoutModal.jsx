@@ -1,11 +1,12 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { X, Check, ShieldCheck, CreditCard, Truck, ArrowRight, ArrowLeft, MapPin } from 'lucide-react';
+import { X, Check, ShieldCheck, CreditCard, Truck, ArrowRight, ArrowLeft, MapPin, FileText, Download } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
 import { api } from '../services/api';
 import { formatSize } from '../utils/productSizes';
 import { searchTamilNaduCities, loadAllTamilNaduLocations } from '../data/tamilNaduCities';
+import { generateOrderPdf } from '../utils/generateOrderPdf';
 
 const STORE_WHATSAPP_NUMBER = '916369090536';
 const STORE_WHATSAPP_DISPLAY = '+91 63690 90536';
@@ -34,14 +35,16 @@ function generateWhatsAppBill(order, form, items, pricing) {
   });
 
   const itemsList = items.map((item, idx) => {
-    const size = item.selectedSize || '250G';
+    // Clean name from duplicate size if already contained in title
+    const rawName = String(item.name || '').replace(/\s*\(\d+\s*(?:g|gm|kg)\)/i, '').trim();
+    const size = formatSize(item.selectedSize) || '250 GM';
     const total = (item.price * item.quantity).toLocaleString('en-IN');
-    return `${idx + 1}. *${item.name}* (${size})
-   Qty: ${item.quantity} × ₹${Number(item.price).toLocaleString('en-IN')} = *₹${total}*`;
+    return `${idx + 1}. *${rawName}* (${size})\n   Qty: ${item.quantity} × ₹${Number(item.price).toLocaleString('en-IN')} = *₹${total}*`;
   }).join('\n\n');
 
   return (
 `🧾 *YAHIYA TRADERS - OFFICIAL ORDER BILL*
+📄 *PDF Tax Invoice Generated*
 ━━━━━━━━━━━━━━━━━━━━━━
 *Order ID:* ${order?.order_number || '#ORD-' + Date.now()}
 *Date:* ${dateStr}
@@ -67,6 +70,7 @@ ${pricing.discountAmount > 0 ? `*Discount (${pricing.promoCode}):* -₹${Number(
 📦 *Packaging:* Signature Nitrogen Fresh Pack
 📍 *Shipped From:* Puliangudi, Tenkasi District, TN
 📞 *Store WhatsApp:* ${STORE_WHATSAPP_DISPLAY}
+📄 *Official Tax Invoice:* PDF Bill attached / saved
 
 🙏 *Thank you for your order with Yahiya Traders! Please confirm and dispatch my order.*`
   );
@@ -289,18 +293,23 @@ export function CheckoutModal({ isOpen, onClose, onOrderPlaced }) {
           postalCode: formData.postalCode,
           phone: formData.phone
         },
-        items: cartItems.map(item => ({
-          id: item.id,
-          product_id: item.id,
-          name: `${item.name} (${formatSize(item.selectedSize) || '250 GM'})`,
-          product_name: `${item.name} (${formatSize(item.selectedSize) || '250 GM'})`,
-          quantity: Number(item.quantity || 1),
-          price: Number(item.price || 0),
-          unit_price: Number(item.price || 0),
-          total_price: Number((item.price || 0) * (item.quantity || 1)),
-          images: item.images || (item.image_url ? [item.image_url] : []),
-          image_url: item.images?.[0] || item.image_url || ''
-        })),
+        items: cartItems.map(item => {
+          const cleanItemTitle = String(item.name || '').replace(/\s*\(\d+\s*(?:g|gm|kg)\)/i, '').trim();
+          const cleanSize = formatSize(item.selectedSize) || '250 GM';
+          const fullItemName = `${cleanItemTitle} (${cleanSize})`;
+          return {
+            id: item.id,
+            product_id: item.id,
+            name: fullItemName,
+            product_name: fullItemName,
+            quantity: Number(item.quantity || 1),
+            price: Number(item.price || 0),
+            unit_price: Number(item.price || 0),
+            total_price: Number((item.price || 0) * (item.quantity || 1)),
+            images: item.images || (item.image_url ? [item.image_url] : []),
+            image_url: item.images?.[0] || item.image_url || ''
+          };
+        }),
         subtotal,
         taxAmount,
         shippingFee,
@@ -345,25 +354,82 @@ export function CheckoutModal({ isOpen, onClose, onOrderPlaced }) {
       });
 
       const storeWaUrl = `https://wa.me/${STORE_WHATSAPP_NUMBER}?text=${encodeURIComponent(billText)}`;
-
       const finalBillAmount = Number(placedOrder?.total_amount || totalAmount || 0);
+
+      // Generate Official PDF Tax Invoice
+      let pdfDoc = null;
+      let pdfBlob = null;
+      const cleanOrderNum = (placedOrder?.order_number || 'YAHIYA-ORDER').replace(/[^a-zA-Z0-9_-]/g, '_');
+      const pdfFileName = `${cleanOrderNum}_Bill.pdf`;
+
+      try {
+        pdfDoc = generateOrderPdf({
+          order: placedOrder,
+          formData,
+          cartItems,
+          pricing: {
+            subtotal,
+            discountAmount,
+            taxAmount,
+            shippingFee,
+            totalAmount,
+            promoCode
+          }
+        });
+        pdfBlob = pdfDoc.output('blob');
+
+        // Automatically trigger download of official PDF bill
+        pdfDoc.save(pdfFileName);
+      } catch (pdfErr) {
+        console.warn('PDF generation notice:', pdfErr);
+      }
 
       setOrderCompletedData({
         order: placedOrder,
         totalAmount: finalBillAmount,
         billText,
         storeWaUrl,
-        customerPhone: formData.phone
+        customerPhone: formData.phone,
+        pdfDoc,
+        pdfBlob,
+        pdfFileName
       });
 
-      // Launch WhatsApp to send bill directly to shop WhatsApp (+91 63690 90536)
-      if (desktopWaTab && !desktopWaTab.closed) {
-        desktopWaTab.location.href = storeWaUrl;
-      } else {
+      // Check if device supports Web Share API with files (Android / iOS native share directly to WhatsApp)
+      let sharedViaFile = false;
+      if (pdfBlob && navigator.canShare) {
         try {
-          window.location.href = storeWaUrl;
-        } catch (e) {
-          console.warn('Redirect to WhatsApp failed:', e);
+          const pdfFile = new File([pdfBlob], pdfFileName, { type: 'application/pdf' });
+          if (navigator.canShare({ files: [pdfFile] })) {
+            if (desktopWaTab && !desktopWaTab.closed) {
+              try { desktopWaTab.close(); } catch (_) {}
+            }
+            await navigator.share({
+              title: `Official Tax Invoice - ${placedOrder?.order_number || ''}`,
+              text: billText,
+              files: [pdfFile]
+            });
+            sharedViaFile = true;
+          }
+        } catch (shareErr) {
+          if (shareErr.name !== 'AbortError') {
+            console.warn('File share unavailable, falling back to direct WhatsApp link:', shareErr);
+          } else {
+            sharedViaFile = true; // User dismissed share dialog
+          }
+        }
+      }
+
+      // If not shared via file share, launch WhatsApp directly
+      if (!sharedViaFile) {
+        if (desktopWaTab && !desktopWaTab.closed) {
+          desktopWaTab.location.href = storeWaUrl;
+        } else {
+          try {
+            window.location.href = storeWaUrl;
+          } catch (e) {
+            console.warn('Redirect to WhatsApp failed:', e);
+          }
         }
       }
 
@@ -378,6 +444,47 @@ export function CheckoutModal({ isOpen, onClose, onOrderPlaced }) {
     } finally {
       setIsProcessing(false);
     }
+  };
+
+  const handleDownloadPdf = () => {
+    if (orderCompletedData?.pdfDoc && orderCompletedData?.pdfFileName) {
+      try {
+        orderCompletedData.pdfDoc.save(orderCompletedData.pdfFileName);
+      } catch (e) {
+        console.warn('PDF save error:', e);
+      }
+    }
+  };
+
+  const handleSendWhatsAppWithPdf = async () => {
+    if (!orderCompletedData) return;
+    const { pdfBlob, pdfFileName, billText, storeWaUrl, pdfDoc } = orderCompletedData;
+
+    if (pdfBlob && navigator.canShare) {
+      try {
+        const file = new File([pdfBlob], pdfFileName, { type: 'application/pdf' });
+        if (navigator.canShare({ files: [file] })) {
+          await navigator.share({
+            title: `Official Tax Invoice - ${pdfFileName}`,
+            text: billText,
+            files: [file]
+          });
+          return;
+        }
+      } catch (err) {
+        if (err.name !== 'AbortError') {
+          console.warn('WebShare failed:', err);
+        } else {
+          return;
+        }
+      }
+    }
+
+    // If file sharing is not supported in browser, ensure user has PDF saved and open WhatsApp
+    if (pdfDoc && pdfFileName) {
+      try { pdfDoc.save(pdfFileName); } catch (_) {}
+    }
+    window.open(storeWaUrl, '_blank');
   };
 
   return (
@@ -441,7 +548,7 @@ export function CheckoutModal({ isOpen, onClose, onOrderPlaced }) {
             <div className="space-y-1.5">
               <span className="px-3 py-1 rounded-full text-xs font-bold bg-[#25D366]/15 text-[#1EBE5B] dark:text-[#25D366] inline-flex items-center gap-1.5 mb-1">
                 <WhatsAppIcon size={14} />
-                <span>WhatsApp Bill Generated</span>
+                <span>WhatsApp Bill & PDF Generated</span>
               </span>
               <h3 className="font-serif text-2xl font-bold text-[#3E2723] dark:text-[#F5EFEA]">
                 Order Placed Successfully!
@@ -450,6 +557,39 @@ export function CheckoutModal({ isOpen, onClose, onOrderPlaced }) {
                 Order <span className="font-mono font-bold text-[#795548] dark:text-[#E8A598]">{orderCompletedData.order.order_number}</span> has been confirmed.
               </p>
             </div>
+
+            {/* Official PDF Tax Invoice Card */}
+            {orderCompletedData.pdfFileName && (
+              <div className="max-w-md mx-auto p-3.5 rounded-xl bg-amber-50/90 dark:bg-[#251A16] border border-amber-200/80 dark:border-amber-900/40 flex items-center justify-between text-left text-xs shadow-sm">
+                <div className="flex items-center gap-3 min-w-0 pr-2">
+                  <div className="w-9 h-9 rounded-lg bg-red-100 dark:bg-red-950/60 text-red-600 flex items-center justify-center flex-shrink-0">
+                    <FileText size={20} />
+                  </div>
+                  <div className="min-w-0">
+                    <div className="flex items-center gap-1.5">
+                      <span className="font-bold text-[#3E2723] dark:text-[#F5EFEA] truncate">
+                        {orderCompletedData.pdfFileName}
+                      </span>
+                      <span className="text-[10px] px-1.5 py-0.5 rounded bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-400 font-bold flex-shrink-0">
+                        PDF Ready
+                      </span>
+                    </div>
+                    <p className="text-[11px] text-[#6D4C41] dark:text-[#C8B8B0] truncate">
+                      Official Tax Invoice with Pack Weight & Rates
+                    </p>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={handleDownloadPdf}
+                  title="Download PDF Bill"
+                  className="px-3 py-1.5 rounded-lg bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 hover:bg-neutral-50 dark:hover:bg-neutral-700 text-[#795548] dark:text-[#E8A598] text-xs font-bold transition flex items-center gap-1.5 flex-shrink-0 shadow-sm"
+                >
+                  <Download size={13} />
+                  <span>Download</span>
+                </button>
+              </div>
+            )}
 
             {/* Bill Preview Card */}
             <div className="max-w-md mx-auto text-left p-4 rounded-xl bg-[#FDF8F5] dark:bg-[#1E1614] border border-[#EBE0D8] dark:border-[#3E2F29] text-xs space-y-2.5">
@@ -462,24 +602,33 @@ export function CheckoutModal({ isOpen, onClose, onOrderPlaced }) {
               <div className="space-y-1 text-[#6D4C41] dark:text-[#C8B8B0] text-[11px]">
                 <p>👤 <span className="font-medium text-[#3E2723] dark:text-[#F5EFEA]">{formData.fullName}</span></p>
                 <p>📞 Customer WhatsApp: <span className="font-mono font-medium text-[#3E2723] dark:text-[#F5EFEA]">{formData.phone}</span></p>
-                <p> {formData.addressLine}, {formData.city}, {formData.state || 'Tamil Nadu'} - {formData.postalCode}</p>
-                <p>📦 Insulated Nitrogen Fresh Pack • Dispatched from Puliangudi</p>
+                <p>📍 {formData.addressLine}, {formData.city}, {formData.state || 'Tamil Nadu'} - {formData.postalCode}</p>
+                <p>📦 Insulated Nitrogen Fresh Pack • Dispatched from Puliangudi Hub</p>
               </div>
             </div>
 
-            {/* Direct WhatsApp Action Button */}
-            <div className="max-w-md mx-auto space-y-2">
-              <a
-                href={orderCompletedData.storeWaUrl}
-                target="_blank"
-                rel="noopener noreferrer"
+            {/* WhatsApp & PDF Actions */}
+            <div className="max-w-md mx-auto space-y-2.5">
+              <button
+                type="button"
+                onClick={handleSendWhatsAppWithPdf}
                 className="w-full py-3.5 px-4 rounded-xl bg-[#25D366] hover:bg-[#20bd5a] text-white text-sm font-bold shadow-lg shadow-emerald-600/25 flex items-center justify-center gap-2.5 transition active:scale-98"
               >
                 <WhatsAppIcon size={18} />
-                <span>Send Bill on Shop WhatsApp</span>
-              </a>
+                <span>Send PDF Bill to Shop WhatsApp</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={handleDownloadPdf}
+                className="w-full py-2.5 px-4 rounded-xl border border-[#795548]/30 dark:border-[#795548]/50 hover:bg-[#795548]/10 text-[#795548] dark:text-[#E8A598] text-xs font-semibold flex items-center justify-center gap-2 transition"
+              >
+                <Download size={14} />
+                <span>Save / Print PDF Tax Invoice</span>
+              </button>
+
               <p className="text-[11px] text-[#6D4C41] dark:text-[#C8B8B0]">
-                Sent directly to shop WhatsApp for order confirmation
+                Official PDF bill is auto-saved. On mobile it attaches directly to WhatsApp; on desktop attach the downloaded PDF.
               </p>
             </div>
 
@@ -846,7 +995,9 @@ export function CheckoutModal({ isOpen, onClose, onOrderPlaced }) {
                         />
                       </div>
                       <div className="flex-1 min-w-0 pr-1">
-                        <span className="font-bold text-[#3E2723] dark:text-[#F5EFEA] line-clamp-1 block">{item.name}</span>
+                        <span className="font-bold text-[#3E2723] dark:text-[#F5EFEA] line-clamp-1 block">
+                          {String(item.name || '').replace(/\s*\(\d+\s*(?:g|gm|kg)\)/i, '').trim()}
+                        </span>
                         <div className="flex items-center gap-1.5 mt-0.5">
                           <span className="px-1.5 py-0.2 rounded bg-neutral-200/80 dark:bg-neutral-800 text-[10px] font-black text-[#3E2723] dark:text-[#F5EFEA]">
                             {formatSize(item.selectedSize) || '250 GM'}
