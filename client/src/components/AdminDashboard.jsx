@@ -1017,19 +1017,19 @@ export function AdminDashboard({ isOpen, onClose, onRefreshProducts, onOpenAddIt
                         </p>
                       </div>
 
-                      {/* Low Stock Watch */}
+                      {/* Completed / Delivered Orders in Period */}
                       <div className="p-5 rounded-2xl bg-white dark:bg-[#201815] border border-neutral-200 dark:border-neutral-800 shadow-2xs hover:shadow-sm transition">
                         <div className="flex items-center justify-between mb-2">
-                          <span className="text-xs font-bold uppercase tracking-wider text-neutral-500">Low Stock Alert</span>
-                          <div className="w-8 h-8 rounded-xl bg-rose-500/10 text-rose-600 flex items-center justify-center">
-                            <AlertTriangle size={16} />
+                          <span className="text-xs font-bold uppercase tracking-wider text-neutral-500">Delivered Orders</span>
+                          <div className="w-8 h-8 rounded-xl bg-purple-500/10 text-purple-600 flex items-center justify-center">
+                            <CheckCircle size={16} />
                           </div>
                         </div>
-                        <p className="text-2xl sm:text-3xl font-black text-rose-600 dark:text-rose-400">
-                          {products.filter(p => Number(p.stock) < 25).length}
+                        <p className="text-2xl sm:text-3xl font-black text-neutral-900 dark:text-white">
+                          {periodStats.delivered}
                         </p>
-                        <p className="text-[11px] text-rose-500 font-bold mt-2">
-                          Batches requiring harvest restock (&lt;25 units)
+                        <p className="text-[11px] text-emerald-600 font-bold mt-2">
+                          {periodOrders.length ? Math.round((periodStats.delivered / periodOrders.length) * 100) : 0}% fulfillment completion in period
                         </p>
                       </div>
                     </div>
@@ -1274,67 +1274,7 @@ export function AdminDashboard({ isOpen, onClose, onRefreshProducts, onOpenAddIt
                       )}
                     </div>
 
-                    {/* Low Stock Restock Watchlist (Inline Quick Restock) */}
-                    <div className="p-5 rounded-2xl bg-white dark:bg-[#201815] border border-neutral-200 dark:border-neutral-800 shadow-2xs space-y-3">
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <h3 className="text-sm font-black text-rose-600 dark:text-rose-400 flex items-center gap-2">
-                            <AlertTriangle size={16} />
-                            <span>Low Stock Watchlist (&lt;25 units available)</span>
-                          </h3>
-                          <p className="text-xs text-neutral-400">One-click quick restock triggers instantaneous catalog sync</p>
-                        </div>
-                        <button
-                          onClick={() => setActiveTab('products')}
-                          className="text-xs font-bold text-[#108474] hover:underline"
-                        >
-                          View Full Catalog
-                        </button>
-                      </div>
-
-                      {products.filter(p => Number(p.stock) < 25).length === 0 ? (
-                        <div className="p-4 rounded-xl bg-emerald-50 dark:bg-emerald-950/20 text-emerald-800 dark:text-emerald-300 text-xs font-bold flex items-center gap-2">
-                          <CheckCircle size={16} />
-                          <span>All items are healthy! No inventory is critically low.</span>
-                        </div>
-                      ) : (
-                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 pt-2">
-                          {products
-                            .filter(p => Number(p.stock) < 25)
-                            .slice(0, 6)
-                            .map(item => (
-                              <div
-                                key={item.id}
-                                className="p-3.5 rounded-xl border border-rose-200 dark:border-rose-950/50 bg-rose-50/40 dark:bg-rose-950/10 flex items-center justify-between gap-3"
-                              >
-                                <div className="min-w-0">
-                                  <p className="text-xs font-black text-neutral-900 dark:text-white truncate">
-                                    {item.name}
-                                  </p>
-                                  <p className="text-[11px] text-rose-600 font-bold mt-0.5">
-                                    {item.stock} units remaining
-                                  </p>
-                                </div>
-                                <div className="flex items-center gap-1.5 flex-shrink-0">
-                                  <button
-                                    onClick={() => handleQuickRestock(item.id, 25)}
-                                    className="px-2 py-1 rounded-lg bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 text-[10px] font-black hover:bg-neutral-100 transition cursor-pointer"
-                                  >
-                                    +25
-                                  </button>
-                                  <button
-                                    onClick={() => handleQuickRestock(item.id, 50)}
-                                    className="px-2 py-1 rounded-lg bg-[#fee000] text-neutral-950 text-[10px] font-black hover:bg-[#f5d600] transition cursor-pointer"
-                                  >
-                                    +50
-                                  </button>
-                                </div>
-                              </div>
-                            ))}
-                        </div>
-                      )}
                     </div>
-                  </div>
                 )}
 
                 {/* ========================================================= */}

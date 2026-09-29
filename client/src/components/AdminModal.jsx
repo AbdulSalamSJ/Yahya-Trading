@@ -317,37 +317,16 @@ export function AdminModal({ isOpen, onClose, onRefreshProducts, onOpenAddItem, 
 
                 <div className="p-4 rounded-xl bg-[#FDF8F5] dark:bg-[#1C1412] border border-[#EBE0D8] dark:border-[#3E2F29]">
                   <div className="flex items-center justify-between text-[#6D4C41] dark:text-[#C8B8B0] text-xs font-semibold uppercase mb-1">
-                    <span>Low Stock Batches</span>
-                    <AlertTriangle size={16} className="text-[#F57C00]" />
+                    <span>Delivered Orders</span>
+                    <CheckCircle size={16} className="text-[#108474]" />
                   </div>
-                  <p className="font-serif text-2xl font-bold text-[#F57C00]">
-                    {metrics?.lowStockCount || 2}
+                  <p className="font-serif text-2xl font-bold text-[#108474]">
+                    {orders ? orders.filter(o => o.status === 'delivered').length : 0}
                   </p>
-                  <p className="text-[11px] text-[#F57C00] mt-1">Requires harvest restock</p>
+                  <p className="text-[11px] text-[#108474] mt-1">Fulfilled customer orders</p>
                 </div>
 
               </div>
-
-              {/* Low Stock Watchlist */}
-              {metrics?.lowStockItems && metrics.lowStockItems.length > 0 && (
-                <div className="p-4 rounded-xl bg-[#FDF8F5] dark:bg-[#1C1412] border border-[#EBE0D8] dark:border-[#3E2F29]">
-                  <h4 className="font-serif text-sm font-bold text-[#3E2723] dark:text-[#F5EFEA] mb-3 flex items-center gap-2">
-                    <AlertTriangle size={15} className="text-[#F57C00]" />
-                    Batches Requiring Harvest Restock
-                  </h4>
-
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                    {metrics.lowStockItems.map(item => (
-                      <div key={item.id} className="flex justify-between items-center p-2 rounded-lg bg-white dark:bg-[#271E1B] border border-[#EBE0D8] dark:border-[#3E2F29] text-xs">
-                        <span className="font-medium text-[#3E2723] dark:text-[#F5EFEA] truncate">{item.name}</span>
-                        <span className="px-2 py-0.5 rounded bg-[#F57C00]/15 text-[#F57C00] font-semibold flex-shrink-0">
-                          {item.stock} left
-                        </span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
             </div>
           )}
 

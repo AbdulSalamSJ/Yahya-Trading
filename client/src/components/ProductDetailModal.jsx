@@ -896,16 +896,10 @@ const handleBack = (e) => {
 
                 {/* Stock Status */}
                 <div className="mb-6">
-                  {product.stock > 10 ? (
-                    <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#e6f4f1] dark:bg-[#108474]/20 text-[#108474] dark:text-[#14b8a6] text-xs font-bold">
-                      <Check size={14} />
-                      In Stock ({product.stock} available) • Ready for 24h Express Dispatch
-                    </span>
-                  ) : (
-                    <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-100 dark:bg-amber-900/30 text-amber-800 dark:text-amber-300 text-xs font-bold">
-                      ⚠ Low Stock: Only {product.stock} packs left
-                    </span>
-                  )}
+                  <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#e6f4f1] dark:bg-[#108474]/20 text-[#108474] dark:text-[#14b8a6] text-xs font-bold">
+                    <Check size={14} />
+                    In Stock • Ready for 24h Express Dispatch
+                  </span>
                 </div>
 
                 {/* Short Description */}
