@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import { formatSize } from '../utils/productSizes';
 
 const CartContext = createContext();
 
@@ -30,7 +31,7 @@ export function CartProvider({ children }) {
   };
 
   const addToCart = (product, quantity = 1, size = null) => {
-    const selectedSize = size || product.selectedSize || '250G';
+    const selectedSize = formatSize(size || product.selectedSize || '250 GM');
     const itemKey = `${product.id}-${selectedSize}`;
     const price = product.price != null ? Number(product.price) : 0;
 

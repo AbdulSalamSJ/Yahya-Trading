@@ -2,11 +2,11 @@ import React, { useState } from 'react';
 import { Star, ShoppingBag, Eye, Check } from 'lucide-react';
 import { useCart } from '../context/CartContext';
 import { SizeSelector } from './SizeSelector';
-import { getPriceForSize } from '../utils/productSizes';
+import { getPriceForSize, formatSize, isSizeAvailable } from '../utils/productSizes';
 
 export function ProductCard({ product, onSelectProduct }) {
   const { addToCart } = useCart();
-  const [selectedSize, setSelectedSize] = useState(product.selectedSize || '250G');
+  const [selectedSize, setSelectedSize] = useState(product.selectedSize ? formatSize(product.selectedSize) : '250 GM');
 
   const primaryImage = product.images && product.images.length > 0
     ? product.images[0]
@@ -16,6 +16,7 @@ export function ProductCard({ product, onSelectProduct }) {
   const currentPrice = getPriceForSize(product, selectedSize);
   const regularPrice = Math.round(currentPrice * 1.18);
   const discountPercent = Math.round(((regularPrice - currentPrice) / regularPrice) * 100);
+  const isAvailable = isSizeAvailable(product, selectedSize);
 
   const handleOpenDetail = () => {
     onSelectProduct({
@@ -83,7 +84,7 @@ export function ProductCard({ product, onSelectProduct }) {
               {product.origin || 'Sourced Globally'}
             </span>
             <span className="font-semibold text-neutral-600 dark:text-neutral-400">
-              {selectedSize}
+              {formatSize(selectedSize)}
             </span>
           </div>
 
@@ -138,21 +139,33 @@ export function ProductCard({ product, onSelectProduct }) {
                 ₹ {regularPrice.toLocaleString('en-IN')}
               </span>
             </div>
-            <span className="text-[10px] font-semibold text-[#108474] block">
-              In Stock & Ready to Ship
-            </span>
+            {isAvailable ? (
+              <span className="text-[10px] font-semibold text-[#108474] block">
+                In Stock & Ready to Ship
+              </span>
+            ) : (
+              <span className="text-[10px] font-semibold text-rose-500 dark:text-rose-400 block">
+                Out of Stock • Unavailable
+              </span>
+            )}
           </div>
 
           <button
             onClick={(e) => {
               e.stopPropagation();
-              addToCart({ ...product, price: currentPrice, selectedSize }, 1, selectedSize);
+              if (!isAvailable) return;
+              addToCart({ ...product, price: currentPrice, selectedSize: formatSize(selectedSize) }, 1, formatSize(selectedSize));
             }}
-            className="px-3.5 py-2 rounded-full bg-[#fee000] hover:bg-[#f5d600] active:scale-95 text-[#1d1d1d] text-xs font-bold shadow-sm transition-all flex items-center gap-1.5 cursor-pointer"
-            aria-label={`Add ${product.name} to cart`}
+            disabled={!isAvailable}
+            className={`px-3.5 py-2 rounded-full text-xs font-bold shadow-sm transition-all flex items-center gap-1.5 ${
+              isAvailable
+                ? 'bg-[#fee000] hover:bg-[#f5d600] active:scale-95 text-[#1d1d1d] cursor-pointer'
+                : 'bg-neutral-200 dark:bg-neutral-800 text-neutral-400 dark:text-neutral-500 cursor-not-allowed'
+            }`}
+            aria-label={isAvailable ? `Add ${product.name} to cart` : `${product.name} is unavailable`}
           >
             <ShoppingBag size={14} />
-            <span>Add</span>
+            <span>{isAvailable ? 'Add' : 'Unavailable'}</span>
           </button>
         </div>
 
@@ -161,3 +174,4 @@ export function ProductCard({ product, onSelectProduct }) {
     </div>
   );
 }
+

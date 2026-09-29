@@ -1,5 +1,5 @@
 import React from 'react';
-import { getProductSizes } from '../utils/productSizes';
+import { getProductSizes, formatSize, formatSizeOption, isSizeAvailable } from '../utils/productSizes';
 
 export function SizeSelector({
   product,
@@ -10,7 +10,7 @@ export function SizeSelector({
   className = ''
 }) {
   const sizes = getProductSizes(product);
-  const currentSize = selectedSize || sizes[0] || '250G';
+  const currentCleanSize = selectedSize ? formatSize(selectedSize) : formatSize(sizes[0] || '250 GM');
 
   return (
     <div className={`relative ${className}`}>
@@ -20,24 +20,29 @@ export function SizeSelector({
         </label>
       )}
 
-      <div className="relative inline-block w-full max-w-[240px]">
+      <div className="relative inline-block w-full max-w-[280px]">
         <select
-          value={currentSize}
+          value={currentCleanSize}
           onChange={(e) => onSelectSize(e.target.value)}
           className={`w-full appearance-none bg-[#f2f2f2] hover:bg-[#e9e9e9] dark:bg-[#262626] dark:hover:bg-[#2f2f2f] text-neutral-900 dark:text-neutral-100 font-semibold border border-neutral-300 dark:border-neutral-700 rounded-sm cursor-pointer shadow-xs transition-colors focus:outline-none focus:border-neutral-500 ${
             compact ? 'px-3 py-1.5 text-xs pr-8' : 'px-3.5 py-2.5 text-sm sm:text-base pr-9'
           }`}
           aria-label="Select product size"
         >
-          {sizes.map((size) => (
-            <option
-              key={size}
-              value={size}
-              className="bg-white dark:bg-[#222222] text-neutral-900 dark:text-white py-1.5"
-            >
-              {size}
-            </option>
-          ))}
+          {sizes.map((size) => {
+            const formatted = formatSize(size);
+            const label = formatSizeOption(product, size);
+            const available = isSizeAvailable(product, size);
+            return (
+              <option
+                key={formatted}
+                value={formatted}
+                className={`bg-white dark:bg-[#222222] text-neutral-900 dark:text-white py-1.5 ${!available ? 'text-neutral-400 dark:text-neutral-500' : ''}`}
+              >
+                {label}
+              </option>
+            );
+          })}
         </select>
 
         {/* Downward triangle arrow matching screenshot */}

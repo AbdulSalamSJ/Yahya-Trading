@@ -28,9 +28,8 @@ import {
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
 import { api } from '../services/api';
-import logoImg from '../image/logo.jpg';
 import { SizeSelector } from './SizeSelector';
-import { getPriceForSize } from '../utils/productSizes';
+import { getPriceForSize, formatSize, isSizeAvailable } from '../utils/productSizes';
 
 export function ProductDetailModal({
   product: initialProduct,
@@ -81,7 +80,7 @@ export function ProductDetailModal({
   const [adminSaving, setAdminSaving] = useState(false);
   const [adminSuccessMsg, setAdminSuccessMsg] = useState('');
   const [adminErrorMsg, setAdminErrorMsg] = useState('');
-  const [selectedSize, setSelectedSize] = useState(initialProduct?.selectedSize || '250G');
+  const [selectedSize, setSelectedSize] = useState(initialProduct?.selectedSize ? formatSize(initialProduct.selectedSize) : '250 GM');
 
   // 2-click back detector ref
   const lastBackClickRef = useRef(0);
@@ -174,6 +173,7 @@ const handleBack = (e) => {
   const currentPrice = getPriceForSize(product, selectedSize);
   const regularPrice = Math.round(currentPrice * 1.18);
   const discountPercent = Math.round(((regularPrice - currentPrice) / regularPrice) * 100);
+  const isAvailable = isSizeAvailable(product, selectedSize);
 
   // Customer handlers
   const handleAddReview = async (e) => {
@@ -200,21 +200,23 @@ const handleBack = (e) => {
   };
 
   const handleAddToCart = () => {
+    if (!isAvailable) return;
     addToCart({
       ...product,
       price: currentPrice,
-      selectedSize
-    }, quantity, selectedSize);
+      selectedSize: formatSize(selectedSize)
+    }, quantity, formatSize(selectedSize));
     setJustAdded(true);
     setTimeout(() => setJustAdded(false), 2200);
   };
 
   const handleBuyNow = () => {
+    if (!isAvailable) return;
     addToCart({
       ...product,
       price: currentPrice,
-      selectedSize
-    }, quantity, selectedSize);
+      selectedSize: formatSize(selectedSize)
+    }, quantity, formatSize(selectedSize));
     if (onBuyNow) {
       onBuyNow();
     } else {
@@ -879,10 +881,17 @@ const handleBack = (e) => {
 
                 {/* Stock Status */}
                 <div className="mb-6">
-                  <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#e6f4f1] dark:bg-[#108474]/20 text-[#108474] dark:text-[#14b8a6] text-xs font-bold">
-                    <Check size={14} />
-                    In Stock • Ready for 24h Express Dispatch
-                  </span>
+                  {isAvailable ? (
+                    <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#e6f4f1] dark:bg-[#108474]/20 text-[#108474] dark:text-[#14b8a6] text-xs font-bold">
+                      <Check size={14} />
+                      In Stock • Ready for 24h Express Dispatch
+                    </span>
+                  ) : (
+                    <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-rose-50 dark:bg-rose-950/40 text-rose-600 dark:text-rose-400 text-xs font-bold">
+                      <RotateCcw size={14} />
+                      Unavailable • Currently Out of Stock
+                    </span>
+                  )}
                 </div>
 
                 {/* Short Description */}
@@ -917,13 +926,18 @@ const handleBack = (e) => {
                   <div className="flex flex-col sm:flex-row items-center gap-3">
                     <button
                       onClick={handleAddToCart}
-                      className={`w-full sm:flex-1 py-4 px-6 rounded-full text-sm font-black shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer ${
-                        justAdded
-                          ? 'bg-[#108474] text-white shadow-lg'
-                          : 'bg-[#fee000] hover:bg-[#f5d600] text-[#1d1d1d] hover:shadow-lg'
+                      disabled={!isAvailable}
+                      className={`w-full sm:flex-1 py-4 px-6 rounded-full text-sm font-black shadow-md transition-all flex items-center justify-center gap-2 ${
+                        !isAvailable
+                          ? 'bg-neutral-200 dark:bg-neutral-800 text-neutral-400 dark:text-neutral-500 cursor-not-allowed'
+                          : justAdded
+                          ? 'bg-[#108474] text-white shadow-lg cursor-pointer'
+                          : 'bg-[#fee000] hover:bg-[#f5d600] text-[#1d1d1d] hover:shadow-lg cursor-pointer'
                       }`}
                     >
-                      {justAdded ? (
+                      {!isAvailable ? (
+                        <span>Currently Unavailable</span>
+                      ) : justAdded ? (
                         <>
                           <Check size={18} />
                           <span>Added to Bag Successfully!</span>
@@ -938,7 +952,12 @@ const handleBack = (e) => {
 
                     <button
                       onClick={handleBuyNow}
-                      className="w-full sm:w-auto py-4 px-7 rounded-full bg-[#1d1d1d] text-white dark:bg-white dark:text-[#1d1d1d] text-sm font-black hover:opacity-90 transition shadow cursor-pointer whitespace-nowrap"
+                      disabled={!isAvailable}
+                      className={`w-full sm:w-auto py-4 px-7 rounded-full text-sm font-black transition shadow whitespace-nowrap ${
+                        isAvailable
+                          ? 'bg-[#1d1d1d] text-white dark:bg-white dark:text-[#1d1d1d] hover:opacity-90 cursor-pointer'
+                          : 'bg-neutral-200 dark:bg-neutral-800 text-neutral-400 dark:text-neutral-500 cursor-not-allowed'
+                      }`}
                     >
                       Buy Now
                     </button>
