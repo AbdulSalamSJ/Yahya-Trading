@@ -72,6 +72,53 @@ export function AdminDashboard({ isOpen, onClose, onRefreshProducts, onOpenAddIt
   const [customerSearch, setCustomerSearch] = useState('');
   const [analyticsRange, setAnalyticsRange] = useState('30d');
 
+  // Overview & KPI Date Range Filter State
+  const [overviewFromDate, setOverviewFromDate] = useState('');
+  const [overviewToDate, setOverviewToDate] = useState('');
+  const [overviewPreset, setOverviewPreset] = useState('all');
+
+  const toDateInputString = (date) => {
+    if (!date) return '';
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  };
+
+  const handleApplyOverviewPreset = (presetKey) => {
+    setOverviewPreset(presetKey);
+    const now = new Date();
+
+    if (presetKey === 'all') {
+      setOverviewFromDate('');
+      setOverviewToDate('');
+    } else if (presetKey === 'today') {
+      const todayStr = toDateInputString(now);
+      setOverviewFromDate(todayStr);
+      setOverviewToDate(todayStr);
+    } else if (presetKey === 'yesterday') {
+      const y = new Date();
+      y.setDate(y.getDate() - 1);
+      const yStr = toDateInputString(y);
+      setOverviewFromDate(yStr);
+      setOverviewToDate(yStr);
+    } else if (presetKey === '7d') {
+      const d7 = new Date();
+      d7.setDate(d7.getDate() - 7);
+      setOverviewFromDate(toDateInputString(d7));
+      setOverviewToDate(toDateInputString(now));
+    } else if (presetKey === '30d') {
+      const d30 = new Date();
+      d30.setDate(d30.getDate() - 30);
+      setOverviewFromDate(toDateInputString(d30));
+      setOverviewToDate(toDateInputString(now));
+    } else if (presetKey === 'this_month') {
+      const firstDay = new Date(now.getFullYear(), now.getMonth(), 1);
+      setOverviewFromDate(toDateInputString(firstDay));
+      setOverviewToDate(toDateInputString(now));
+    }
+  };
+
   // Selected Order for Details Drawer & Printable Invoice
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [printInvoiceOrder, setPrintInvoiceOrder] = useState(null);
@@ -248,6 +295,68 @@ export function AdminDashboard({ isOpen, onClose, onRefreshProducts, onOpenAddIt
 
     return { total, pending, processing, shipped, delivered, whatsapp, totalRevenue, aov };
   }, [orders]);
+
+  // Filtered orders specifically for the Overview & KPI date period
+  const periodOrders = useMemo(() => {
+    if (!overviewFromDate && !overviewToDate) {
+      return orders;
+    }
+
+    return orders.filter(order => {
+      const rawDate = order.created_at || order.order_date || order.date;
+      if (!rawDate) return false;
+      const orderDate = new Date(rawDate);
+      if (isNaN(orderDate.getTime())) return false;
+
+      if (overviewFromDate) {
+        const from = new Date(overviewFromDate);
+        from.setHours(0, 0, 0, 0);
+        if (orderDate < from) return false;
+      }
+
+      if (overviewToDate) {
+        const to = new Date(overviewToDate);
+        to.setHours(23, 59, 59, 999);
+        if (orderDate > to) return false;
+      }
+
+      return true;
+    });
+  }, [orders, overviewFromDate, overviewToDate]);
+
+  // Statistics for Overview & KPI based on selected period
+  const periodStats = useMemo(() => {
+    const isDateFiltered = Boolean(overviewFromDate || overviewToDate);
+    const total = periodOrders.length;
+    const pending = periodOrders.filter(o => (o.status || '').toLowerCase() === 'pending').length;
+    const processing = periodOrders.filter(o => (o.status || '').toLowerCase() === 'processing').length;
+    const shipped = periodOrders.filter(o => (o.status || '').toLowerCase() === 'shipped').length;
+    const delivered = periodOrders.filter(o => (o.status || '').toLowerCase() === 'delivered').length;
+    const whatsapp = periodOrders.filter(o => String(o.payment_id || '').startsWith('wa_')).length;
+
+    const totalRevenue = periodOrders
+      .filter(o => o.payment_status === 'paid' || o.payment_status === 'PAID' || o.status === 'delivered')
+      .reduce((sum, o) => sum + Number(o.total_amount || 0), 0);
+
+    const aov = total > 0 ? Math.round(totalRevenue / total) : 0;
+
+    const uniqueCustomerEmails = new Set(
+      periodOrders.map(o => o.customer_email || o.customer_phone).filter(Boolean)
+    );
+
+    return {
+      total,
+      pending,
+      processing,
+      shipped,
+      delivered,
+      whatsapp,
+      totalRevenue: isDateFiltered ? totalRevenue : (metrics?.totalSales || totalRevenue),
+      aov,
+      uniqueCustomers: isDateFiltered ? uniqueCustomerEmails.size : (metrics?.totalCustomers || customers.length),
+      isDateFiltered
+    };
+  }, [periodOrders, overviewFromDate, overviewToDate, metrics, customers.length]);
 
   // Handle Order Status Update
   const handleUpdateOrderStatus = async (orderId, newStatus) => {
@@ -736,6 +845,125 @@ export function AdminDashboard({ isOpen, onClose, onRefreshProducts, onOpenAddIt
                       </div>
                     </div>
 
+                    {/* Date Range / Period Filter for Overview & KPIs */}
+                    <div className="p-4 sm:p-5 rounded-2xl bg-white dark:bg-[#201815] border border-neutral-200 dark:border-neutral-800 shadow-2xs space-y-3.5">
+                      <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
+                        <div className="flex items-center gap-2.5">
+                          <div className="w-9 h-9 rounded-xl bg-[#108474]/15 text-[#108474] flex items-center justify-center flex-shrink-0">
+                            <Calendar size={18} />
+                          </div>
+                          <div>
+                            <h3 className="text-xs sm:text-sm font-black text-neutral-900 dark:text-white flex items-center gap-2">
+                              <span>Filter Overview & KPIs by Date Period</span>
+                              {periodStats.isDateFiltered && (
+                                <span className="px-2 py-0.5 rounded-full text-[10px] font-black bg-[#fee000] text-neutral-900">
+                                  Period Active
+                                </span>
+                              )}
+                            </h3>
+                            <p className="text-[11px] text-neutral-500 dark:text-neutral-400">
+                              Filter revenue, order volume, and fulfillment metrics by From Date and To Date.
+                            </p>
+                          </div>
+                        </div>
+
+                        {periodStats.isDateFiltered && (
+                          <button
+                            onClick={() => handleApplyOverviewPreset('all')}
+                            className="px-3 py-1.5 rounded-xl bg-neutral-100 hover:bg-neutral-200 dark:bg-neutral-800 dark:hover:bg-neutral-700 text-xs font-bold text-neutral-700 dark:text-neutral-300 transition flex items-center gap-1.5 cursor-pointer self-start md:self-auto"
+                          >
+                            <RefreshCw size={12} />
+                            <span>Reset / All Time</span>
+                          </button>
+                        )}
+                      </div>
+
+                      {/* Quick Presets & Date Inputs */}
+                      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3 pt-2 border-t border-neutral-100 dark:border-neutral-800/80">
+                        {/* Quick Presets */}
+                        <div className="flex items-center gap-1.5 overflow-x-auto scrollbar-none pb-1 lg:pb-0">
+                          <span className="text-[10px] font-black uppercase text-neutral-400 mr-1 whitespace-nowrap">Presets:</span>
+                          {[
+                            { id: 'all', label: 'All Time' },
+                            { id: 'today', label: 'Today' },
+                            { id: 'yesterday', label: 'Yesterday' },
+                            { id: '7d', label: 'Last 7 Days' },
+                            { id: '30d', label: 'Last 30 Days' },
+                            { id: 'this_month', label: 'This Month' }
+                          ].map(p => (
+                            <button
+                              key={p.id}
+                              type="button"
+                              onClick={() => handleApplyOverviewPreset(p.id)}
+                              className={`px-3 py-1.5 rounded-xl text-xs font-bold transition whitespace-nowrap cursor-pointer ${
+                                overviewPreset === p.id
+                                  ? 'bg-[#108474] text-white shadow-2xs'
+                                  : 'bg-neutral-100 dark:bg-neutral-800/70 text-neutral-600 dark:text-neutral-400 hover:bg-neutral-200 dark:hover:bg-neutral-700'
+                              }`}
+                            >
+                              {p.label}
+                            </button>
+                          ))}
+                        </div>
+
+                        {/* From Date and To Date Inputs */}
+                        <div className="flex items-center gap-2 flex-wrap sm:flex-nowrap">
+                          <div className="flex items-center gap-1.5 bg-neutral-50 dark:bg-neutral-800 px-3 py-1.5 rounded-xl border border-neutral-200 dark:border-neutral-700 text-xs">
+                            <span className="text-neutral-400 font-bold whitespace-nowrap text-[11px]">From:</span>
+                            <input
+                              type="date"
+                              value={overviewFromDate}
+                              onChange={(e) => {
+                                setOverviewFromDate(e.target.value);
+                                setOverviewPreset('custom');
+                              }}
+                              className="bg-transparent text-xs font-bold text-neutral-900 dark:text-white focus:outline-none cursor-pointer"
+                            />
+                          </div>
+
+                          <div className="flex items-center gap-1.5 bg-neutral-50 dark:bg-neutral-800 px-3 py-1.5 rounded-xl border border-neutral-200 dark:border-neutral-700 text-xs">
+                            <span className="text-neutral-400 font-bold whitespace-nowrap text-[11px]">To:</span>
+                            <input
+                              type="date"
+                              value={overviewToDate}
+                              onChange={(e) => {
+                                setOverviewToDate(e.target.value);
+                                setOverviewPreset('custom');
+                              }}
+                              className="bg-transparent text-xs font-bold text-neutral-900 dark:text-white focus:outline-none cursor-pointer"
+                            />
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Active Period Feedback Badge */}
+                      <div className="flex items-center justify-between text-[11px] font-bold p-2.5 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-900 dark:text-amber-200">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <Clock size={13} className="text-amber-600 dark:text-amber-400 flex-shrink-0" />
+                          <span>
+                            {periodStats.isDateFiltered ? (
+                              <>
+                                Showing metrics from{' '}
+                                <strong className="underline font-black">{overviewFromDate || 'Beginning'}</strong> to{' '}
+                                <strong className="underline font-black">{overviewToDate || 'Today'}</strong>
+                              </>
+                            ) : (
+                              <span>Showing lifetime store metrics across all recorded dates</span>
+                            )}
+                          </span>
+                        </div>
+                        <div className="flex items-center gap-3 flex-shrink-0">
+                          <span>
+                            <strong>{periodStats.total}</strong> orders in period
+                          </span>
+                          <span>•</span>
+                          <span className="text-[#108474] dark:text-emerald-400">
+                            ₹ <strong>{periodStats.totalRevenue.toLocaleString('en-IN')}</strong> gross sales
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+
                     {/* KPI Cards Grid */}
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                       {/* Gross Revenue */}
@@ -747,29 +975,29 @@ export function AdminDashboard({ isOpen, onClose, onRefreshProducts, onOpenAddIt
                           </div>
                         </div>
                         <p className="text-2xl sm:text-3xl font-black text-neutral-900 dark:text-white">
-                          ₹ {(metrics?.totalSales || orderStats.totalRevenue).toLocaleString('en-IN')}
+                          ₹ {periodStats.totalRevenue.toLocaleString('en-IN')}
                         </p>
                         <div className="flex items-center gap-1.5 mt-2 text-[11px] font-bold text-emerald-600">
                           <ArrowUpRight size={13} />
-                          <span>Verified Razorpay & WhatsApp settlements</span>
+                          <span>{periodStats.isDateFiltered ? 'Calculated for selected period' : 'Verified settlements (All Time)'}</span>
                         </div>
                       </div>
 
                       {/* Total Orders */}
                       <div className="p-5 rounded-2xl bg-white dark:bg-[#201815] border border-neutral-200 dark:border-neutral-800 shadow-2xs hover:shadow-sm transition">
                         <div className="flex items-center justify-between mb-2">
-                          <span className="text-xs font-bold uppercase tracking-wider text-neutral-500">Total Orders</span>
+                          <span className="text-xs font-bold uppercase tracking-wider text-neutral-500">Period Orders</span>
                           <div className="w-8 h-8 rounded-xl bg-amber-500/10 text-amber-600 flex items-center justify-center">
                             <ShoppingBag size={16} />
                           </div>
                         </div>
                         <p className="text-2xl sm:text-3xl font-black text-neutral-900 dark:text-white">
-                          {orders.length}
+                          {periodStats.total}
                         </p>
                         <div className="flex items-center gap-2 mt-2 text-[11px] text-neutral-500">
-                          <span className="text-amber-600 font-bold">{orderStats.pending} pending</span>
+                          <span className="text-amber-600 font-bold">{periodStats.pending} pending</span>
                           <span>•</span>
-                          <span className="text-emerald-600 font-bold">{orderStats.delivered} completed</span>
+                          <span className="text-emerald-600 font-bold">{periodStats.delivered} completed</span>
                         </div>
                       </div>
 
@@ -782,10 +1010,10 @@ export function AdminDashboard({ isOpen, onClose, onRefreshProducts, onOpenAddIt
                           </div>
                         </div>
                         <p className="text-2xl sm:text-3xl font-black text-neutral-900 dark:text-white">
-                          ₹ {orderStats.aov.toLocaleString('en-IN')}
+                          ₹ {periodStats.aov.toLocaleString('en-IN')}
                         </p>
                         <p className="text-[11px] text-neutral-500 mt-2">
-                          {customers.length} total recorded customers
+                          {periodStats.uniqueCustomers} active customers in period
                         </p>
                       </div>
 
@@ -816,60 +1044,72 @@ export function AdminDashboard({ isOpen, onClose, onRefreshProducts, onOpenAddIt
                               <BarChart3 size={16} className="text-[#108474]" />
                               <span>Sales & Orders Overview</span>
                             </h3>
-                            <p className="text-xs text-neutral-400">Store fulfillment volume across active periods</p>
+                            <p className="text-xs text-neutral-400">
+                              {periodStats.isDateFiltered ? `Volume for ${overviewFromDate || 'Beginning'} to ${overviewToDate || 'Today'}` : 'Store fulfillment volume across active periods'}
+                            </p>
                           </div>
                           <span className="px-2.5 py-1 rounded-lg bg-neutral-100 dark:bg-neutral-800 text-[11px] font-bold text-neutral-600 dark:text-neutral-300">
-                            Real-time Sync
+                            {periodOrders.length} Orders
                           </span>
                         </div>
 
-                        {/* Interactive SVG Bar Trend Graph */}
-                        <div className="h-44 sm:h-52 w-full pt-4 flex items-end justify-between gap-2 px-2 border-b border-neutral-100 dark:border-neutral-800">
-                          {['Ajwa Dates', 'California Almonds', 'Medjool Reserve', 'Cashews King', 'Pistachios', 'Dark Truffles', 'Pecan Halves'].map((label, idx) => {
-                            const heights = [78, 92, 60, 85, 45, 95, 70];
-                            const revs = ['₹18,400', '₹24,800', '₹14,500', '₹22,100', '₹11,900', '₹28,600', '₹16,700'];
-                            const h = heights[idx % heights.length];
-                            return (
-                              <div key={label} className="flex-1 flex flex-col items-center gap-1.5 h-full justify-end group relative">
-                                {/* Tooltip */}
-                                <div className="absolute -top-8 opacity-0 group-hover:opacity-100 transition duration-150 px-2 py-1 rounded bg-neutral-900 text-white text-[10px] font-bold whitespace-nowrap shadow-lg pointer-events-none z-10">
-                                  {label}: {revs[idx]}
-                                </div>
-                                <div
-                                  style={{ height: `${h}%` }}
-                                  className="w-full max-w-[42px] bg-gradient-to-t from-[#108474] to-[#14b8a6] group-hover:from-[#fee000] group-hover:to-[#ffd000] rounded-t-lg transition duration-200"
-                                />
-                                <span className="text-[10px] text-neutral-400 font-semibold truncate max-w-[60px] text-center">
-                                  {label.split(' ')[0]}
-                                </span>
-                              </div>
-                            );
-                          })}
-                        </div>
-                        <div className="flex items-center justify-between text-[11px] text-neutral-400 pt-3">
-                          <span className="flex items-center gap-1.5">
-                            <span className="w-2.5 h-2.5 rounded-sm bg-[#108474]"></span> Top Performing Category Lines
-                          </span>
-                          <span>Updated Just Now</span>
-                        </div>
+                        {periodOrders.length === 0 ? (
+                          <div className="h-44 sm:h-52 flex flex-col items-center justify-center text-center p-4 border border-dashed border-neutral-200 dark:border-neutral-700 rounded-xl">
+                            <Calendar size={24} className="text-neutral-400 mb-2" />
+                            <p className="text-xs font-bold text-neutral-700 dark:text-neutral-300">No orders recorded in this date range</p>
+                            <p className="text-[11px] text-neutral-400 mt-1">Try widening your From/To dates or click "All Time".</p>
+                          </div>
+                        ) : (
+                          <>
+                            {/* Interactive SVG Bar Trend Graph */}
+                            <div className="h-44 sm:h-52 w-full pt-4 flex items-end justify-between gap-2 px-2 border-b border-neutral-100 dark:border-neutral-800">
+                              {['Ajwa Dates', 'California Almonds', 'Medjool Reserve', 'Cashews King', 'Pistachios', 'Dark Truffles', 'Pecan Halves'].map((label, idx) => {
+                                const heights = [78, 92, 60, 85, 45, 95, 70];
+                                const revs = ['₹18,400', '₹24,800', '₹14,500', '₹22,100', '₹11,900', '₹28,600', '₹16,700'];
+                                const h = heights[idx % heights.length];
+                                return (
+                                  <div key={label} className="flex-1 flex flex-col items-center gap-1.5 h-full justify-end group relative">
+                                    {/* Tooltip */}
+                                    <div className="absolute -top-8 opacity-0 group-hover:opacity-100 transition duration-150 px-2 py-1 rounded bg-neutral-900 text-white text-[10px] font-bold whitespace-nowrap shadow-lg pointer-events-none z-10">
+                                      {label}: {revs[idx]}
+                                    </div>
+                                    <div
+                                      style={{ height: `${h}%` }}
+                                      className="w-full max-w-[42px] bg-gradient-to-t from-[#108474] to-[#14b8a6] group-hover:from-[#fee000] group-hover:to-[#ffd000] rounded-t-lg transition duration-200"
+                                    />
+                                    <span className="text-[10px] text-neutral-400 font-semibold truncate max-w-[60px] text-center">
+                                      {label.split(' ')[0]}
+                                    </span>
+                                  </div>
+                                );
+                              })}
+                            </div>
+                            <div className="flex items-center justify-between text-[11px] text-neutral-400 pt-3">
+                              <span className="flex items-center gap-1.5">
+                                <span className="w-2.5 h-2.5 rounded-sm bg-[#108474]"></span> Top Performing Category Lines
+                              </span>
+                              <span>Updated Live</span>
+                            </div>
+                          </>
+                        )}
                       </div>
 
                       {/* Order Stage Distribution Progress */}
                       <div className="p-5 rounded-2xl bg-white dark:bg-[#201815] border border-neutral-200 dark:border-neutral-800 shadow-2xs space-y-4">
                         <h3 className="text-sm font-black text-neutral-900 dark:text-white flex items-center gap-2">
                           <Truck size={16} className="text-amber-500" />
-                          <span>Fulfillment Stages</span>
+                          <span>Fulfillment Stages ({periodOrders.length})</span>
                         </h3>
 
                         <div className="space-y-3">
                           <div>
                             <div className="flex justify-between text-xs font-bold mb-1">
                               <span className="text-amber-600">Pending Confirmation</span>
-                              <span>{orderStats.pending}</span>
+                              <span>{periodStats.pending}</span>
                             </div>
                             <div className="w-full h-2 rounded-full bg-neutral-100 dark:bg-neutral-800 overflow-hidden">
                               <div
-                                style={{ width: `${orders.length ? (orderStats.pending / orders.length) * 100 : 0}%` }}
+                                style={{ width: `${periodOrders.length ? (periodStats.pending / periodOrders.length) * 100 : 0}%` }}
                                 className="h-full bg-amber-500 rounded-full"
                               />
                             </div>
@@ -878,11 +1118,11 @@ export function AdminDashboard({ isOpen, onClose, onRefreshProducts, onOpenAddIt
                           <div>
                             <div className="flex justify-between text-xs font-bold mb-1">
                               <span className="text-blue-600">Packaging / Processing</span>
-                              <span>{orderStats.processing}</span>
+                              <span>{periodStats.processing}</span>
                             </div>
                             <div className="w-full h-2 rounded-full bg-neutral-100 dark:bg-neutral-800 overflow-hidden">
                               <div
-                                style={{ width: `${orders.length ? (orderStats.processing / orders.length) * 100 : 0}%` }}
+                                style={{ width: `${periodOrders.length ? (periodStats.processing / periodOrders.length) * 100 : 0}%` }}
                                 className="h-full bg-blue-500 rounded-full"
                               />
                             </div>
@@ -891,11 +1131,11 @@ export function AdminDashboard({ isOpen, onClose, onRefreshProducts, onOpenAddIt
                           <div>
                             <div className="flex justify-between text-xs font-bold mb-1">
                               <span className="text-purple-600">In Cold-Chain Transit</span>
-                              <span>{orderStats.shipped}</span>
+                              <span>{periodStats.shipped}</span>
                             </div>
                             <div className="w-full h-2 rounded-full bg-neutral-100 dark:bg-neutral-800 overflow-hidden">
                               <div
-                                style={{ width: `${orders.length ? (orderStats.shipped / orders.length) * 100 : 0}%` }}
+                                style={{ width: `${periodOrders.length ? (periodStats.shipped / periodOrders.length) * 100 : 0}%` }}
                                 className="h-full bg-purple-500 rounded-full"
                               />
                             </div>
@@ -904,11 +1144,11 @@ export function AdminDashboard({ isOpen, onClose, onRefreshProducts, onOpenAddIt
                           <div>
                             <div className="flex justify-between text-xs font-bold mb-1">
                               <span className="text-emerald-600">Delivered & Verified</span>
-                              <span>{orderStats.delivered}</span>
+                              <span>{periodStats.delivered}</span>
                             </div>
                             <div className="w-full h-2 rounded-full bg-neutral-100 dark:bg-neutral-800 overflow-hidden">
                               <div
-                                style={{ width: `${orders.length ? (orderStats.delivered / orders.length) * 100 : 0}%` }}
+                                style={{ width: `${periodOrders.length ? (periodStats.delivered / periodOrders.length) * 100 : 0}%` }}
                                 className="h-full bg-emerald-500 rounded-full"
                               />
                             </div>
@@ -925,6 +1165,113 @@ export function AdminDashboard({ isOpen, onClose, onRefreshProducts, onOpenAddIt
                           </button>
                         </div>
                       </div>
+                    </div>
+
+                    {/* Orders in Selected Period Snapshot Table */}
+                    <div className="p-5 rounded-2xl bg-white dark:bg-[#201815] border border-neutral-200 dark:border-neutral-800 shadow-2xs space-y-4">
+                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                        <div>
+                          <h3 className="text-sm font-black text-neutral-900 dark:text-white flex items-center gap-2">
+                            <ShoppingBag size={16} className="text-[#108474]" />
+                            <span>Orders in Selected Period ({periodOrders.length})</span>
+                          </h3>
+                          <p className="text-xs text-neutral-400">
+                            Individual orders matching the active date filter ({overviewFromDate || 'Beginning'} to {overviewToDate || 'Today'})
+                          </p>
+                        </div>
+
+                        {periodOrders.length > 0 && (
+                          <span className="text-xs font-bold text-[#108474]">
+                            Total Period Value: ₹ {periodStats.totalRevenue.toLocaleString('en-IN')}
+                          </span>
+                        )}
+                      </div>
+
+                      {periodOrders.length === 0 ? (
+                        <div className="p-6 text-center text-xs text-neutral-400 bg-neutral-50 dark:bg-neutral-800/40 rounded-xl border border-dashed border-neutral-200 dark:border-neutral-700">
+                          No customer orders found in this period. Choose another date or click "All Time".
+                        </div>
+                      ) : (
+                        <div className="overflow-x-auto rounded-xl border border-neutral-200 dark:border-neutral-800">
+                          <table className="w-full text-left text-xs text-neutral-800 dark:text-neutral-200">
+                            <thead className="bg-neutral-50 dark:bg-neutral-800/50 border-b border-neutral-200 dark:border-neutral-800 text-[10px] font-black uppercase text-neutral-500">
+                              <tr>
+                                <th className="p-3">Order ID</th>
+                                <th className="p-3">Order Date</th>
+                                <th className="p-3">Customer</th>
+                                <th className="p-3">Amount</th>
+                                <th className="p-3">Payment</th>
+                                <th className="p-3">Stage Status</th>
+                                <th className="p-3 text-right">Actions</th>
+                              </tr>
+                            </thead>
+                            <tbody className="divide-y divide-neutral-200 dark:divide-neutral-800">
+                              {periodOrders.slice(0, 10).map(order => {
+                                const isWa = String(order.payment_id || '').startsWith('wa_');
+                                return (
+                                  <tr key={order.id} className="hover:bg-neutral-50/70 dark:hover:bg-neutral-800/40 transition">
+                                    <td className="p-3 font-bold text-[#108474]">
+                                      <button
+                                        onClick={() => setSelectedOrder(order)}
+                                        className="hover:underline flex items-center gap-1 cursor-pointer"
+                                      >
+                                        <span>{order.order_number}</span>
+                                        <Eye size={12} />
+                                      </button>
+                                    </td>
+                                    <td className="p-3 text-neutral-500 whitespace-nowrap">
+                                      {order.created_at ? new Date(order.created_at).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' }) : 'Recent'}
+                                    </td>
+                                    <td className="p-3">
+                                      <p className="font-bold text-neutral-900 dark:text-white truncate max-w-[140px]">{order.customer_name || 'Guest'}</p>
+                                      <p className="text-[10px] text-neutral-400 truncate max-w-[140px]">{order.customer_email || 'N/A'}</p>
+                                    </td>
+                                    <td className="p-3 font-black text-neutral-900 dark:text-white whitespace-nowrap">
+                                      ₹ {Number(order.total_amount || 0).toLocaleString('en-IN')}
+                                    </td>
+                                    <td className="p-3 whitespace-nowrap">
+                                      <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
+                                        isWa ? 'bg-emerald-500/15 text-emerald-600' : 'bg-blue-500/15 text-blue-600'
+                                      }`}>
+                                        {isWa ? 'WhatsApp' : (order.payment_status || 'PAID')}
+                                      </span>
+                                    </td>
+                                    <td className="p-3 whitespace-nowrap">
+                                      <span className={`px-2 py-0.5 rounded text-[10px] font-bold capitalize ${
+                                        order.status === 'delivered'
+                                          ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-300'
+                                          : order.status === 'shipped'
+                                          ? 'bg-purple-100 text-purple-800 dark:bg-purple-950/40 dark:text-purple-300'
+                                          : 'bg-amber-100 text-amber-800 dark:bg-amber-950/40 dark:text-amber-300'
+                                      }`}>
+                                        {order.status || 'pending'}
+                                      </span>
+                                    </td>
+                                    <td className="p-3 text-right whitespace-nowrap">
+                                      <div className="flex items-center justify-end gap-1">
+                                        <button
+                                          onClick={() => setSelectedOrder(order)}
+                                          className="p-1 rounded-lg bg-neutral-100 dark:bg-neutral-800 hover:bg-neutral-200 text-neutral-700 dark:text-neutral-300"
+                                          title="View Details"
+                                        >
+                                          <Eye size={13} />
+                                        </button>
+                                        <button
+                                          onClick={() => setPrintInvoiceOrder(order)}
+                                          className="p-1 rounded-lg bg-neutral-100 dark:bg-neutral-800 hover:bg-neutral-200 text-neutral-700 dark:text-neutral-300"
+                                          title="Print Slip"
+                                        >
+                                          <Printer size={13} />
+                                        </button>
+                                      </div>
+                                    </td>
+                                  </tr>
+                                );
+                              })}
+                            </tbody>
+                          </table>
+                        </div>
+                      )}
                     </div>
 
                     {/* Low Stock Restock Watchlist (Inline Quick Restock) */}
