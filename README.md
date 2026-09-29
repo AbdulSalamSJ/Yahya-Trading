@@ -64,9 +64,18 @@ npm run db:init
 
 ## 👤 Test Accounts
 - **Yahiya Traders Admin**:
-  - Email: `admin@chocolatier.com`
+  - Email: `admin@yahiyatraders.com`
   - Password: `Admin@123`
-  - Features: Metrics dashboard, harvest inventory management, batch order status updates.
+  - Features: Executive dashboard, harvest catalog & inventory manager, cold-chain orders fulfillment, real-time metrics, printable slips, and CSV export.
 - **Customer**:
   - Email: `customer@example.com`
   - Password: `Customer@123`
+
+---
+
+## 🛡️ Proprietary Rights & Ownership
+**All rights reserved for Data Infolenz.**  
+© 2026 **Data Infolenz**. All Rights Reserved.
+
+This platform, including its source code, UI/UX design architecture, database models, and documentation, is proprietary and reserved for **Data Infolenz**. Unauthorized duplication, distribution, reverse engineering, or commercial exploitation in whole or in part without express written permission from Data Infolenz is strictly prohibited.
+
