@@ -1,11 +1,13 @@
 import React, { useState } from 'react';
 import { Star, ShoppingBag, Eye, Check } from 'lucide-react';
 import { useCart } from '../context/CartContext';
+import { useAuth } from '../context/AuthContext';
 import { SizeSelector } from './SizeSelector';
 import { getPriceForSize, formatSize, isSizeAvailable } from '../utils/productSizes';
 
 export function ProductCard({ product, onSelectProduct }) {
   const { addToCart } = useCart();
+  const { isAdmin } = useAuth();
   const [selectedSize, setSelectedSize] = useState(product.selectedSize ? formatSize(product.selectedSize) : '250 GM');
 
   const primaryImage = product.images && product.images.length > 0
@@ -150,23 +152,37 @@ export function ProductCard({ product, onSelectProduct }) {
             )}
           </div>
 
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              if (!isAvailable) return;
-              addToCart({ ...product, price: currentPrice, selectedSize: formatSize(selectedSize) }, 1, formatSize(selectedSize));
-            }}
-            disabled={!isAvailable}
-            className={`px-3.5 py-2 rounded-full text-xs font-bold shadow-sm transition-all flex items-center gap-1.5 ${
-              isAvailable
-                ? 'bg-[#fee000] hover:bg-[#f5d600] active:scale-95 text-[#1d1d1d] cursor-pointer'
-                : 'bg-neutral-200 dark:bg-neutral-800 text-neutral-400 dark:text-neutral-500 cursor-not-allowed'
-            }`}
-            aria-label={isAvailable ? `Add ${product.name} to cart` : `${product.name} is unavailable`}
-          >
-            <ShoppingBag size={14} />
-            <span>{isAvailable ? 'Add' : 'Unavailable'}</span>
-          </button>
+          {isAdmin ? (
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                handleOpenDetail();
+              }}
+              className="px-3.5 py-2 rounded-full bg-amber-500/15 hover:bg-amber-500/25 border border-amber-500/40 text-amber-900 dark:text-amber-200 text-xs font-black shadow-xs transition-all flex items-center gap-1.5 cursor-pointer"
+              title="Edit Item Details"
+            >
+              <Eye size={13} className="text-amber-600" />
+              <span>Edit</span>
+            </button>
+          ) : (
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                if (!isAvailable) return;
+                addToCart({ ...product, price: currentPrice, selectedSize: formatSize(selectedSize) }, 1, formatSize(selectedSize));
+              }}
+              disabled={!isAvailable}
+              className={`px-3.5 py-2 rounded-full text-xs font-bold shadow-sm transition-all flex items-center gap-1.5 ${
+                isAvailable
+                  ? 'bg-[#fee000] hover:bg-[#f5d600] active:scale-95 text-[#1d1d1d] cursor-pointer'
+                  : 'bg-neutral-200 dark:bg-neutral-800 text-neutral-400 dark:text-neutral-500 cursor-not-allowed'
+              }`}
+              aria-label={isAvailable ? `Add ${product.name} to cart` : `${product.name} is unavailable`}
+            >
+              <ShoppingBag size={14} />
+              <span>{isAvailable ? 'Add' : 'Unavailable'}</span>
+            </button>
+          )}
         </div>
 
       </div>

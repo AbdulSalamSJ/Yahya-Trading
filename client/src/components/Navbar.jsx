@@ -235,20 +235,22 @@ export function Navbar({ onOpenAuth, onOpenAdmin, onOpenAddItem, onOpenTracking,
             )}
           </div>
 
-          {/* PalmTree Shopping Cart Button */}
-          <button
-            onClick={() => setIsCartOpen(true)}
-            className="relative p-2 sm:px-3.5 sm:py-2 bg-[#fee000] hover:bg-[#f5d600] active:scale-95 text-[#1d1d1d] font-semibold rounded-full shadow-sm transition flex items-center gap-1.5 sm:gap-2"
-            aria-label="View shopping bag"
-          >
-            <ShoppingBag size={18} />
-            <span className="hidden sm:inline text-xs font-bold">Cart</span>
-            {totalItemsCount > 0 && (
-              <span className="bg-[#1d1d1d] text-white text-[10px] sm:text-[11px] font-bold min-w-[18px] h-[18px] sm:w-5 sm:h-5 px-1 rounded-full flex items-center justify-center">
-                {totalItemsCount}
-              </span>
-            )}
-          </button>
+          {/* Shopping Cart Button (Hidden in Admin Mode) */}
+          {!isAdmin && (
+            <button
+              onClick={() => setIsCartOpen(true)}
+              className="relative p-2 sm:px-3.5 sm:py-2 bg-[#fee000] hover:bg-[#f5d600] active:scale-95 text-[#1d1d1d] font-semibold rounded-full shadow-sm transition flex items-center gap-1.5 sm:gap-2 cursor-pointer"
+              aria-label="View shopping bag"
+            >
+              <ShoppingBag size={18} />
+              <span className="hidden sm:inline text-xs font-bold">Cart</span>
+              {totalItemsCount > 0 && (
+                <span className="bg-[#1d1d1d] text-white text-[10px] sm:text-[11px] font-bold min-w-[18px] h-[18px] sm:w-5 sm:h-5 px-1 rounded-full flex items-center justify-center">
+                  {totalItemsCount}
+                </span>
+              )}
+            </button>
+          )}
         </div>
 
       </div>

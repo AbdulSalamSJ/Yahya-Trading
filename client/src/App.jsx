@@ -587,10 +587,12 @@ export function App() {
         </main>
       )}
 
-      {/* Shopping Cart Drawer */}
-      <CartDrawer
-        onProceedToCheckout={() => setIsCheckoutOpen(true)}
-      />
+      {/* Shopping Cart Drawer (Disabled in Admin Mode) */}
+      {!isAdmin && (
+        <CartDrawer
+          onProceedToCheckout={() => setIsCheckoutOpen(true)}
+        />
+      )}
 
       {/* Product Detail Modal */}
       {selectedProduct && (
