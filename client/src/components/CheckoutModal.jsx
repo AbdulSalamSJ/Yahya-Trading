@@ -476,10 +476,10 @@ export function CheckoutModal({ isOpen, onClose, onOrderPlaced }) {
                 className="w-full py-3.5 px-4 rounded-xl bg-[#25D366] hover:bg-[#20bd5a] text-white text-sm font-bold shadow-lg shadow-emerald-600/25 flex items-center justify-center gap-2.5 transition active:scale-98"
               >
                 <WhatsAppIcon size={18} />
-                <span>Send Bill on Shop WhatsApp (+91 63690 90536)</span>
+                <span>Send Bill on Shop WhatsApp</span>
               </a>
               <p className="text-[11px] text-[#6D4C41] dark:text-[#C8B8B0]">
-                Sent directly from customer WhatsApp ({formData.phone}) to shop WhatsApp number +91 63690 90536
+                Sent directly to shop WhatsApp for order confirmation
               </p>
             </div>
 
@@ -758,7 +758,7 @@ export function CheckoutModal({ isOpen, onClose, onOrderPlaced }) {
                     <div className="p-3 rounded-lg bg-[#F5ECE5] dark:bg-[#2A1D1A] space-y-1.5 text-xs text-[#5D4037] dark:text-[#D7CCC8]">
                       <div className="flex justify-between items-center text-[11px]">
                         <span className="font-semibold text-[#8D6E63] dark:text-[#A1887F]">Send Order Bill To:</span>
-                        <span className="font-mono font-bold text-[#3E2723] dark:text-[#F5EFEA]">Shop WhatsApp (+91 63690 90536)</span>
+                        <span className="font-mono font-bold text-[#3E2723] dark:text-[#F5EFEA]">Shop WhatsApp</span>
                       </div>
                       <div className="flex justify-between items-center text-[11px]">
                         <span className="font-semibold text-[#8D6E63] dark:text-[#A1887F]">From Customer WhatsApp:</span>
