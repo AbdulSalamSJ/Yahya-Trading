@@ -1787,8 +1787,7 @@ export function AdminDashboard({ isOpen, onClose, onRefreshProducts, onOpenAddIt
                   
                   {selectedOrder.shipping_address && (
                     <div className="pt-2 border-t border-neutral-200 dark:border-neutral-700 text-neutral-600 dark:text-neutral-400">
-                      <span className="font-bold block text-neutral-700 dark:text-neutral-300 mb-0.5">Shipping Destination:</span>
-                      <p>{typeof selectedOrder.shipping_address === 'string' ? selectedOrder.shipping_address : `${selectedOrder.shipping_address.address || ''}, ${selectedOrder.shipping_address.city || ''}, ${selectedOrder.shipping_address.pincode || ''}`}</p>
+                      <p>{typeof selectedOrder.shipping_address === 'string' ? selectedOrder.shipping_address : [selectedOrder.shipping_address.addressLine || selectedOrder.shipping_address.address, selectedOrder.shipping_address.city, selectedOrder.shipping_address.state, selectedOrder.shipping_address.postalCode || selectedOrder.shipping_address.pincode].filter(Boolean).join(', ')}</p>
                     </div>
                   )}
                 </div>
@@ -1874,86 +1873,225 @@ export function AdminDashboard({ isOpen, onClose, onRefreshProducts, onOpenAddIt
       {/* MODAL: PRINTABLE PACKING SLIP / INVOICE PREVIEW            */}
       {/* ========================================================= */}
       {printInvoiceOrder && (
-        <div className="fixed inset-0 z-70 overflow-y-auto bg-black/60 backdrop-blur-xs flex items-center justify-center p-3 sm:p-6 animate-fadeIn">
-          <div className="w-full max-w-2xl bg-white text-neutral-950 p-6 sm:p-8 rounded-2xl shadow-2xl space-y-6">
-            <div className="flex items-center justify-between border-b pb-4">
-              <div>
-                <h3 className="text-xl font-black">YAHIYA TRADERS</h3>
-                <p className="text-xs text-neutral-500">Dates, Nuts, Dry Fruits & Gourmet Confections</p>
-                <p className="text-[11px] text-neutral-400">Order Invoice / Packing Slip</p>
-              </div>
-              <div className="text-right">
-                <span className="text-xs font-bold text-neutral-500">Order No:</span>
-                <p className="text-sm font-black">{printInvoiceOrder.order_number}</p>
-                <p className="text-xs text-neutral-400">
-                  {printInvoiceOrder.created_at ? new Date(printInvoiceOrder.created_at).toLocaleDateString('en-IN') : 'Today'}
-                </p>
-              </div>
-            </div>
-
-            <div className="grid grid-cols-2 gap-4 text-xs">
-              <div>
-                <span className="font-bold uppercase text-[10px] text-neutral-500 block mb-1">Customer / Recipient:</span>
-                <p className="font-black text-sm">{printInvoiceOrder.customer_name || 'Customer'}</p>
-                <p>{printInvoiceOrder.customer_email || 'N/A'}</p>
-                <p>{printInvoiceOrder.customer_phone || ''}</p>
-              </div>
-              <div>
-                <span className="font-bold uppercase text-[10px] text-neutral-500 block mb-1">Shipment Address:</span>
-                <p>{typeof printInvoiceOrder.shipping_address === 'string' ? printInvoiceOrder.shipping_address : `${printInvoiceOrder.shipping_address?.address || ''}, ${printInvoiceOrder.shipping_address?.city || ''}`}</p>
-              </div>
-            </div>
-
-            <div className="border rounded-xl overflow-hidden text-xs">
-              <table className="w-full text-left">
-                <thead className="bg-neutral-100 border-b font-bold text-[11px]">
-                  <tr>
-                    <th className="p-2.5">Item Description</th>
-                    <th className="p-2.5 text-center">Qty</th>
-                    <th className="p-2.5 text-right">Rate</th>
-                    <th className="p-2.5 text-right">Total</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y">
-                  {Array.isArray(printInvoiceOrder.items) && printInvoiceOrder.items.length > 0 ? (
-                    printInvoiceOrder.items.map((it, idx) => (
-                      <tr key={idx}>
-                        <td className="p-2.5 font-bold">{it.product_name}</td>
-                        <td className="p-2.5 text-center">{it.quantity}</td>
-                        <td className="p-2.5 text-right">₹ {it.unit_price}</td>
-                        <td className="p-2.5 text-right font-black">₹ {it.quantity * it.unit_price}</td>
-                      </tr>
-                    ))
-                  ) : (
-                    <tr>
-                      <td className="p-2.5 font-bold">Store Package Delivery</td>
-                      <td className="p-2.5 text-center">1</td>
-                      <td className="p-2.5 text-right">₹ {printInvoiceOrder.total_amount}</td>
-                      <td className="p-2.5 text-right font-black">₹ {printInvoiceOrder.total_amount}</td>
-                    </tr>
-                  )}
-                </tbody>
-              </table>
-            </div>
-
-            <div className="flex justify-between items-center text-sm font-black pt-2 border-t">
-              <span>Grand Total</span>
-              <span className="text-base">₹ {Number(printInvoiceOrder.total_amount).toLocaleString('en-IN')}</span>
-            </div>
-
-            <div className="flex items-center justify-end gap-2 pt-2">
+        <div className="fixed inset-0 z-70 overflow-y-auto bg-black/75 backdrop-blur-sm flex justify-center items-start p-2 sm:p-6 lg:p-8 animate-fadeIn">
+          {/* Print & Action Bar */}
+          <div className="w-full max-w-3xl my-2 sm:my-4 space-y-3">
+            {/* Top Toolbar (Hidden on Print) */}
+            <div className="flex items-center justify-between bg-neutral-900/90 text-white p-3 rounded-2xl shadow-xl backdrop-blur-md border border-neutral-700 print:hidden">
               <button
                 onClick={() => setPrintInvoiceOrder(null)}
-                className="px-4 py-2 rounded-xl text-xs font-bold border border-neutral-300 hover:bg-neutral-100 cursor-pointer"
+                className="px-3.5 py-1.5 rounded-xl bg-neutral-800 hover:bg-neutral-700 text-xs font-bold transition flex items-center gap-1.5 cursor-pointer"
               >
-                Close
+                <ArrowLeft size={14} />
+                <span>Back to Dashboard</span>
+              </button>
+
+              <div className="flex items-center gap-2">
+                <span className="text-xs font-medium text-neutral-300 hidden sm:inline">
+                  Invoice & Packing Slip • {printInvoiceOrder.order_number}
+                </span>
+                <button
+                  onClick={() => window.print()}
+                  className="px-4 py-2 rounded-xl bg-[#fee000] hover:bg-[#f5d600] text-[#1d1d1d] text-xs font-black shadow-md transition flex items-center gap-1.5 cursor-pointer"
+                >
+                  <Printer size={15} />
+                  <span>Print / Save as PDF</span>
+                </button>
+                <button
+                  onClick={() => setPrintInvoiceOrder(null)}
+                  className="p-1.5 rounded-lg text-neutral-400 hover:text-white hover:bg-neutral-800 transition cursor-pointer"
+                  aria-label="Close invoice"
+                >
+                  <X size={18} />
+                </button>
+              </div>
+            </div>
+
+            {/* Printable Document Sheet (Letterhead / Tax Invoice) */}
+            <div
+              id="printable-invoice"
+              className="w-full bg-white text-neutral-950 p-6 sm:p-10 rounded-2xl shadow-2xl space-y-6 border border-neutral-200 print:border-none print:shadow-none print:p-0 print:m-0"
+            >
+              {/* Header Letterhead */}
+              <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4 border-b-2 border-neutral-900 pb-5">
+                <div className="flex items-start gap-3.5">
+                  <div className="w-14 h-14 rounded-2xl overflow-hidden border-2 border-[#fee000] shadow-sm bg-white flex-shrink-0">
+                    <img src={logoImg} alt="Yahiya Traders" className="w-full h-full object-cover" />
+                  </div>
+                  <div>
+                    <h2 className="text-2xl font-black tracking-tight text-neutral-950">YAHIYA TRADERS</h2>
+                    <p className="text-xs font-semibold text-neutral-600 mt-0.5">
+                      Royal Saudi Dates, Colossal Cashews & Gourmet Confections
+                    </p>
+                    <p className="text-[11px] text-neutral-500 mt-1">
+                      Main Bazaar, Tenkarai, Tamil Nadu 625601 • WhatsApp: +91 80562 25895
+                    </p>
+                    <p className="text-[10px] text-neutral-400">
+                      Email: sales@yahiyatraders.com • www.yahiyatraders.com
+                    </p>
+                  </div>
+                </div>
+
+                <div className="text-left sm:text-right flex-shrink-0 bg-neutral-50 sm:bg-transparent p-3 sm:p-0 rounded-xl sm:rounded-none">
+                  <div className="inline-block px-3 py-1 rounded bg-neutral-900 text-white text-[10px] font-black uppercase tracking-wider mb-2">
+                    Tax Invoice & Packing Slip
+                  </div>
+                  <p className="text-xs font-bold text-neutral-500">Order Reference:</p>
+                  <p className="text-base font-black text-neutral-950 tracking-wide">{printInvoiceOrder.order_number}</p>
+                  <p className="text-xs text-neutral-500 mt-1">
+                    Date: <strong className="text-neutral-900 font-bold">{printInvoiceOrder.created_at ? new Date(printInvoiceOrder.created_at).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }) : 'Today'}</strong>
+                  </p>
+                  <p className="text-[11px] font-bold text-emerald-700 mt-0.5">
+                    Payment: {String(printInvoiceOrder.payment_id || '').startsWith('wa_') ? 'WhatsApp Direct Bill' : (printInvoiceOrder.payment_status || 'PAID (Online)')}
+                  </p>
+                </div>
+              </div>
+
+              {/* Customer & Shipping 2-Column Card */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
+                {/* Bill To */}
+                <div className="p-4 rounded-xl bg-neutral-50 border border-neutral-200/80 space-y-1">
+                  <span className="font-black uppercase text-[10px] text-neutral-500 tracking-wider block mb-1">
+                    Customer / Recipient:
+                  </span>
+                  <p className="font-black text-sm text-neutral-950">{printInvoiceOrder.customer_name || 'Valued Customer'}</p>
+                  <p className="text-neutral-600 font-medium">{printInvoiceOrder.customer_email || 'No email provided'}</p>
+                  <p className="text-neutral-700 font-bold">Contact: {printInvoiceOrder.customer_phone || 'N/A'}</p>
+                </div>
+
+                {/* Ship To */}
+                <div className="p-4 rounded-xl bg-neutral-50 border border-neutral-200/80 space-y-1">
+                  <span className="font-black uppercase text-[10px] text-neutral-500 tracking-wider block mb-1">
+                    Delivery / Shipping Destination:
+                  </span>
+                  <p className="font-bold text-neutral-900 leading-relaxed">
+                    {(() => {
+                      const addr = printInvoiceOrder.shipping_address;
+                      if (!addr) return 'Standard Zone, Tamil Nadu';
+                      if (typeof addr === 'string') return addr;
+                      const parts = [
+                        addr.addressLine || addr.address,
+                        addr.city,
+                        addr.state || 'Tamil Nadu',
+                        addr.postalCode || addr.pincode
+                      ].filter(Boolean);
+                      return parts.join(', ') || 'Standard Zone, Tamil Nadu';
+                    })()}
+                  </p>
+                  <p className="text-[11px] text-neutral-500">
+                    Insulated cold-chain safe packaging with aroma seal.
+                  </p>
+                </div>
+              </div>
+
+              {/* Itemized Table */}
+              <div className="border border-neutral-300 rounded-xl overflow-hidden text-xs">
+                <table className="w-full text-left">
+                  <thead className="bg-neutral-100 border-b border-neutral-300 font-black text-[11px] text-neutral-700 uppercase tracking-wider">
+                    <tr>
+                      <th className="p-3 w-10 text-center">#</th>
+                      <th className="p-3">Item Description</th>
+                      <th className="p-3 text-center">Qty</th>
+                      <th className="p-3 text-right">Unit Rate (₹)</th>
+                      <th className="p-3 text-right">Amount (₹)</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-neutral-200">
+                    {Array.isArray(printInvoiceOrder.items) && printInvoiceOrder.items.length > 0 ? (
+                      printInvoiceOrder.items.map((it, idx) => {
+                        const cleanName = (it.product_name || it.name || 'Harvest Item')
+                          .replace(/\s*\(([0-9]+(?:\.[0-9]+)?(?:g|kg|G|KG))\)\s*\(([0-9]+(?:\.[0-9]+)?(?:g|kg|G|KG))\)/i, ' ($2)');
+                        const qty = Number(it.quantity || 1);
+                        const rate = Number(it.unit_price || it.price || 0);
+                        const lineTotal = Number(it.total_price || (qty * rate));
+
+                        return (
+                          <tr key={idx} className="hover:bg-neutral-50/50">
+                            <td className="p-3 text-center text-neutral-400 font-bold">{idx + 1}</td>
+                            <td className="p-3 font-bold text-neutral-900">
+                              {cleanName}
+                            </td>
+                            <td className="p-3 text-center font-black text-neutral-900">{qty}</td>
+                            <td className="p-3 text-right font-medium text-neutral-700">₹ {rate.toFixed(2)}</td>
+                            <td className="p-3 text-right font-black text-neutral-950">₹ {lineTotal.toLocaleString('en-IN')}</td>
+                          </tr>
+                        );
+                      })
+                    ) : (
+                      <tr>
+                        <td className="p-3 text-center text-neutral-400">1</td>
+                        <td className="p-3 font-bold text-neutral-900">Store Harvest Fulfillment Package</td>
+                        <td className="p-3 text-center font-black">1</td>
+                        <td className="p-3 text-right">₹ {Number(printInvoiceOrder.total_amount).toFixed(2)}</td>
+                        <td className="p-3 text-right font-black">₹ {Number(printInvoiceOrder.total_amount).toLocaleString('en-IN')}</td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
+
+              {/* Summary & Financials */}
+              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-end gap-4 pt-2">
+                <div className="text-xs text-neutral-500 max-w-sm space-y-1">
+                  <p className="font-bold text-neutral-800">Quality & Freshness Guarantee:</p>
+                  <p>All items are sorted and packaged under certified hygienic standards. Keep stored in cool, sealed environment.</p>
+                  <p className="text-[10px] text-neutral-400">For support or inquiries, please contact: +91 80562 25895</p>
+                </div>
+
+                <div className="w-full sm:w-72 p-4 rounded-xl bg-neutral-50 border border-neutral-200 space-y-2 text-xs">
+                  <div className="flex justify-between text-neutral-600">
+                    <span>Subtotal:</span>
+                    <span className="font-bold text-neutral-900">₹ {Number(printInvoiceOrder.subtotal || printInvoiceOrder.total_amount || 0).toLocaleString('en-IN')}</span>
+                  </div>
+                  <div className="flex justify-between text-neutral-600">
+                    <span>Cold-Chain Packaging:</span>
+                    <span className="font-bold text-emerald-700">FREE</span>
+                  </div>
+                  <div className="flex justify-between text-neutral-600">
+                    <span>Shipping Charges:</span>
+                    <span className="font-bold text-emerald-700">FREE Delivery</span>
+                  </div>
+                  <div className="flex justify-between text-sm font-black text-neutral-950 pt-2 border-t-2 border-neutral-900">
+                    <span>Grand Total:</span>
+                    <span className="text-base text-neutral-950 font-black">
+                      ₹ {Number(printInvoiceOrder.total_amount).toLocaleString('en-IN')}
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Signature & Legal Notice */}
+              <div className="pt-6 border-t border-neutral-300 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs">
+                <div className="text-center sm:text-left text-[11px] text-neutral-400">
+                  <p className="font-bold text-neutral-700">Thank you for ordering with Yahiya Traders!</p>
+                  <p>© 2026 Data Infolenz. All rights reserved.</p>
+                </div>
+
+                <div className="text-center sm:text-right">
+                  <div className="w-40 border-b border-neutral-400 pb-1 mx-auto sm:ml-auto">
+                    <span className="font-serif italic text-sm text-neutral-700 font-bold">Yahiya Traders</span>
+                  </div>
+                  <span className="text-[10px] font-bold text-neutral-500 uppercase tracking-wider block mt-1">
+                    Authorized Signatory
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            {/* Bottom Floating Bar */}
+            <div className="flex items-center justify-end gap-2 pt-2 print:hidden">
+              <button
+                onClick={() => setPrintInvoiceOrder(null)}
+                className="px-5 py-2.5 rounded-xl text-xs font-bold bg-white text-neutral-800 border border-neutral-300 hover:bg-neutral-100 shadow-sm cursor-pointer"
+              >
+                Close Window
               </button>
               <button
                 onClick={() => window.print()}
-                className="px-5 py-2 rounded-xl bg-neutral-900 text-white text-xs font-bold hover:bg-neutral-800 transition cursor-pointer flex items-center gap-1.5"
+                className="px-6 py-2.5 rounded-xl bg-neutral-900 hover:bg-neutral-800 text-white text-xs font-black shadow-md transition cursor-pointer flex items-center gap-1.5"
               >
                 <Printer size={15} />
-                <span>Print Slip</span>
+                <span>Print Document</span>
               </button>
             </div>
           </div>
